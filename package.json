@@ -1,29 +1,31 @@
 {
-  "name": "AlbumView",
-  "version": "1.0.0",
-  "description": "Album-oriented view of music collection data from Spotify and elsewhere",
-  "main": "api/server.js",
+  "name": "heroku-cra-node",
+  "version": "3.0.0",
+  "description": "How to use create-react-app with a custom Node API on Heroku",
+  "engines": {
+    "node": "10.x"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node api/server.js",
-    "server": "nodemon api/server.js",
-    "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "cd api && npm install && cd ../client && npm install && npm run build && cd .."
+    "start": "node server",
+    "build": "cd react-ui/ && npm install && npm run build"
+  },
+  "cacheDirectories": [
+    "node_modules",
+    "react-ui/node_modules"
+  ],
+  "dependencies": {
+    "express": "^4.16.4"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paulphillips217/AlbumView.git"
+    "url": "https://github.com/mars/heroku-cra-node.git"
   },
-  "proxy": "http://localhost:5000",
-  "keywords": [],
-  "author": "Paul Phillips",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/paulphillips217/AlbumView/issues"
-  },
-  "homepage": "https://github.com/paulphillips217/AlbumView#readme",
-  "devDependencies": {
-    "concurrently": "^5.1.0"
-  }
+  "keywords": [
+    "node",
+    "heroku",
+    "create-react-app",
+    "react"
+  ],
+  "license": "MIT",
+  "devDependencies": {}
 }
