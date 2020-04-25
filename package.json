@@ -1,12 +1,15 @@
 {
-  "name": "heroku-cra-node",
-  "version": "3.0.0",
-  "description": "How to use create-react-app with a custom Node API on Heroku",
+  "name": "AlbumView",
+  "version": "1.0.0",
+  "description": "Album-oriented view of music collection data from Spotify and elsewhere",
   "engines": {
     "node": "10.x"
   },
   "scripts": {
     "start": "node server",
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd client/ && npm install && npm run build"
   },
   "cacheDirectories": [
@@ -18,14 +21,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mars/heroku-cra-node.git"
+    "url": "git+https://github.com/paulphillips217/AlbumView.git"
   },
+  "proxy": "http://localhost:5000",
+  "author": "Paul Phillips",
   "keywords": [
     "node",
     "heroku",
     "create-react-app",
     "react"
   ],
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paulphillips217/AlbumView/issues"
+  },
+  "homepage": "https://github.com/paulphillips217/AlbumView#readme",
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "nodemon": "^2.0.3"
+  }
 }
