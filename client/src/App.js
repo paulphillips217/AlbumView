@@ -8,6 +8,7 @@ import { setAuthenticated } from "./store/actions";
 
 class App extends Component {
   componentDidMount() {
+    console.log('client application initial render');
     const urlParams = new URLSearchParams(window.location.search);
     const isUserAuthorized = urlParams.has("authorized") ? true : false;
 

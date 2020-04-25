@@ -25,6 +25,7 @@ const getSpotifyAccessToken = (req, res, next) => {
       searchParams.set(prop, data[prop]);
     });
 
+    console.log('posting access token to spotify');
     fetch(url, {
       method: 'POST',
       headers,
@@ -42,9 +43,11 @@ const getSpotifyAccessToken = (req, res, next) => {
 const getAccessToken = (db, callback) => {
   db.find({}, (err, docs) => {
     if (err) {
+      console.error('Failed to retrieve documents');
       throw Error('Failed to retrieve documents');
     }
     if (!docs) {
+      console.error('Documents are empty');
       throw Error('Documents are empty');
     }
 

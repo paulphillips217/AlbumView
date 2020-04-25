@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import '../styles/App.css';
-import {Link, NavLink} from "react-router-dom";
+import {NavLink} from "react-router-dom";
 import {List, Image} from "semantic-ui-react";
 import {getImage} from '../util/utilities';
 

@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== "production") {
   if (result.error) {
     throw result.error;
   }
-  console.error(result.parsed);
+  console.log(result.parsed);
 }
 
 const express = require("express");
@@ -38,12 +38,6 @@ app.get("/ping", (req, res) => {
   res.send("It is ALIVE!!!");
 });
 
-// Answer API requests.  this isn't used anymore, so eventually delete it
-app.get("/api", function (req, res) {
-  res.set("Content-Type", "application/json");
-  res.send('{"message":"Hello from the custom server!"}');
-});
-
 // test endpoint to get the environment setting
 app.get("/node-env", (req, res) => {
   res.send(`NODE_ENV: ${process.env.NODE_ENV}<br/>
@@ -55,7 +49,7 @@ app.get("/node-env", (req, res) => {
 app.get("/login", authorizeSpotify);
 
 app.get("/callback", accessToken.getSpotifyAccessToken, (req, res, next) => {
-//  console.log("callback - credentials: " + JSON.stringify(req.credentials));
+  console.log("callback - credentials: " + JSON.stringify(req.credentials));
   db.insert(req.credentials, (err) => {
     if (err) {
       next(err);
@@ -148,9 +142,5 @@ app.get("*", function (request, response) {
 });
 
 app.listen(PORT, function () {
-  console.error(
-    `Node ${
-      isDev ? "dev server" : "cluster worker " + process.pid
-    }: listening on port ${PORT}`
-  );
+  console.log('Node server listening on port ${PORT}');
 });
