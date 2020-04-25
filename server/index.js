@@ -27,13 +27,19 @@ if (!isDev && cluster.isMaster) {
 
   // Answer API requests.
   app.get('/api', function (req, res) {
+    console.log('got a hit');
     res.set('Content-Type', 'application/json');
     res.send('{"message":"Hello from the custom server!"}');
   });
 
   // All remaining requests return the React app, so it can handle routing.
   app.get('*', function(request, response) {
-    response.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+    if (isDev) {
+      response.sendFile(path.resolve(__dirname, '../client/public', 'index.html'));
+    }
+    else {
+      response.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+    }
   });
 
   app.listen(PORT, function () {
