@@ -134,7 +134,9 @@ app.post("/queue-track/:uri", (req, res) => {
 
 // serve up the react client to any unknown route
 app.get("*", (req, res) => {
-  res.sendfile(path.join(clientRootDir + "/index.html"));
+  const clientUrl = path.join(clientRootDir + "/index.html");
+  console.log("serving up client at " + clientUrl);
+  res.sendfile(clientUrl);
 });
 
 app.set("port", process.env.PORT || 5000);

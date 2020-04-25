@@ -9,7 +9,7 @@
     "server": "nodemon api/server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "cd api && npm install && cd .."
+    "heroku-postbuild": "cd api && npm install && cd ../client && npm install && npm run build && cd .."
   },
   "repository": {
     "type": "git",
