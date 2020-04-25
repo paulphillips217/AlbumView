@@ -1,8 +1,10 @@
-const result = require("dotenv").config({ path: "./api/variables.env" });
-if (result.error) {
-  throw result.error;
+if (process.env.NODE_ENV !== "production") {
+  const result = require("dotenv").config({ path: "./api/variables.env" });
+  if (result.error) {
+    throw result.error;
+  }
+  console.log(result.parsed);
 }
-console.log(result.parsed);
 
 const express = require("express");
 const path = require("path");
@@ -38,7 +40,10 @@ app.get("/ping", (req, res) => {
 
 // test endpoint to get the environment setting
 app.get("/node-env", (req, res) => {
-  res.send(`Environment: ${clientUrl}`);
+  res.send(`NODE_ENV: ${process.env.NODE_ENV}<br/>
+            PORT: ${process.env.PORT}<br/>
+            CLIENT_URL: ${process.env.CLIENT_URL}<br/>
+            `);
 });
 
 app.get("/login", authorizeSpotify);
