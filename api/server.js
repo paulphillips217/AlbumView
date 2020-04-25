@@ -1,3 +1,4 @@
+/*
 if (process.env.NODE_ENV !== "production") {
   const result = require("dotenv").config({ path: "./api/variables.env" });
   if (result.error) {
@@ -5,6 +6,7 @@ if (process.env.NODE_ENV !== "production") {
   }
   console.log(result.parsed);
 }
+*/
 
 const express = require("express");
 const path = require("path");
