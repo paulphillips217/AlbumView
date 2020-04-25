@@ -19,7 +19,7 @@ class TrackHistory extends Component {
 
     if (isUserAuthorized) {
       console.log('getting data');
-      fetch('http://localhost:5000/history')
+      fetch('/history')
         .then(res => res.json())
         .then(data => {
           console.log('data: ' + JSON.stringify(data));

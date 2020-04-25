@@ -27,7 +27,7 @@ class PlaylistTracks extends Component {
     const id = this.props.match.params.id;
 
     if (isUserAuthorized) {
-      fetch(`http://localhost:5000/playlist/${id}`)
+      fetch(`/playlist/${id}`)
         .then(res => res.json())
         .then(data => {
           this.setState({

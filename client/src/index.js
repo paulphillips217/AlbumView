@@ -1,18 +1,22 @@
 // react-router tutorial: https://codeburst.io/getting-started-with-react-router-5c978f70df91
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './styles/index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
-import { Route, BrowserRouter as Router, Switch, NavLink } from 'react-router-dom'
+import React from "react";
+import ReactDOM from "react-dom";
+import "./styles/index.css";
+import App from "./App";
+import * as serviceWorker from "./serviceWorker";
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  NavLink,
+} from "react-router-dom";
 import Playlists from "./components/playlists";
 import PlaylistTracks from "./components/playlistTracks";
 import TrackHistory from "./components/history";
-import { Provider } from 'react-redux'
-import store from './store'
-import { Menu, Icon } from 'semantic-ui-react';
-
+import { Provider } from "react-redux";
+import store from "./store";
+import { Menu, Icon } from "semantic-ui-react";
 
 const routing = (
   <Provider store={store}>
@@ -25,18 +29,19 @@ const routing = (
           style={{
             flexShrink: 0, //don't allow flexbox to shrink it
             borderRadius: 0, //clear semantic-ui style
-            margin: 0 //clear semantic-ui style
-          }}>
-          <Menu.Item as={NavLink} to="/home" >
-            <Icon name="list layout"/>
+            margin: 0, //clear semantic-ui style
+          }}
+        >
+          <Menu.Item as={NavLink} to="/home">
+            <Icon name="list layout" />
             Home
           </Menu.Item>
           <Menu.Item as={NavLink} to="/history">
-            <Icon name="cogs"/>
+            <Icon name="cogs" />
             History
           </Menu.Item>
           <Menu.Item as={NavLink} to="/playlists">
-            <Icon name="browser"/>
+            <Icon name="browser" />
             Playlists
           </Menu.Item>
         </Menu>
@@ -52,7 +57,7 @@ const routing = (
   </Provider>
 );
 
-ReactDOM.render(routing, document.getElementById('root'));
+ReactDOM.render(routing, document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

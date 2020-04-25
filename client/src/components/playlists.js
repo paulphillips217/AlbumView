@@ -30,7 +30,7 @@ class Playlists extends Component {
     const { playlistData } = this.state;
 
     if (isUserAuthorized) {
-      fetch(`http://localhost:5000/playlists/${pageOffset}/${pageLimit}`)
+      fetch(`/playlists/${pageOffset}/${pageLimit}`)
         .then(res => res.json())
         .then(rawData => {
 //          console.log(rawData);
