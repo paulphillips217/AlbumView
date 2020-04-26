@@ -23,6 +23,7 @@
     "nedb": "^1.8.0",
     "node-cron": "^2.0.3",
     "node-fetch": "^2.6.0",
+    "pg": "^7.18.2",
     "pusher": "^3.0.0"
   },
   "repository": {
