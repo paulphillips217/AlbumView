@@ -106,3 +106,5 @@ dist
 api/variables.env
 
 .idea/
+
+server/variables.env
