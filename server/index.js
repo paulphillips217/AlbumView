@@ -66,8 +66,9 @@ app.get("/db-test", async (req, res) => {
 app.get("/login", authorizeSpotify);
 
 app.get("/callback", accessToken.getSpotifyAccessToken, (req, res, next) => {
-//  console.log("callback - credentials: " + JSON.stringify(req.credentials));
+  console.log("callback - credentials: " + JSON.stringify(req.credentials));
   accessToken.storeAccessToken(pool, req.credentials);
+  console.log('redirecting to: '+ clientUrl + '/?authorized=true');
   res.redirect(`${clientUrl}/?authorized=true`);
 });
 
