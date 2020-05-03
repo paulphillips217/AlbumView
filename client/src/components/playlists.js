@@ -1,14 +1,17 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import { connect } from "react-redux";
-import '../styles/App.css';
-import {NavLink} from "react-router-dom";
-import {List, Image} from "semantic-ui-react";
-import {getImage} from '../util/utilities';
+import "../styles/App.css";
+import { List, Image } from "semantic-ui-react";
+import { getImage } from "../util/utilities";
+import {
+  getAuthenticationState,
+  getSelectedPlaylist,
+} from "../store/selectors";
+import { setAuthenticated, setSelectedPlaylist } from "../store/actions";
 
 class Playlists extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       playlistData: [],
       pageOffset: 0,
@@ -18,62 +21,69 @@ class Playlists extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener("scroll", e => {
-      this.handleScroll(e);
-    });
+    console.log("playlist componentDidMount");
     const { pageOffset, pageLimit } = this.state;
     this.getPlaylists(pageOffset, pageLimit);
+
+    // connect up the scrolling mechanism
+    const node = document.querySelector(".Pane1");
+//    console.log(node);
+    node.addEventListener("scroll", (e) => {
+      this.handleScroll(e);
+    });
   }
 
   getPlaylists = (pageOffset, pageLimit) => {
-    const isUserAuthorized = this.props.authentication.authenticated;
+    const { isAuthenticated } = this.props;
     const { playlistData } = this.state;
 
-    if (isUserAuthorized) {
+    if (isAuthenticated) {
       fetch(`/playlists/${pageOffset}/${pageLimit}`)
-        .then(res => res.json())
-        .then(rawData => {
-//          console.log(rawData);
-          const data = rawData.items.map(e => ({
+        .then((res) => res.json())
+        .then((rawData) => {
+          //          console.log(rawData);
+          const data = rawData.items.map((e) => ({
             id: e.id,
             name: e.name,
             author: e.owner.display_name,
             description: e.description,
             image: getImage(e.images),
-            }));
+          }));
           const newData = playlistData.concat(data);
           this.setState({
             playlistData: newData,
-            moreDataAvailable: rawData.next != null
+            moreDataAvailable: rawData.next != null,
           });
         })
-        .catch(error => console.log(error));
-    }
-    else {
-      this.props.history.push('/');
+        .catch((error) => console.log(error));
     }
   };
 
   handleScroll = (e) => {
     const bigGrid = document.querySelector(".left-align-list");
-    console.log('scrolling: ' + bigGrid != null);
+    console.log("scrolling: " + bigGrid != null);
     if (bigGrid) {
+      const node = document.querySelector(".Pane1");
       const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
-      const pageScrollOffset = window.pageYOffset + window.innerHeight;
-      console.log('scrolling -- ' + lastGridOffset + ', ' + pageScrollOffset);
-      if (pageScrollOffset > lastGridOffset) {
+      const pageScrollOffset = node.scrollTop + node.offsetHeight;
+      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
+      if (pageScrollOffset >= lastGridOffset) {
         const { playlistData, pageLimit } = this.state;
         const newPageOffset = playlistData.length;
         this.setState({
-          pageOffset: newPageOffset
+          pageOffset: newPageOffset,
         });
         this.getPlaylists(newPageOffset, pageLimit);
       }
     }
   };
 
+  handleClick = (id) => {
+    this.props.selectPlaylist(id);
+  };
+
   createDescriptionMarkup = (text) => {
-    return {__html: text};
+    return { __html: text };
   };
 
   render() {
@@ -81,29 +91,37 @@ class Playlists extends Component {
 
     const PlaylistItem = (item, index) => (
       <List.Item key={index}>
-        <Image src={item.image} size='mini' />
+        <Image src={item.image} size="mini" />
         <List.Content>
-          <List.Header as={NavLink} to={'/playlist-tracks/' + item.id}>{item.name}</List.Header>
+          <List.Header>
+            <button className='link-button' onClick={(e) => this.handleClick(item.id, e)}>
+              {item.name}
+            </button>
+          </List.Header>
           <List.Description>
-            <p>
-              by: {item.author} <br/>
-              <div dangerouslySetInnerHTML={this.createDescriptionMarkup(item.description)} />
-            </p>
+            <div>
+              by: {item.author} <br />
+              <div
+                dangerouslySetInnerHTML={this.createDescriptionMarkup(
+                  item.description
+                )}
+              />
+            </div>
           </List.Description>
         </List.Content>
       </List.Item>
     );
 
     const PlaylistTable = () => (
-      <List floated={'left'} divided relaxed>
-          {playlistData.map((item, index) => PlaylistItem(item, index))}
+      <List floated={"left"} divided relaxed>
+        {playlistData.map((item, index) => PlaylistItem(item, index))}
       </List>
     );
 
     return (
-      <div className="App">
+      <div className="App1">
         <h1>Your Spotify Playlists</h1>
-        <div className='left-align-list'>
+        <div className="left-align-list">
           {playlistData.length !== 0 ? <PlaylistTable /> : null}
         </div>
       </div>
@@ -112,9 +130,13 @@ class Playlists extends Component {
 }
 
 const mapStateToProps = (state) => ({
-  authentication: state.authentication
+  isAuthenticated: getAuthenticationState(state),
+  selectedPlaylist: getSelectedPlaylist(state),
 });
 
-export default connect(
-  mapStateToProps
-)(Playlists);
+const mapDispatchToProps = (dispatch) => ({
+  logIn: () => dispatch(setAuthenticated()),
+  selectPlaylist: (playlistId) => dispatch(setSelectedPlaylist(playlistId)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Playlists);

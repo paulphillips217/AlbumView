@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== "production") {
   if (result.error) {
     throw result.error;
   }
-  console.log(result.parsed);
+//  console.log(result.parsed);
 }
 
 const express = require("express");
@@ -66,9 +66,8 @@ app.get("/db-test", async (req, res) => {
 app.get("/login", authorizeSpotify);
 
 app.get("/callback", accessToken.getSpotifyAccessToken, (req, res, next) => {
-  console.log("callback - credentials: " + JSON.stringify(req.credentials));
+//  console.log("callback - credentials: " + JSON.stringify(req.credentials));
   accessToken.storeAccessToken(pool, req.credentials);
-  console.log('redirecting to: '+ clientUrl + '/?authorized=true');
   res.redirect(`${clientUrl}/?authorized=true`);
 });
 
@@ -113,6 +112,7 @@ app.get("/playlist/:id", (req, res) => {
 });
 
 app.get("/playlist-tracks/:id/:offset/:limit", (req, res) => {
+  console.log('playlist tracks: ' + req.params.id);
   accessToken.getAccessToken(pool, (accessToken) => {
     const url = `https://api.spotify.com/v1/playlists/${req.params.id}/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
     spotifyData
