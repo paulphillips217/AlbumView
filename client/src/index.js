@@ -48,8 +48,8 @@ const routing = (
           </Menu>
           <Switch>
             <Route path="/history" component={TrackHistory} />
-            <Route path="/playlists" component={Playlists} />
-            <Route path="/playlist-tracks/:id" component={PlaylistTracks} />
+            <Route path="/playlists" component={App} />
+            <Route path="/playlist-tracks/:id" component={App} />
             <Route path="/home" component={App} />
             <Route component={App} />
           </Switch>

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import "../styles/App.css";
-import { List, Image } from "semantic-ui-react";
+import { List, Image, Dropdown } from "semantic-ui-react";
 import { getImage } from "../util/utilities";
 import {
   getAuthenticationState,
@@ -27,7 +27,7 @@ class Playlists extends Component {
 
     // connect up the scrolling mechanism
     const node = document.querySelector(".Pane1");
-//    console.log(node);
+    //    console.log(node);
     node.addEventListener("scroll", (e) => {
       this.handleScroll(e);
     });
@@ -94,7 +94,10 @@ class Playlists extends Component {
         <Image src={item.image} size="mini" />
         <List.Content>
           <List.Header>
-            <button className='link-button' onClick={(e) => this.handleClick(item.id, e)}>
+            <button
+              className="link-button"
+              onClick={(e) => this.handleClick(item.id, e)}
+            >
               {item.name}
             </button>
           </List.Header>
@@ -118,9 +121,28 @@ class Playlists extends Component {
       </List>
     );
 
+    const listOptions = [
+      {
+        key: "playlists",
+        text: "Your Spotify Playlists",
+        value: "playlists",
+      },
+      {
+        key: "favorite-artists",
+        text: "Your Favorite Artists",
+        value: "favorite-artists",
+      },
+    ];
+
     return (
       <div className="App1">
-        <h1>Your Spotify Playlists</h1>
+        <h1>
+          <Dropdown
+            inline
+            options={listOptions}
+            defaultValue={listOptions[0].value}
+          />
+        </h1>
         <div className="left-align-list">
           {playlistData.length !== 0 ? <PlaylistTable /> : null}
         </div>

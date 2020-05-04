@@ -124,6 +124,19 @@ app.get("/playlist-tracks/:id/:offset/:limit", (req, res) => {
   });
 });
 
+app.get("/albums/:id", (req, res) => {
+  console.log('album: ' + req.params.id);
+  accessToken.getAccessToken(pool, (accessToken) => {
+    const url = `https://api.spotify.com/v1/albums/${req.params.id}`;
+    spotifyData
+      .getSpotifyData(accessToken, url)
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((err) => console.log(err));
+  });
+});
+
 app.post("/queue-track/:uri", (req, res) => {
   accessToken.getAccessToken(pool, (accessToken) => {
     console.log("queue track uri: " + req.params.uri);

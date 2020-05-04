@@ -7,7 +7,7 @@ import {
   getAuthenticationState,
   getSelectedPlaylist,
 } from "../store/selectors";
-import { setAuthenticated } from "../store/actions";
+import ModalAlbum from "./modalAlbum";
 
 class PlaylistTracks extends Component {
   constructor(props) {
@@ -19,11 +19,13 @@ class PlaylistTracks extends Component {
         name: "",
         description: "",
       },
-      trackData: [],
+      listTrackData: [],
       pageOffset: 0,
       pageLimit: 50,
       moreDataAvailable: true,
       activeIndex: -1,
+      modalId: "",
+      albumData: {},
     };
   }
 
@@ -48,7 +50,7 @@ class PlaylistTracks extends Component {
   };
 
   getPlaylistTracks = (pageOffset, pageLimit) => {
-    const { trackData } = this.state;
+    const { listTrackData } = this.state;
     const { isAuthenticated, selectedPlaylist } = this.props;
     console.log("getPlaylistTracks: " + selectedPlaylist + ", " + pageOffset);
 
@@ -61,15 +63,16 @@ class PlaylistTracks extends Component {
           const data = rawData.items.map((e) => ({
             id: e.track.id,
             name: e.track.name,
-            album: e.track.album.name,
+            albumId: e.track.album.id,
+            albumName: e.track.album.name,
             artist: e.track.album.artists[0].name,
             image: getImage(e.track.album.images),
             href: e.track.href,
             uri: e.track.uri,
           }));
-          const newData = pageOffset ? trackData.concat(data) : data;
+          const newData = pageOffset ? listTrackData.concat(data) : data;
           this.setState({
-            trackData: newData,
+            listTrackData: newData,
             moreDataAvailable: rawData.next != null,
           });
         })
@@ -121,8 +124,8 @@ class PlaylistTracks extends Component {
       const pageScrollOffset = node.scrollTop + node.offsetHeight;
       console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
       if (pageScrollOffset >= lastGridOffset) {
-        const { trackData, pageLimit } = this.state;
-        const newPageOffset = trackData.length;
+        const { listTrackData, pageLimit } = this.state;
+        const newPageOffset = listTrackData.length;
         this.setState({
           pageOffset: newPageOffset,
         });
@@ -151,8 +154,29 @@ class PlaylistTracks extends Component {
       .catch((error) => console.log(error));
   };
 
+  handleModalOpen = (albumId) => {
+    const { isAuthenticated } = this.props;
+    this.setState({
+      modalId: albumId,
+    });
+
+    if (isAuthenticated && albumId) {
+      fetch(`/albums/${albumId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          this.setState({
+            albumData: {
+              tracks: data.tracks,
+            },
+          });
+          console.log(data);
+        })
+        .catch((error) => console.log(error));
+    }
+  };
+
   render() {
-    const { playlistData, trackData, activeIndex } = this.state;
+    const { playlistData, listTrackData, activeIndex } = this.state;
 
     const GridItem = (item, index) => (
       <Grid.Column key={index}>
@@ -171,20 +195,30 @@ class PlaylistTracks extends Component {
               <br />
               <strong>Artist</strong>: {item.artist}
               <br />
-              <strong>Album</strong>: {item.album}
+              <strong>Album</strong>: {item.albumName}
               <br />
-              <strong>Info</strong>: <a href={item.href}>click here</a>
-              <br />
-              <strong>Play</strong>:{" "}
               <a href={"http://open.spotify.com/track/" + item.id}>
-                click here
+                Open in Player
               </a>
+              <br />
               <button
+                style={{ width: "95%" }}
                 value={item.uri}
                 onClick={() => this.handleQueueClick(item.uri)}
               >
                 Queue Track
               </button>
+              <br />
+              <ModalAlbum
+                handleModalOpen={this.handleModalOpen}
+                handleModalClose={() => this.setState({ modalId: "" })}
+                open={this.state.modalId === item.albumId}
+                albumId={item.albumId}
+                albumName={item.albumName}
+                artist={item.artist}
+                image={item.image}
+                albumData={this.state.albumData}
+              />
             </p>
           </Accordion.Content>
         </Accordion>
@@ -193,7 +227,7 @@ class PlaylistTracks extends Component {
 
     const AlbumGrid = () => (
       <Grid columns={6} style={{ width: "100%" }}>
-        {trackData.map((e, index) => GridItem(e, index))}
+        {listTrackData.map((e, index) => GridItem(e, index))}
       </Grid>
     );
 
@@ -201,7 +235,7 @@ class PlaylistTracks extends Component {
       <div className="App">
         <h1>{playlistData.name}</h1>
         <h3>{playlistData.description}</h3>
-        {trackData.length !== 0 ? <AlbumGrid /> : ""}
+        {listTrackData.length !== 0 ? <AlbumGrid /> : ""}
       </div>
     );
   }
@@ -212,8 +246,4 @@ const mapStateToProps = (state) => ({
   selectedPlaylist: getSelectedPlaylist(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  logIn: () => dispatch(setAuthenticated()),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(PlaylistTracks);
+export default connect(mapStateToProps)(PlaylistTracks);

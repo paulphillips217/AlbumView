@@ -5,7 +5,7 @@ const initialState = {
   selectedPlaylist: "",
 };
 
-export function authenticationReducer(state = initialState, action) {
+export function albumViewReducer(state = initialState, action) {
   switch (action.type) {
     case AUTHENTICATED:
       console.log("setting authenticated");
