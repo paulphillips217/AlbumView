@@ -3,10 +3,10 @@
 
 import {combineReducers, createStore} from "redux";
 import {composeWithDevTools} from "redux-devtools-extension";
-import {authenticationReducer} from "./reducers";
+import {albumViewReducer} from "./reducers";
 
 const rootReducer = combineReducers({
-  authentication: authenticationReducer
+  albumView: albumViewReducer
 });
 
 export const configureStore = () => {

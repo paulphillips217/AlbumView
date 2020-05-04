@@ -1,8 +1,6 @@
 .App {
   width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px;
+  margin: 0 10px;
   text-align: center;
 }
 
@@ -34,5 +32,17 @@ td:last-child {
 .left-align-list {
   display: inline-block;
   text-align: left;
-  width: 50%;
+  width: calc(100% - 50px);
+}
+
+.link-button {
+  background: none!important;
+  border: none;
+  padding: 0!important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  color: #069;
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -1,0 +1,52 @@
+{
+  "name": "AlbumView",
+  "version": "1.0.0",
+  "description": "Album-oriented view of music collection data from Spotify and elsewhere",
+  "engines": {
+    "node": "10.x"
+  },
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "cd client/ && npm install && npm run build"
+  },
+  "cacheDirectories": [
+    "node_modules",
+    "client/node_modules"
+  ],
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nedb": "^1.8.0",
+    "node-cron": "^2.0.3",
+    "node-fetch": "^2.6.0",
+    "pg": "^7.18.2",
+    "pusher": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paulphillips217/AlbumView.git"
+  },
+  "proxy": "http://localhost:5000",
+  "author": "Paul Phillips",
+  "keywords": [
+    "node",
+    "heroku",
+    "create-react-app",
+    "react"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paulphillips217/AlbumView/issues"
+  },
+  "homepage": "https://github.com/paulphillips217/AlbumView#readme",
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "nodemon": "^2.0.3",
+    "dotenv": "^8.2.0",
+    "prettier": "^2.0.5"
+  }
+}

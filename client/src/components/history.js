@@ -1,43 +1,42 @@
 // this comes from the tutorial at https://pusher.com/tutorials/spotify-history-react-node
 
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import { connect } from "react-redux";
-import '../styles/App.css';
+import "../styles/App.css";
+import { getAuthenticationState } from "../store/selectors";
 
 class TrackHistory extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      musicHistory: []
+      musicHistory: [],
     };
   }
 
   componentDidMount() {
-    const isUserAuthorized = this.props.authentication.authenticated;
-    console.log('history - authorized: ' + isUserAuthorized);
+    const { isAuthenticated } = this.props;
 
-    if (isUserAuthorized) {
-      console.log('getting data');
-      fetch('http://localhost:5000/history')
-        .then(res => res.json())
-        .then(data => {
-          console.log('data: ' + JSON.stringify(data));
+    if (isAuthenticated) {
+      console.log("getting data");
+      fetch("/history")
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("data: " + JSON.stringify(data));
           this.setState({
             musicHistory: data,
           });
         })
-        .catch(error => console.log(error));
-    }
-    else {
-      this.props.history.push('/');
+        .catch((error) => console.log(error));
+    } else {
+      this.props.history.push("/");
     }
   }
 
   render() {
     const { musicHistory } = this.state;
 
-//  <td>{format(item.played_at, 'D MMM YYYY, hh:mma')}</td>
+    //  <td>{format(item.played_at, 'D MMM YYYY, hh:mma')}</td>
 
     const TableItem = (item, index) => (
       <tr key={item.played_at}>
@@ -52,11 +51,11 @@ class TrackHistory extends Component {
         <h2>Recent Tracks</h2>
         <table className="table">
           <thead>
-          <tr>
-            <th>#</th>
-            <th>Song title</th>
-            <th>Time</th>
-          </tr>
+            <tr>
+              <th>#</th>
+              <th>Song title</th>
+              <th>Time</th>
+            </tr>
           </thead>
           <tbody>{musicHistory.map((e, index) => TableItem(e, index))}</tbody>
         </table>
@@ -75,9 +74,7 @@ class TrackHistory extends Component {
 }
 
 const mapStateToProps = (state) => ({
-  authentication: state.authentication
+  isAuthenticated: getAuthenticationState(state),
 });
 
-export default connect(
-  mapStateToProps
-)(TrackHistory);
+export default connect(mapStateToProps)(TrackHistory);
