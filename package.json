@@ -30,7 +30,6 @@
     "type": "git",
     "url": "git+https://github.com/paulphillips217/AlbumView.git"
   },
-  "proxy": "http://localhost:5000",
   "author": "Paul Phillips",
   "keywords": [
     "node",

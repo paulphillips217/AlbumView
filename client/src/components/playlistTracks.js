@@ -56,7 +56,7 @@ class PlaylistTracks extends Component {
 
     if (isAuthenticated && selectedPlaylist) {
       fetch(
-        `http://localhost:5000/playlist-tracks/${selectedPlaylist}/${pageOffset}/${pageLimit}`
+        `/playlist-tracks/${selectedPlaylist}/${pageOffset}/${pageLimit}`
       )
         .then((res) => res.json())
         .then((rawData) => {
@@ -143,7 +143,7 @@ class PlaylistTracks extends Component {
 
   handleQueueClick = (uri) => {
     console.log("handleQueueClick: " + encodeURI(uri));
-    fetch(`http://localhost:5000/queue-track/${encodeURI(uri)}`, {
+    fetch(`/queue-track/${encodeURI(uri)}`, {
       method: "post",
     })
       .then((res) => res)
