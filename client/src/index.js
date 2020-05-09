@@ -11,8 +11,6 @@ import {
   Switch,
   NavLink,
 } from "react-router-dom";
-import Playlists from "./components/playlists";
-import PlaylistTracks from "./components/playlistTracks";
 import TrackHistory from "./components/history";
 import { Provider } from "react-redux";
 import store from "./store";

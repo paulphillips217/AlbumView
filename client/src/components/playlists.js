@@ -1,13 +1,14 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import "../styles/App.css";
-import { List, Image, Dropdown } from "semantic-ui-react";
-import { getImage } from "../util/utilities";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import '../styles/App.css';
+import { List, Image, Dropdown } from 'semantic-ui-react';
+import { getImage } from '../util/utilities';
 import {
   getAuthenticationState,
   getSelectedPlaylist,
-} from "../store/selectors";
-import { setAuthenticated, setSelectedPlaylist } from "../store/actions";
+} from '../store/selectors';
+import { setAuthenticated, setSelectedPlaylist } from '../store/actions';
+import httpService from '../util/httpUtils';
 
 class Playlists extends Component {
   constructor(props) {
@@ -21,14 +22,14 @@ class Playlists extends Component {
   }
 
   componentDidMount() {
-    console.log("playlist componentDidMount");
+    console.log('playlist componentDidMount');
     const { pageOffset, pageLimit } = this.state;
     this.getPlaylists(pageOffset, pageLimit);
 
     // connect up the scrolling mechanism
-    const node = document.querySelector(".Pane1");
+    const node = document.querySelector('.Pane1');
     //    console.log(node);
-    node.addEventListener("scroll", (e) => {
+    node.addEventListener('scroll', (e) => {
       this.handleScroll(e);
     });
   }
@@ -38,21 +39,20 @@ class Playlists extends Component {
     const { playlistData } = this.state;
 
     if (isAuthenticated) {
-      fetch(`/playlists/${pageOffset}/${pageLimit}`)
-        .then((res) => res.json())
-        .then((rawData) => {
-          //          console.log(rawData);
-          const data = rawData.items.map((e) => ({
+      this.props.httpService
+        .get(`/playlists/${pageOffset}/${pageLimit}`)
+        .then((data) => {
+          const parsedData = data.items.map((e) => ({
             id: e.id,
             name: e.name,
             author: e.owner.display_name,
             description: e.description,
             image: getImage(e.images),
           }));
-          const newData = playlistData.concat(data);
+          const newData = playlistData.concat(parsedData);
           this.setState({
             playlistData: newData,
-            moreDataAvailable: rawData.next != null,
+            moreDataAvailable: data.next != null,
           });
         })
         .catch((error) => console.log(error));
@@ -60,13 +60,13 @@ class Playlists extends Component {
   };
 
   handleScroll = (e) => {
-    const bigGrid = document.querySelector(".left-align-list");
-    console.log("scrolling: " + bigGrid != null);
+    const bigGrid = document.querySelector('.left-align-list');
+    //    console.log("scrolling: " + bigGrid != null);
     if (bigGrid) {
-      const node = document.querySelector(".Pane1");
+      const node = document.querySelector('.Pane1');
       const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
       const pageScrollOffset = node.scrollTop + node.offsetHeight;
-      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
+      //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
       if (pageScrollOffset >= lastGridOffset) {
         const { playlistData, pageLimit } = this.state;
         const newPageOffset = playlistData.length;
@@ -116,21 +116,21 @@ class Playlists extends Component {
     );
 
     const PlaylistTable = () => (
-      <List floated={"left"} divided relaxed>
+      <List floated={'left'} divided relaxed>
         {playlistData.map((item, index) => PlaylistItem(item, index))}
       </List>
     );
 
     const listOptions = [
       {
-        key: "playlists",
-        text: "Your Spotify Playlists",
-        value: "playlists",
+        key: 'playlists',
+        text: 'Your Spotify Playlists',
+        value: 'playlists',
       },
       {
-        key: "favorite-artists",
-        text: "Your Favorite Artists",
-        value: "favorite-artists",
+        key: 'favorite-artists',
+        text: 'Your Favorite Artists',
+        value: 'favorite-artists',
       },
     ];
 
@@ -154,6 +154,7 @@ class Playlists extends Component {
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
   selectedPlaylist: getSelectedPlaylist(state),
+  httpService: new httpService(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

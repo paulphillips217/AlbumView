@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import "../styles/App.css";
 import { getAuthenticationState } from "../store/selectors";
+import httpService from "../util/httpUtils";
 
 class TrackHistory extends Component {
   constructor(props) {
@@ -18,16 +19,14 @@ class TrackHistory extends Component {
     const { isAuthenticated } = this.props;
 
     if (isAuthenticated) {
-      console.log("getting data");
-      fetch("/history")
-        .then((res) => res.json())
+      this.props.httpService
+        .get("/history")
         .then((data) => {
-          console.log("data: " + JSON.stringify(data));
           this.setState({
             musicHistory: data,
           });
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.error(error));
     } else {
       this.props.history.push("/");
     }
@@ -75,6 +74,7 @@ class TrackHistory extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
+  httpService: new httpService(state),
 });
 
 export default connect(mapStateToProps)(TrackHistory);

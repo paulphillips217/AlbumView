@@ -58,7 +58,7 @@ const storeAccessToken = (pool, token) => {
   }
 };
 
-const getAccessToken = (pool, callback) => {
+const getAccessTokenFromDatabase = (pool, callback) => {
   try {
     pool.query("SELECT * FROM credentials WHERE id = 1", (error, results) => {
       if (error) {
@@ -74,8 +74,18 @@ const getAccessToken = (pool, callback) => {
   }
 };
 
+const getAccessTokenFromHeader = (req) => {
+  return req.header("X-Spotify-access-token");
+}
+
+const getRefreshTokenFromHeader = (req) => {
+  return req.header("X-Spotify-refresh-token");
+}
+
 module.exports = {
   getSpotifyAccessToken,
   storeAccessToken,
-  getAccessToken
+  getAccessTokenFromDatabase,
+  getAccessTokenFromHeader,
+  getRefreshTokenFromHeader
 };

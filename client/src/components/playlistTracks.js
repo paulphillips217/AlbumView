@@ -1,13 +1,14 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import "../styles/App.css";
-import { Grid, Image, Accordion } from "semantic-ui-react";
-import { getImage } from "../util/utilities";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import '../styles/App.css';
+import { Grid, Image, Accordion } from 'semantic-ui-react';
+import { getImage } from '../util/utilities';
 import {
   getAuthenticationState,
   getSelectedPlaylist,
-} from "../store/selectors";
-import ModalAlbum from "./modalAlbum";
+} from '../store/selectors';
+import ModalAlbum from './modalAlbum';
+import httpService from '../util/httpUtils';
 
 class PlaylistTracks extends Component {
   constructor(props) {
@@ -15,27 +16,27 @@ class PlaylistTracks extends Component {
 
     this.state = {
       playlistData: {
-        id: "",
-        name: "",
-        description: "",
+        id: '',
+        name: '',
+        description: '',
       },
       listTrackData: [],
       pageOffset: 0,
       pageLimit: 50,
       moreDataAvailable: true,
       activeIndex: -1,
-      modalId: "",
+      modalId: '',
       albumData: {},
     };
   }
 
   getPlaylistData = () => {
     const { isAuthenticated, selectedPlaylist } = this.props;
-    console.log("getPlaylistData: " + selectedPlaylist);
+    console.log('getPlaylistData: ' + selectedPlaylist);
 
     if (isAuthenticated && selectedPlaylist) {
-      fetch(`/playlist/${selectedPlaylist}`)
-        .then((res) => res.json())
+      this.props.httpService
+        .get(`/playlist/${selectedPlaylist}`)
         .then((data) => {
           this.setState({
             playlistData: {
@@ -52,13 +53,11 @@ class PlaylistTracks extends Component {
   getPlaylistTracks = (pageOffset, pageLimit) => {
     const { listTrackData } = this.state;
     const { isAuthenticated, selectedPlaylist } = this.props;
-    console.log("getPlaylistTracks: " + selectedPlaylist + ", " + pageOffset);
+    console.log('getPlaylistTracks: ' + selectedPlaylist + ', ' + pageOffset);
 
     if (isAuthenticated && selectedPlaylist) {
-      fetch(
-        `/playlist-tracks/${selectedPlaylist}/${pageOffset}/${pageLimit}`
-      )
-        .then((res) => res.json())
+      this.props.httpService
+        .get(`/playlist-tracks/${selectedPlaylist}/${pageOffset}/${pageLimit}`)
         .then((rawData) => {
           const data = rawData.items.map((e) => ({
             id: e.track.id,
@@ -78,18 +77,18 @@ class PlaylistTracks extends Component {
         })
         .catch((error) => console.log(error));
     } else {
-      this.props.history.push("/");
+      this.props.history.push('/');
     }
   };
 
   componentDidMount() {
-    console.log("playlistTracks did mount");
+    console.log('playlistTracks did mount');
     const { isAuthenticated, selectedPlaylist } = this.props;
 
     // connect up the scrolling mechanism
-    const node = document.querySelector(".Pane2");
+    const node = document.querySelector('.Pane2');
     console.log(node);
-    node.addEventListener("scroll", (e) => {
+    node.addEventListener('scroll', (e) => {
       this.handleScroll(e);
     });
 
@@ -102,7 +101,7 @@ class PlaylistTracks extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.selectedPlaylist !== prevProps.selectedPlaylist) {
-      console.log("time to update the playlist tracks");
+      console.log('time to update the playlist tracks');
 
       const { isAuthenticated, selectedPlaylist } = this.props;
 
@@ -115,14 +114,14 @@ class PlaylistTracks extends Component {
   }
 
   handleScroll = (e) => {
-    const bigGrid = document.querySelector(".column:last-child");
-    console.log("scrolling: " + bigGrid != null);
+    const bigGrid = document.querySelector('.column:last-child');
+    //    console.log("scrolling: " + bigGrid != null);
     if (bigGrid) {
-      const node = document.querySelector(".Pane2");
+      const node = document.querySelector('.Pane2');
       const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
       //      const pageScrollOffset = window.pageYOffset + window.innerHeight;
       const pageScrollOffset = node.scrollTop + node.offsetHeight;
-      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
+      //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
       if (pageScrollOffset >= lastGridOffset) {
         const { listTrackData, pageLimit } = this.state;
         const newPageOffset = listTrackData.length;
@@ -142,14 +141,12 @@ class PlaylistTracks extends Component {
   };
 
   handleQueueClick = (uri) => {
-    console.log("handleQueueClick: " + encodeURI(uri));
-    fetch(`/queue-track/${encodeURI(uri)}`, {
-      method: "post",
-    })
-      .then((res) => res)
-      .then((rawData) => {
-        //        console.log('play click data: ');
-        //        console.log(rawData);
+    console.log('handleQueueClick: ' + encodeURI(uri));
+    this.props.httpService
+      .post(`/queue-track/${encodeURI(uri)}`)
+      .then((data) => {
+        //        console.log("play click data: ");
+        //        console.log(data);
       })
       .catch((error) => console.log(error));
   };
@@ -161,8 +158,8 @@ class PlaylistTracks extends Component {
     });
 
     if (isAuthenticated && albumId) {
-      fetch(`/albums/${albumId}`)
-        .then((res) => res.json())
+      this.props.httpService
+        .get(`/albums/${albumId}`)
         .then((data) => {
           this.setState({
             albumData: {
@@ -190,19 +187,19 @@ class PlaylistTracks extends Component {
             <p>{item.name}</p>
           </Accordion.Title>
           <Accordion.Content active={activeIndex === index}>
-            <p className={"album-details"}>
+            <p className={'album-details'}>
               <strong>Track</strong>: {item.name}
               <br />
               <strong>Artist</strong>: {item.artist}
               <br />
               <strong>Album</strong>: {item.albumName}
               <br />
-              <a href={"http://open.spotify.com/track/" + item.id}>
+              <a href={'http://open.spotify.com/track/' + item.id}>
                 Open in Player
               </a>
               <br />
               <button
-                style={{ width: "95%" }}
+                style={{ width: '95%' }}
                 value={item.uri}
                 onClick={() => this.handleQueueClick(item.uri)}
               >
@@ -211,7 +208,7 @@ class PlaylistTracks extends Component {
               <br />
               <ModalAlbum
                 handleModalOpen={this.handleModalOpen}
-                handleModalClose={() => this.setState({ modalId: "" })}
+                handleModalClose={() => this.setState({ modalId: '' })}
                 open={this.state.modalId === item.albumId}
                 albumId={item.albumId}
                 albumName={item.albumName}
@@ -226,7 +223,7 @@ class PlaylistTracks extends Component {
     );
 
     const AlbumGrid = () => (
-      <Grid columns={6} style={{ width: "100%" }}>
+      <Grid columns={6} style={{ width: '100%' }}>
         {listTrackData.map((e, index) => GridItem(e, index))}
       </Grid>
     );
@@ -235,7 +232,7 @@ class PlaylistTracks extends Component {
       <div className="App">
         <h1>{playlistData.name}</h1>
         <h3>{playlistData.description}</h3>
-        {listTrackData.length !== 0 ? <AlbumGrid /> : ""}
+        {listTrackData.length !== 0 ? <AlbumGrid /> : ''}
       </div>
     );
   }
@@ -244,6 +241,7 @@ class PlaylistTracks extends Component {
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
   selectedPlaylist: getSelectedPlaylist(state),
+  httpService: new httpService(state),
 });
 
 export default connect(mapStateToProps)(PlaylistTracks);
