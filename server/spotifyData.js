@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const spotifyData = (accessToken, url) => {
+const getSpotifyData = (accessToken, url) => {
   return fetch(url, {
     method: 'GET',
     headers: {
@@ -34,6 +34,6 @@ const postSpotifyData = (accessToken, url, body = '') => {
 };
 
 module.exports = {
-  getSpotifyData: spotifyData,
+  getSpotifyData,
   postSpotifyData
 };

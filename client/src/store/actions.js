@@ -1,13 +1,4 @@
-import {
-  ACCESS_TOKEN,
-  AUTHENTICATED,
-  REFRESH_TOKEN,
-  SELECTED_PLAYLIST,
-} from "./types";
-
-export const setAuthenticated = () => ({
-  type: AUTHENTICATED,
-});
+import { ACCESS_TOKEN, REFRESH_TOKEN, SELECTED_PLAYLIST } from './types';
 
 export const setSelectedPlaylist = (playlistId) => ({
   type: SELECTED_PLAYLIST,

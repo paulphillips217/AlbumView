@@ -1,13 +1,27 @@
 import axios from 'axios';
 import { getAccessToken, getRefreshToken } from '../store/selectors';
+import { setAccessToken, setRefreshToken } from '../store/actions';
 
 class httpService {
-  constructor(store) {
-    this.store = store;
+  constructor(state, dispatch) {
+    this.state = state;
+    this.dispatch = dispatch;
   }
 
   httpRequest = (options) => {
     const onSuccess = (response) => {
+      if (response && response.data && response.data.credentials) {
+        console.log('Received Spotify token reset');
+        try {
+          const accessToken = response.data.credentials.access_token;
+          this.dispatch(setAccessToken(accessToken));
+          const refreshToken = response.data.credentials.refresh_token;
+          this.dispatch(setRefreshToken(refreshToken));
+        } catch (err) {
+          console.error(err);
+        }
+        return {};
+      }
       console.debug('Request Successful!', response);
       return response.data;
     };
@@ -31,8 +45,8 @@ class httpService {
     };
 
     options.headers = {
-      'X-Spotify-access-token': getAccessToken(this.store),
-      'X-Spotify-refresh-token': getRefreshToken(this.store),
+      'X-Spotify-access-token': getAccessToken(this.state),
+      'X-Spotify-refresh-token': getRefreshToken(this.state),
     };
 
     return axios(options).then(onSuccess).catch(onError);

@@ -12,7 +12,7 @@ table {
 th,
 td {
   padding: 12px 15px;
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid #e1e1e1;
 }
 
 th:first-child,
@@ -36,13 +36,56 @@ td:last-child {
 }
 
 .link-button {
-  background: none!important;
+  background: none !important;
   border: none;
-  padding: 0!important;
+  padding: 0 !important;
   /*optional*/
   font-family: arial, sans-serif;
   /*input has OS specific font-family*/
   color: #069;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.spotify-button {
+  background-color: rgb(26, 163, 74);
+  border-bottom-color: rgb(26, 163, 74);
+  border-bottom-left-radius: 500px;
+  border-bottom-right-radius: 500px;
+  border-bottom-style: solid;
+  border-image-repeat: stretch;
+  border-image-slice: 100%;
+  border-image-width: 1;
+  border-left-color: rgb(26, 163, 74);
+  border-left-style: solid;
+  border-right-color: rgb(26, 163, 74);
+  border-right-style: solid;
+  border-top-color: rgb(26, 163, 74);
+  border-top-left-radius: 500px;
+  border-top-right-radius: 500px;
+  border-top-style: solid;
+  box-sizing: border-box;
+  color: rgb(255, 255, 255);
+  display: inline-block;
+  font-family: Circular, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 12px;
+  margin-bottom: 0px;
+  min-width: 160px;
+  overflow-wrap: break-word;
+  padding-bottom: 9px;
+  padding-left: 32px;
+  padding-right: 32px;
+  padding-top: 11px;
+  text-align: center;
+  text-decoration: rgb(255, 255, 255);
+  text-decoration-color: rgb(255, 255, 255);
+  text-decoration-line: none;
+  text-decoration-style: solid;
+  text-decoration-thickness: auto;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: normal;
 }

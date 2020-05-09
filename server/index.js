@@ -14,7 +14,6 @@ const authorizeSpotify = require('./authorizeSpotify');
 const spotifyTokens = require('./accessToken');
 const spotifyData = require('./spotifyData');
 
-const clientUrl = process.env.CLIENT_URL;
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -66,13 +65,14 @@ app.get('/db-test', async (req, res) => {
 app.get('/login', authorizeSpotify);
 
 app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
-  //  console.log("callback - credentials: " + JSON.stringify(req.credentials));
+//  console.log('callback - credentials: ' + JSON.stringify(req.credentials));
   try {
-    console.log('access token: ' + req.credentials.access_token);
-    console.log('refresh token: ' + req.credentials.refresh_token);
-    spotifyTokens.storeAccessToken(pool, req.credentials);
+//    console.log('access token: ' + req.credentials.access_token);
+//    console.log('refresh token: ' + req.credentials.refresh_token);
+    //    spotifyTokens.storeAccessTokenInDatabase(pool, req.credentials);
+    const clientUrl = process.env.CLIENT_URL;
     res.redirect(
-      `${clientUrl}/?authorized=true&access_token=${req.credentials.access_token}&refresh_token=${req.credentials.refresh_token}`
+      `${clientUrl}/?access_token=${req.credentials.access_token}&refresh_token=${req.credentials.refresh_token}`
     );
   } catch (err) {
     console.error(err);
@@ -91,7 +91,12 @@ app.get('/history', (req, res) => {
       }));
       res.json(arr);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 app.get('/playlists/:offset/:limit', (req, res) => {
@@ -102,7 +107,12 @@ app.get('/playlists/:offset/:limit', (req, res) => {
     .then((data) => {
       res.json(data);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 app.get('/playlist/:id', (req, res) => {
@@ -113,7 +123,12 @@ app.get('/playlist/:id', (req, res) => {
     .then((data) => {
       res.json(data);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 app.get('/playlist-tracks/:id/:offset/:limit', (req, res) => {
@@ -125,7 +140,12 @@ app.get('/playlist-tracks/:id/:offset/:limit', (req, res) => {
     .then((data) => {
       res.json(data);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 app.get('/albums/:id', (req, res) => {
@@ -137,7 +157,12 @@ app.get('/albums/:id', (req, res) => {
     .then((data) => {
       res.json(data);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 app.post('/queue-track/:uri', (req, res) => {
@@ -150,7 +175,12 @@ app.post('/queue-track/:uri', (req, res) => {
       console.log('queue track data: ' + data);
       res.json(data);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
 });
 
 // All remaining requests return the React app, so it can handle routing.

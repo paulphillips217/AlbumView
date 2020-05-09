@@ -1,10 +1,10 @@
 // this comes from the tutorial at https://pusher.com/tutorials/spotify-history-react-node
 
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import "../styles/App.css";
-import { getAuthenticationState } from "../store/selectors";
-import httpService from "../util/httpUtils";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import '../styles/App.css';
+import { getAuthenticationState } from '../store/selectors';
+import httpService from '../util/httpUtils';
 
 class TrackHistory extends Component {
   constructor(props) {
@@ -20,15 +20,15 @@ class TrackHistory extends Component {
 
     if (isAuthenticated) {
       this.props.httpService
-        .get("/history")
+        .get('/history')
         .then((data) => {
           this.setState({
-            musicHistory: data,
+            musicHistory: data || [],
           });
         })
         .catch((error) => console.error(error));
     } else {
-      this.props.history.push("/");
+      this.props.history.push('/');
     }
   }
 
@@ -65,7 +65,9 @@ class TrackHistory extends Component {
       <div className="App">
         <header className="header">
           <h1>Spotify Listening History</h1>
-          {musicHistory.length !== 0 ? <RecentlyPlayed /> : null}
+          {musicHistory && musicHistory.length > 0 ? (
+            <RecentlyPlayed />
+          ) : null}
         </header>
       </div>
     );
@@ -74,7 +76,11 @@ class TrackHistory extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
-  httpService: new httpService(state),
+  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
-export default connect(mapStateToProps)(TrackHistory);
+const mergeProps = (stateProps, dispatchProps) => ({...stateProps, ...dispatchProps,
+  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch)
+});
+
+export default connect(mapStateToProps, null, mergeProps)(TrackHistory);

@@ -7,7 +7,7 @@ import {
   getAuthenticationState,
   getSelectedPlaylist,
 } from '../store/selectors';
-import { setAuthenticated, setSelectedPlaylist } from '../store/actions';
+import { setSelectedPlaylist } from '../store/actions';
 import httpService from '../util/httpUtils';
 
 class Playlists extends Component {
@@ -28,10 +28,11 @@ class Playlists extends Component {
 
     // connect up the scrolling mechanism
     const node = document.querySelector('.Pane1');
-    //    console.log(node);
-    node.addEventListener('scroll', (e) => {
-      this.handleScroll(e);
-    });
+    if (node) {
+      node.addEventListener('scroll', (e) => {
+        this.handleScroll(e);
+      });
+    }
   }
 
   getPlaylists = (pageOffset, pageLimit) => {
@@ -64,16 +65,18 @@ class Playlists extends Component {
     //    console.log("scrolling: " + bigGrid != null);
     if (bigGrid) {
       const node = document.querySelector('.Pane1');
-      const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
-      const pageScrollOffset = node.scrollTop + node.offsetHeight;
-      //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
-      if (pageScrollOffset >= lastGridOffset) {
-        const { playlistData, pageLimit } = this.state;
-        const newPageOffset = playlistData.length;
-        this.setState({
-          pageOffset: newPageOffset,
-        });
-        this.getPlaylists(newPageOffset, pageLimit);
+      if (node) {
+        const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
+        const pageScrollOffset = node.scrollTop + node.offsetHeight;
+        //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
+        if (pageScrollOffset >= lastGridOffset) {
+          const { playlistData, pageLimit } = this.state;
+          const newPageOffset = playlistData.length;
+          this.setState({
+            pageOffset: newPageOffset,
+          });
+          this.getPlaylists(newPageOffset, pageLimit);
+        }
       }
     }
   };
@@ -144,7 +147,7 @@ class Playlists extends Component {
           />
         </h1>
         <div className="left-align-list">
-          {playlistData.length !== 0 ? <PlaylistTable /> : null}
+          {playlistData && playlistData.length > 0 ? <PlaylistTable /> : null}
         </div>
       </div>
     );
@@ -154,12 +157,21 @@ class Playlists extends Component {
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
   selectedPlaylist: getSelectedPlaylist(state),
-  httpService: new httpService(state),
+  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  logIn: () => dispatch(setAuthenticated()),
   selectPlaylist: (playlistId) => dispatch(setSelectedPlaylist(playlistId)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Playlists);
+const mergeProps = (stateProps, dispatchProps) => ({
+  ...stateProps,
+  ...dispatchProps,
+  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  mergeProps
+)(Playlists);

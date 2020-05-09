@@ -87,10 +87,11 @@ class PlaylistTracks extends Component {
 
     // connect up the scrolling mechanism
     const node = document.querySelector('.Pane2');
-    console.log(node);
-    node.addEventListener('scroll', (e) => {
-      this.handleScroll(e);
-    });
+    if (node) {
+      node.addEventListener('scroll', (e) => {
+        this.handleScroll(e);
+      });
+    }
 
     if (isAuthenticated && selectedPlaylist) {
       const { pageOffset, pageLimit } = this.state;
@@ -232,7 +233,7 @@ class PlaylistTracks extends Component {
       <div className="App">
         <h1>{playlistData.name}</h1>
         <h3>{playlistData.description}</h3>
-        {listTrackData.length !== 0 ? <AlbumGrid /> : ''}
+        {listTrackData && listTrackData.length > 0 ? <AlbumGrid /> : ''}
       </div>
     );
   }
@@ -241,7 +242,13 @@ class PlaylistTracks extends Component {
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
   selectedPlaylist: getSelectedPlaylist(state),
-  httpService: new httpService(state),
+  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
-export default connect(mapStateToProps)(PlaylistTracks);
+const mergeProps = (stateProps, dispatchProps) => ({
+  ...stateProps,
+  ...dispatchProps,
+  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
+});
+
+export default connect(mapStateToProps, null, mergeProps)(PlaylistTracks);
