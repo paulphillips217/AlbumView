@@ -66,6 +66,20 @@ class httpService {
       data: data,
     });
   };
+
+  put = (url) => {
+    return this.httpRequest({
+      url: url,
+      method: 'PUT',
+    });
+  };
+
+  delete = (url) => {
+    return this.httpRequest({
+      url: url,
+      method: 'DELETE',
+    });
+  };
 }
 
 export default httpService;

@@ -104,8 +104,17 @@ class PlaylistTracks extends Component {
     if (this.props.selectedPlaylist !== prevProps.selectedPlaylist) {
       console.log('time to update the playlist tracks');
 
-      const { isAuthenticated, selectedPlaylist } = this.props;
+      this.setState({
+        listTrackData: [],
+        pageOffset: 0,
+        pageLimit: 50,
+        moreDataAvailable: true,
+        activeIndex: -1,
+        modalId: '',
+        albumData: {},
+      });
 
+      const { isAuthenticated, selectedPlaylist } = this.props;
       if (isAuthenticated && selectedPlaylist) {
         const { pageOffset, pageLimit } = this.state;
         this.getPlaylistData();
@@ -116,13 +125,13 @@ class PlaylistTracks extends Component {
 
   handleScroll = (e) => {
     const bigGrid = document.querySelector('.column:last-child');
-    //    console.log("scrolling: " + bigGrid != null);
+//    console.log('scrolling: ' + bigGrid != null);
     if (bigGrid) {
       const node = document.querySelector('.Pane2');
       const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
       //      const pageScrollOffset = window.pageYOffset + window.innerHeight;
       const pageScrollOffset = node.scrollTop + node.offsetHeight;
-      //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
+//      console.log('scrolling -- ' + lastGridOffset + ', ' + pageScrollOffset);
       if (pageScrollOffset >= lastGridOffset) {
         const { listTrackData, pageLimit } = this.state;
         const newPageOffset = listTrackData.length;
@@ -171,6 +180,10 @@ class PlaylistTracks extends Component {
         })
         .catch((error) => console.log(error));
     }
+  };
+
+  createDescriptionMarkup = (text) => {
+    return { __html: text };
   };
 
   render() {
@@ -232,7 +245,11 @@ class PlaylistTracks extends Component {
     return (
       <div className="App">
         <h1>{playlistData.name}</h1>
-        <h3>{playlistData.description}</h3>
+        <h3
+          dangerouslySetInnerHTML={this.createDescriptionMarkup(
+            playlistData.description
+          )}
+        />
         {listTrackData && listTrackData.length > 0 ? <AlbumGrid /> : ''}
       </div>
     );

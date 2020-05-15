@@ -35,7 +35,10 @@ class App extends Component {
       <div className="App">
         <h1>Album View</h1>
         <p>View your Spotify music collection</p>
-        <a className={'spotify-button'} href={`${process.env.REACT_APP_SERVER_ROOT}/login`}>
+        <a
+          className={'spotify-button'}
+          href={`${process.env.REACT_APP_SERVER_ROOT}/login`}
+        >
           Connect to Spotify
         </a>
       </div>
@@ -50,7 +53,7 @@ class App extends Component {
             minSize={50}
             defaultSize={400}
             style={{ height: 'calc(100vh - 72.6px)' }}
-            paneStyle={{ overflow: 'auto' }}
+            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
             <Playlists />
             <PlaylistTracks />

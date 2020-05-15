@@ -85,10 +85,6 @@ class Playlists extends Component {
     this.props.selectPlaylist(id);
   };
 
-  createDescriptionMarkup = (text) => {
-    return { __html: text };
-  };
-
   render() {
     const { playlistData } = this.state;
 
@@ -107,11 +103,6 @@ class Playlists extends Component {
           <List.Description>
             <div>
               by: {item.author} <br />
-              <div
-                dangerouslySetInnerHTML={this.createDescriptionMarkup(
-                  item.description
-                )}
-              />
             </div>
           </List.Description>
         </List.Content>

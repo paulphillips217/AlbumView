@@ -50,19 +50,15 @@ td:last-child {
 .spotify-button {
   background-color: rgb(26, 163, 74);
   border-bottom-color: rgb(26, 163, 74);
-  border-bottom-left-radius: 500px;
-  border-bottom-right-radius: 500px;
   border-bottom-style: solid;
   border-image-repeat: stretch;
-  border-image-slice: 100%;
   border-image-width: 1;
   border-left-color: rgb(26, 163, 74);
   border-left-style: solid;
   border-right-color: rgb(26, 163, 74);
   border-right-style: solid;
   border-top-color: rgb(26, 163, 74);
-  border-top-left-radius: 500px;
-  border-top-right-radius: 500px;
+  border-radius: 500px;
   border-top-style: solid;
   box-sizing: border-box;
   color: rgb(255, 255, 255);
@@ -75,16 +71,11 @@ td:last-child {
   margin-bottom: 0px;
   min-width: 160px;
   overflow-wrap: break-word;
-  padding-bottom: 9px;
-  padding-left: 32px;
-  padding-right: 32px;
-  padding-top: 11px;
+  padding: 11px 32px 9px;
   text-align: center;
   text-decoration: rgb(255, 255, 255);
-  text-decoration-color: rgb(255, 255, 255);
   text-decoration-line: none;
   text-decoration-style: solid;
-  text-decoration-thickness: auto;
   text-transform: uppercase;
   vertical-align: middle;
   white-space: normal;

@@ -65,10 +65,10 @@ app.get('/db-test', async (req, res) => {
 app.get('/login', authorizeSpotify);
 
 app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
-//  console.log('callback - credentials: ' + JSON.stringify(req.credentials));
+  //  console.log('callback - credentials: ' + JSON.stringify(req.credentials));
   try {
-//    console.log('access token: ' + req.credentials.access_token);
-//    console.log('refresh token: ' + req.credentials.refresh_token);
+    //    console.log('access token: ' + req.credentials.access_token);
+    //    console.log('refresh token: ' + req.credentials.refresh_token);
     //    spotifyTokens.storeAccessTokenInDatabase(pool, req.credentials);
     const clientUrl = process.env.CLIENT_URL;
     res.redirect(
@@ -155,6 +155,62 @@ app.get('/albums/:id', (req, res) => {
   spotifyData
     .getSpotifyData(accessToken, url)
     .then((data) => {
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
+});
+
+// check whether the comma-separated list of track ids are contained in my favorites
+app.get('/tracks/contains/:ids', (req, res) => {
+  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+  const url = `https://api.spotify.com/v1/me/tracks/contains?ids=${req.params.ids}`;
+  //  console.log('track contains url: ' + url);
+  spotifyData
+    .getSpotifyData(accessToken, url)
+    .then((data) => {
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
+});
+
+// save favorite track
+app.put('/save-tracks/:ids', (req, res) => {
+  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+  console.log('save track id: ' + req.params.ids);
+  const url = `https://api.spotify.com/v1/me/tracks?ids=${req.params.ids}`;
+  spotifyData
+    .putSpotifyData(accessToken, url)
+    .then((data) => {
+      console.log('save track data: ' + JSON.stringify(data));
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    });
+});
+
+// delete a favorite track
+app.delete('/delete-tracks/:ids', (req, res) => {
+  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+  console.log('delete track ids: ' + req.params.ids);
+  const url = `https://api.spotify.com/v1/me/tracks?ids=${req.params.ids}`;
+  spotifyData
+    .deleteSpotifyData(accessToken, url)
+    .then((data) => {
+      console.log('delete track data: ' + JSON.stringify(data));
       res.json(data);
     })
     .catch((err) => {

@@ -16,6 +16,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import { Icon, Menu } from 'semantic-ui-react';
 import Tester from './components/Tester';
+import Auth from './components/Auth';
 
 const routing = (
   <Provider store={store}>
@@ -25,7 +26,7 @@ const routing = (
           <Menu
             icon="labeled"
             borderless
-            widths={3}
+            widths={4}
             style={{
               flexShrink: 0, //don't allow flexbox to shrink it
               borderRadius: 0, //clear semantic-ui style
@@ -44,11 +45,16 @@ const routing = (
               <Icon name="browser" />
               Tester
             </Menu.Item>
+            <Menu.Item as={NavLink} to="/auth">
+              <Icon name="browser" />
+              Log Out
+            </Menu.Item>
           </Menu>
           <Switch>
             <Route path="/history" component={TrackHistory} />
             <Route path="/tester" component={Tester} />
             <Route path="/home" component={App} />
+            <Route path="/auth" component={Auth} />
             <Route component={App} />
           </Switch>
         </Router>
