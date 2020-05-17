@@ -41,7 +41,7 @@ class Playlists extends Component {
 
     if (isAuthenticated) {
       this.props.httpService
-        .get(`/playlists/${pageOffset}/${pageLimit}`)
+        .get(`/playlist-list/${pageOffset}/${pageLimit}`)
         .then((data) => {
           const parsedData = data.items.map((e) => ({
             id: e.id,

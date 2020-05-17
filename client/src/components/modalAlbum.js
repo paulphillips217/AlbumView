@@ -1,21 +1,34 @@
 import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
-import React, { useState, useEffect } from 'react';
-import { msToSongTime } from '../util/utilities';
-import httpService from '../util/httpUtils';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { getImage, msToSongTime } from '../util/utilities';
+import httpService from '../util/httpUtils';
 
-const ModalAlbum = ({
-  handleModalOpen,
-  handleModalClose,
-  open,
-  albumId,
-  albumName,
-  artist,
-  image,
-  albumData,
-  httpService,
-}) => {
+const ModalAlbum = ({ albumId, httpService }) => {
+  const [albumData, setAlbumData] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [hearts, setHearts] = useState([]);
+
+  useEffect(() => {
+    const getHeartSettings = () => {
+      if (albumData.tracks && albumData.tracks.items) {
+        const trackIds = albumData.tracks.items
+          .reduce((result, item) => result.concat([item.id]), [])
+          .join();
+        console.log('getHeartSettings track ids: ', trackIds);
+        httpService
+          .get(`/tracks/contains/${trackIds}`)
+          .then((data) => {
+            console.log('heart settings: ', data);
+            setHearts(data);
+          })
+          .catch((error) => console.log(error));
+      }
+    };
+    getHeartSettings();
+  }, [albumData, httpService]);
+
   const firstHalfTracks = albumData.tracks
     ? albumData.tracks.items.slice(
         0,
@@ -28,43 +41,38 @@ const ModalAlbum = ({
       ? albumData.tracks.items.slice(albumData.tracks.items.length / -2)
       : [];
 
-  const getHeartSettings = () => {
-    if (open && albumData.tracks && albumData.tracks.items) {
-      console.log('getHeartSettings items: ', albumData.tracks.items);
-      const trackIds = albumData.tracks.items
-        .reduce((result, item) => result.concat([item.id]), [])
-        .join();
-      console.log('getHeartSettings track ids: ', trackIds);
+  const handleModalOpen = () => {
+    if (albumId) {
       httpService
-        .get(`/tracks/contains/${trackIds}`)
+        .get(`/albums/${albumId}`)
         .then((data) => {
-          console.log('heart settings: ', data);
-          setHearts(data);
+          setAlbumData(data);
+          console.log('modal open album data: ', data);
         })
         .catch((error) => console.log(error));
+      setModalOpen(true);
     }
   };
 
-  const [hearts, setHearts] = useState([]);
-  useEffect(getHeartSettings, []);
-
-  const handleTrackHeartClick = (id, remove) => {
+  const handleTrackHeartClick = (id, index, remove) => {
     if (id) {
       console.log('handleTrackHeartClick ', id, remove);
       if (remove) {
         httpService
           .delete(`/delete-tracks/${id}`)
           .then((data) => {
-            console.log('handleTrackHeartClick response: ', data);
+            console.log('handleTrackHeartClick delete response: ', data);
           })
           .catch((error) => console.log(error));
+        setHearts((h) => [...h.slice(0, index), false, ...h.slice(index + 1)]);
       } else {
         httpService
           .put(`/save-tracks/${id}`)
           .then((data) => {
-            console.log('handleTrackHeartClick response: ', data);
+            console.log('handleTrackHeartClick save response: ', data);
           })
           .catch((error) => console.log(error));
+        setHearts((h) => [...h.slice(0, index), true, ...h.slice(index + 1)]);
       }
     }
   };
@@ -72,23 +80,20 @@ const ModalAlbum = ({
   return (
     <Modal
       trigger={
-        <button
-          style={{ width: '95%' }}
-          onClick={() => {
-            handleModalOpen(albumId);
-          }}
-        >
+        <button style={{ width: '95%' }} onClick={() => handleModalOpen()}>
           Album Info
         </button>
       }
-      open={open}
-      onClose={() => handleModalClose()}
+      open={modalOpen}
+      onClose={() => setModalOpen(false)}
     >
-      <Modal.Header>{albumName}</Modal.Header>
+      <Modal.Header>{albumData.name}</Modal.Header>
       <Modal.Content image>
-        <Image wrapped src={image} />
+        <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
-          <Header style={{ 'padding-bottom': '10px' }}>{artist}</Header>
+          <Header style={{ 'padding-bottom': '10px' }}>
+            {albumData.artists && albumData.artists[0].name}
+          </Header>
 
           {albumData.tracks && (
             <Grid columns={2}>
@@ -121,6 +126,7 @@ const ModalAlbum = ({
                             onClick={() =>
                               handleTrackHeartClick(
                                 item.id,
+                                item.track_number - 1,
                                 hearts[item.track_number - 1]
                               )
                             }
@@ -158,6 +164,7 @@ const ModalAlbum = ({
                             onClick={() =>
                               handleTrackHeartClick(
                                 item.id,
+                                item.track_number - 1,
                                 hearts[item.track_number - 1]
                               )
                             }
@@ -177,26 +184,8 @@ const ModalAlbum = ({
 };
 
 ModalAlbum.propTypes = {
-  handleModalOpen: PropTypes.func.isRequired,
-  handleModalClose: PropTypes.func.isRequired,
-  open: PropTypes.bool.isRequired,
   albumId: PropTypes.string.isRequired,
-  albumName: PropTypes.string.isRequired,
-  artist: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
-  albumData: PropTypes.object.isRequired,
   httpService: PropTypes.object.isRequired,
-};
-
-ModalAlbum.defaultProps = {
-  handleModalOpen: () => console.log('modal open'),
-  handleModalClose: () => console.log('modal close'),
-  open: false,
-  albumId: '',
-  albumName: '',
-  artist: '',
-  image: '',
-  albumData: {},
 };
 
 const mapStateToProps = (state) => ({

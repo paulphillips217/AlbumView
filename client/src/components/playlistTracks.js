@@ -25,7 +25,6 @@ class PlaylistTracks extends Component {
       pageLimit: 50,
       moreDataAvailable: true,
       activeIndex: -1,
-      modalId: '',
       albumData: {},
     };
   }
@@ -36,7 +35,7 @@ class PlaylistTracks extends Component {
 
     if (isAuthenticated && selectedPlaylist) {
       this.props.httpService
-        .get(`/playlist/${selectedPlaylist}`)
+        .get(`/playlist-data/${selectedPlaylist}`)
         .then((data) => {
           this.setState({
             playlistData: {
@@ -110,7 +109,6 @@ class PlaylistTracks extends Component {
         pageLimit: 50,
         moreDataAvailable: true,
         activeIndex: -1,
-        modalId: '',
         albumData: {},
       });
 
@@ -125,13 +123,13 @@ class PlaylistTracks extends Component {
 
   handleScroll = (e) => {
     const bigGrid = document.querySelector('.column:last-child');
-//    console.log('scrolling: ' + bigGrid != null);
+    //    console.log('scrolling: ' + bigGrid != null);
     if (bigGrid) {
       const node = document.querySelector('.Pane2');
       const lastGridOffset = bigGrid.offsetTop + bigGrid.clientHeight;
       //      const pageScrollOffset = window.pageYOffset + window.innerHeight;
       const pageScrollOffset = node.scrollTop + node.offsetHeight;
-//      console.log('scrolling -- ' + lastGridOffset + ', ' + pageScrollOffset);
+      //      console.log('scrolling -- ' + lastGridOffset + ', ' + pageScrollOffset);
       if (pageScrollOffset >= lastGridOffset) {
         const { listTrackData, pageLimit } = this.state;
         const newPageOffset = listTrackData.length;
@@ -159,27 +157,6 @@ class PlaylistTracks extends Component {
         //        console.log(data);
       })
       .catch((error) => console.log(error));
-  };
-
-  handleModalOpen = (albumId) => {
-    const { isAuthenticated } = this.props;
-    this.setState({
-      modalId: albumId,
-    });
-
-    if (isAuthenticated && albumId) {
-      this.props.httpService
-        .get(`/albums/${albumId}`)
-        .then((data) => {
-          this.setState({
-            albumData: {
-              tracks: data.tracks,
-            },
-          });
-          console.log(data);
-        })
-        .catch((error) => console.log(error));
-    }
   };
 
   createDescriptionMarkup = (text) => {
@@ -220,16 +197,7 @@ class PlaylistTracks extends Component {
                 Queue Track
               </button>
               <br />
-              <ModalAlbum
-                handleModalOpen={this.handleModalOpen}
-                handleModalClose={() => this.setState({ modalId: '' })}
-                open={this.state.modalId === item.albumId}
-                albumId={item.albumId}
-                albumName={item.albumName}
-                artist={item.artist}
-                image={item.image}
-                albumData={this.state.albumData}
-              />
+              <ModalAlbum albumId={item.albumId} />
             </p>
           </Accordion.Content>
         </Accordion>

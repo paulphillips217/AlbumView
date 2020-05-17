@@ -24,7 +24,7 @@ class TrackHistory extends Component {
         .get('/history')
         .then((data) => {
           this.setState({
-            musicHistory: data || [],
+            musicHistory: data.items || [],
           });
         })
         .catch((error) => console.error(error));
@@ -41,7 +41,7 @@ class TrackHistory extends Component {
     const TableItem = (item, index) => (
       <tr key={item.played_at}>
         <td>{index + 1}</td>
-        <td>{item.track_name}</td>
+        <td>{item.track.name}</td>
         <td>{item.played_at}</td>
       </tr>
     );
