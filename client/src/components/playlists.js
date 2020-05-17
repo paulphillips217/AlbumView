@@ -129,7 +129,7 @@ class Playlists extends Component {
     ];
 
     return (
-      <div className="App1">
+      <div className="App">
         <h1>
           <Dropdown
             inline

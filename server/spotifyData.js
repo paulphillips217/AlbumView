@@ -4,7 +4,7 @@ const spotifyTokens = require('./accessToken');
 const isJson = require('./utilities');
 
 const getSpotifyUrl = (req) => {
-  console.log('getSpotifyUrl:', req.path);
+  //console.log('getSpotifyUrl:', req.path);
   switch (true) {
     case /\/history/.test(req.path):
       // track play history
@@ -18,16 +18,23 @@ const getSpotifyUrl = (req) => {
     case /\/playlist-data*/.test(req.path):
       // information for a single playlist
       return `https://api.spotify.com/v1/playlists/${req.params.id}`;
-    case /\/albums*/.test(req.path):
+    case /\/album-data*/.test(req.path):
       // information for a single album
       return `https://api.spotify.com/v1/albums/${req.params.id}`;
     case /\/tracks\/contains*/.test(req.path):
       // check whether the comma-separated list of track ids are contained in my favorites
       return `https://api.spotify.com/v1/me/tracks/contains?ids=${req.params.ids}`;
+    case /\/albums\/contains*/.test(req.path):
+      // check whether the comma-separated list of track ids are contained in my favorites
+      return `https://api.spotify.com/v1/me/albums/contains?ids=${req.params.ids}`;
     case /\/save-tracks*/.test(req.path):
     case /\/delete-tracks*/.test(req.path):
       // save or delete a favorite track
       return `https://api.spotify.com/v1/me/tracks?ids=${req.params.ids}`;
+    case /\/save-albums*/.test(req.path):
+    case /\/delete-albums*/.test(req.path):
+      // save or delete a favorite albums
+      return `https://api.spotify.com/v1/me/albums?ids=${req.params.ids}`;
     case /\/queue-track*/.test(req.path):
       // queue a track to the player
       return `https://api.spotify.com/v1/me/player/queue?uri=${req.params.uri}`;
@@ -59,39 +66,18 @@ const talkToSpotify = (req, res) => {
       }
     })
     .catch((err) => {
-      console.error(err);
-      console.log('attempting to refresh spotify token');
-      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
-      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
-    });
-
-  /*
-  return fetch(url, {
-    method: req.method,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-    .then((response) => {
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.indexOf('application/json') !== -1) {
-        return response.json();
+      if (err.response) {
+        console.log(err.response.data);
+        //console.log(err.response.status);
+        //console.log(err.response.headers);
       } else {
-        return response.text();
+        console.error(JSON.stringify(err));
       }
-    })
-    .then((data) => {
-      res.json(isJson(data) ? data : {});
-    })
-    .catch((err) => {
-      console.error(err);
+
       console.log('attempting to refresh spotify token');
       const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
       spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
     });
-   */
 };
 
 module.exports = {

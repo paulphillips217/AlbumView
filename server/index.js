@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== 'production') {
   if (result.error) {
     throw result.error;
   }
-  //  console.log(result.parsed);
+  //console.log(result.parsed);
 }
 
 const express = require('express');
@@ -65,11 +65,11 @@ app.get('/db-test', async (req, res) => {
 app.get('/login', authorizeSpotify);
 
 app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
-  //  console.log('callback - credentials: ' + JSON.stringify(req.credentials));
+  //console.log('callback - credentials: ' + JSON.stringify(req.credentials));
   try {
-    //    console.log('access token: ' + req.credentials.access_token);
-    //    console.log('refresh token: ' + req.credentials.refresh_token);
-    //    spotifyTokens.storeAccessTokenInDatabase(pool, req.credentials);
+    //console.log('access token: ' + req.credentials.access_token);
+    //console.log('refresh token: ' + req.credentials.refresh_token);
+    //spotifyTokens.storeAccessTokenInDatabase(pool, req.credentials);
     const clientUrl = process.env.CLIENT_URL;
     res.redirect(
       `${clientUrl}/?access_token=${req.credentials.access_token}&refresh_token=${req.credentials.refresh_token}`
@@ -83,10 +83,13 @@ app.get('/history', spotifyData.talkToSpotify);
 app.get('/playlist-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-tracks/:id/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-data/:id', spotifyData.talkToSpotify);
-app.get('/albums/:id', spotifyData.talkToSpotify);
+app.get('/album-data/:id', spotifyData.talkToSpotify);
+app.get('/albums/contains/:ids', spotifyData.talkToSpotify);
 app.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
 app.put('/save-tracks/:ids', spotifyData.talkToSpotify);
+app.put('/save-albums/:ids', spotifyData.talkToSpotify);
 app.delete('/delete-tracks/:ids', spotifyData.talkToSpotify);
+app.delete('/delete-albums/:ids', spotifyData.talkToSpotify);
 app.post('/queue-track/:uri', spotifyData.talkToSpotify);
 
 // All remaining requests return the React app, so it can handle routing.

@@ -2,32 +2,40 @@ import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { getImage, msToSongTime } from '../util/utilities';
 import httpService from '../util/httpUtils';
 
 const ModalAlbum = ({ albumId, httpService }) => {
   const [albumData, setAlbumData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [hearts, setHearts] = useState([]);
+  const [trackHearts, setTrackHearts] = useState([]);
+  const [albumHeart, setAlbumHeart] = useState(false);
 
   useEffect(() => {
     const getHeartSettings = () => {
-      if (albumData.tracks && albumData.tracks.items) {
+      if (modalOpen && albumId) {
+        httpService
+          .get(`/albums/contains/${albumId}`)
+          .then((data) => {
+            setAlbumHeart(data[0]);
+          })
+          .catch((error) => console.error(error));
+      }
+      if (modalOpen && albumData.tracks && albumData.tracks.items) {
         const trackIds = albumData.tracks.items
           .reduce((result, item) => result.concat([item.id]), [])
           .join();
-        console.log('getHeartSettings track ids: ', trackIds);
         httpService
           .get(`/tracks/contains/${trackIds}`)
           .then((data) => {
-            console.log('heart settings: ', data);
-            setHearts(data);
+            setTrackHearts(data);
           })
-          .catch((error) => console.log(error));
+          .catch((error) => console.error(error));
       }
     };
     getHeartSettings();
-  }, [albumData, httpService]);
+  }, [modalOpen, albumId, albumData, httpService]);
 
   const firstHalfTracks = albumData.tracks
     ? albumData.tracks.items.slice(
@@ -44,38 +52,64 @@ const ModalAlbum = ({ albumId, httpService }) => {
   const handleModalOpen = () => {
     if (albumId) {
       httpService
-        .get(`/albums/${albumId}`)
+        .get(`/album-data/${albumId}`)
         .then((data) => {
           setAlbumData(data);
-          console.log('modal open album data: ', data);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.error(error));
       setModalOpen(true);
     }
   };
 
   const handleTrackHeartClick = (id, index, remove) => {
     if (id) {
-      console.log('handleTrackHeartClick ', id, remove);
       if (remove) {
         httpService
           .delete(`/delete-tracks/${id}`)
           .then((data) => {
-            console.log('handleTrackHeartClick delete response: ', data);
           })
-          .catch((error) => console.log(error));
-        setHearts((h) => [...h.slice(0, index), false, ...h.slice(index + 1)]);
+          .catch((error) => console.error(error));
+        setTrackHearts((h) => [
+          ...h.slice(0, index),
+          false,
+          ...h.slice(index + 1),
+        ]);
       } else {
         httpService
           .put(`/save-tracks/${id}`)
           .then((data) => {
-            console.log('handleTrackHeartClick save response: ', data);
           })
-          .catch((error) => console.log(error));
-        setHearts((h) => [...h.slice(0, index), true, ...h.slice(index + 1)]);
+          .catch((error) => console.error(error));
+        setTrackHearts((h) => [
+          ...h.slice(0, index),
+          true,
+          ...h.slice(index + 1),
+        ]);
       }
     }
   };
+
+  const handleAlbumHeartClick = (remove) => {
+    if (remove) {
+      httpService
+        .delete(`/delete-albums/${albumId}`)
+        .then((data) => {
+        })
+        .catch((error) => console.error(error));
+      setAlbumHeart(false);
+    } else {
+      httpService
+        .put(`/save-albums/${albumId}`)
+        .then((data) => {
+        })
+        .catch((error) => console.error(error));
+      setAlbumHeart(true);
+    }
+  };
+
+  const headerTitle = albumData.release_date
+    ? `${albumData.name} (${moment(albumData.release_date).format('YYYY')}) `
+    : `${albumData.name} `;
 
   return (
     <Modal
@@ -87,7 +121,15 @@ const ModalAlbum = ({ albumId, httpService }) => {
       open={modalOpen}
       onClose={() => setModalOpen(false)}
     >
-      <Modal.Header>{albumData.name}</Modal.Header>
+      <Modal.Header>
+        {headerTitle}
+        <Icon
+          name={albumHeart ? 'heart' : 'heart outline'}
+          size="small"
+          color="red"
+          onClick={() => handleAlbumHeartClick(albumHeart)}
+        />
+      </Modal.Header>
       <Modal.Content image>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
@@ -117,7 +159,7 @@ const ModalAlbum = ({ albumId, httpService }) => {
                         <Grid.Column style={{ width: '3rem' }}>
                           <Icon
                             name={
-                              hearts[item.track_number - 1]
+                              trackHearts[item.track_number - 1]
                                 ? 'heart'
                                 : 'heart outline'
                             }
@@ -127,7 +169,7 @@ const ModalAlbum = ({ albumId, httpService }) => {
                               handleTrackHeartClick(
                                 item.id,
                                 item.track_number - 1,
-                                hearts[item.track_number - 1]
+                                trackHearts[item.track_number - 1]
                               )
                             }
                           />
@@ -155,7 +197,7 @@ const ModalAlbum = ({ albumId, httpService }) => {
                         <Grid.Column style={{ width: '3rem' }}>
                           <Icon
                             name={
-                              hearts[item.track_number - 1]
+                              trackHearts[item.track_number - 1]
                                 ? 'heart'
                                 : 'heart outline'
                             }
@@ -165,7 +207,7 @@ const ModalAlbum = ({ albumId, httpService }) => {
                               handleTrackHeartClick(
                                 item.id,
                                 item.track_number - 1,
-                                hearts[item.track_number - 1]
+                                trackHearts[item.track_number - 1]
                               )
                             }
                           />
