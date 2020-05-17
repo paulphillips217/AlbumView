@@ -1,10 +1,17 @@
-import { SELECTED_PLAYLIST, ACCESS_TOKEN, REFRESH_TOKEN } from './types';
+import {
+  ContextType,
+  CONTEXT_TYPE,
+  CONTEXT_ITEM,
+  ACCESS_TOKEN,
+  REFRESH_TOKEN,
+} from './types';
 
 const initialState = {
   authenticated: !!localStorage.getItem('accessToken'),
-  selectedPlaylist: '',
   accessToken: localStorage.getItem('accessToken') || '',
   refreshToken: localStorage.getItem('refreshToken') || '',
+  contextType: ContextType.Artists,
+  contextItem: '',
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -22,10 +29,15 @@ export function albumViewReducer(state = initialState, action) {
       return Object.assign({}, state, {
         refreshToken: action.payload,
       });
-    case SELECTED_PLAYLIST:
-      console.log('setting selected playlist');
+    case CONTEXT_TYPE:
+      console.log('setting context type');
       return Object.assign({}, state, {
-        selectedPlaylist: action.payload,
+        contextType: action.payload,
+      });
+    case CONTEXT_ITEM:
+      console.log('setting context item');
+      return Object.assign({}, state, {
+        contextItem: action.payload,
       });
     default:
       return state;

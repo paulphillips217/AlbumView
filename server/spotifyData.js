@@ -68,15 +68,15 @@ const talkToSpotify = (req, res) => {
     .catch((err) => {
       if (err.response) {
         console.log(err.response.data);
-        //console.log(err.response.status);
-        //console.log(err.response.headers);
+
+        if (err.response.status === 401) {
+          console.log('attempting to refresh spotify token');
+          const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+          spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+        }
       } else {
         console.error(JSON.stringify(err));
       }
-
-      console.log('attempting to refresh spotify token');
-      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
-      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
     });
 };
 

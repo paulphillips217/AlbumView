@@ -10,9 +10,9 @@ import SplitPane from 'react-split-pane';
 import './styles/App.css';
 import './styles/splitPane.css';
 import { setAccessToken, setRefreshToken } from './store/actions';
-import Playlists from './components/playlists';
-import PlaylistTracks from './components/playlistTracks';
-import { getAuthenticationState, getSelectedPlaylist } from './store/selectors';
+import ContextList from './components/ContextList';
+import ContextGrid from './components/ContextGrid';
+import { getAuthenticationState, getContextItem } from './store/selectors';
 
 class App extends Component {
   componentDidMount() {
@@ -55,8 +55,8 @@ class App extends Component {
             style={{ height: 'calc(100vh - 72.6px)' }}
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
-            <Playlists />
-            <PlaylistTracks />
+            <ContextList />
+            <ContextGrid />
           </SplitPane>
         </div>
       );
@@ -68,7 +68,7 @@ class App extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
-  selectedPlaylist: getSelectedPlaylist(state),
+  contextItem: getContextItem(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

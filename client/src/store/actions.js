@@ -1,9 +1,4 @@
-import { ACCESS_TOKEN, REFRESH_TOKEN, SELECTED_PLAYLIST } from './types';
-
-export const setSelectedPlaylist = (playlistId) => ({
-  type: SELECTED_PLAYLIST,
-  payload: playlistId,
-});
+import { ACCESS_TOKEN, REFRESH_TOKEN, CONTEXT_TYPE, CONTEXT_ITEM } from './types';
 
 export const setAccessToken = (accessToken) => ({
   type: ACCESS_TOKEN,
@@ -13,4 +8,14 @@ export const setAccessToken = (accessToken) => ({
 export const setRefreshToken = (refreshToken) => ({
   type: REFRESH_TOKEN,
   payload: refreshToken,
+});
+
+export const setContextType = (type) => ({
+  type: CONTEXT_TYPE,
+  payload: type,
+});
+
+export const setContextItem = (id) => ({
+  type: CONTEXT_ITEM,
+  payload: id,
 });

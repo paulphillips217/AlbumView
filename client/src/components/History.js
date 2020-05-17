@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import '../styles/App.css';
 import { getAuthenticationState } from '../store/selectors';
 import httpService from '../util/httpUtils';
-import TestModal from './TestModal';
 
 class TrackHistory extends Component {
   constructor(props) {
@@ -66,7 +65,6 @@ class TrackHistory extends Component {
       <div className="App">
         <header className="header">
           <h1>Spotify Listening History</h1>
-          <TestModal greeting='Hello Paul' open={true} />
           {musicHistory && musicHistory.length > 0 ? <RecentlyPlayed /> : null}
         </header>
       </div>

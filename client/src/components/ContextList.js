@@ -3,28 +3,27 @@ import { connect } from 'react-redux';
 import '../styles/App.css';
 import { List, Image, Dropdown } from 'semantic-ui-react';
 import { getImage } from '../util/utilities';
-import {
-  getAuthenticationState,
-  getSelectedPlaylist,
-} from '../store/selectors';
-import { setSelectedPlaylist } from '../store/actions';
+import { getAuthenticationState, getContextType } from '../store/selectors';
+import { setContextType, setContextItem } from '../store/actions';
 import httpService from '../util/httpUtils';
+import { ContextType } from '../store/types';
 
-class Playlists extends Component {
+const PAGE_LIMIT = 50;
+
+class ContextList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      playlistData: [],
+      listData: [],
       pageOffset: 0,
-      pageLimit: 50,
       moreDataAvailable: true,
     };
   }
 
   componentDidMount() {
     console.log('playlist componentDidMount');
-    const { pageOffset, pageLimit } = this.state;
-    this.getPlaylists(pageOffset, pageLimit);
+    const { pageOffset } = this.state;
+    this.getList(this.props.contextType, pageOffset);
 
     // connect up the scrolling mechanism
     const node = document.querySelector('.Pane1');
@@ -35,32 +34,42 @@ class Playlists extends Component {
     }
   }
 
-  getPlaylists = (pageOffset, pageLimit) => {
-    const { isAuthenticated } = this.props;
-    const { playlistData } = this.state;
+  getList = (contextType, pageOffset) => {
+    const { listData } = this.state;
 
-    if (isAuthenticated) {
-      this.props.httpService
-        .get(`/playlist-list/${pageOffset}/${pageLimit}`)
-        .then((data) => {
-          const parsedData = data.items.map((e) => ({
-            id: e.id,
-            name: e.name,
-            author: e.owner.display_name,
-            description: e.description,
-            image: getImage(e.images),
-          }));
-          const newData = playlistData.concat(parsedData);
-          this.setState({
-            playlistData: newData,
-            moreDataAvailable: data.next != null,
-          });
-        })
-        .catch((error) => console.log(error));
+    switch (contextType) {
+      case ContextType.Artists:
+        this.setState({
+          listData: [],
+          pageOffset: 0,
+          moreDataAvailable: false,
+        });
+        break;
+      case ContextType.Playlists:
+        this.props.httpService
+          .get(`/playlist-list/${pageOffset}/${PAGE_LIMIT}`)
+          .then((data) => {
+            const parsedData = data.items.map((e) => ({
+              id: e.id,
+              name: e.name,
+              author: e.owner.display_name,
+              description: e.description,
+              image: getImage(e.images),
+            }));
+            const newData = listData.concat(parsedData);
+            this.setState({
+              listData: newData,
+              moreDataAvailable: data.next != null,
+            });
+          })
+          .catch((error) => console.log(error));
+        break;
+      default:
+        console.log('unknown context type in ContextList.getList');
     }
   };
 
-  handleScroll = (e) => {
+  handleScroll = () => {
     const bigGrid = document.querySelector('.left-align-list');
     //    console.log("scrolling: " + bigGrid != null);
     if (bigGrid) {
@@ -70,25 +79,30 @@ class Playlists extends Component {
         const pageScrollOffset = node.scrollTop + node.offsetHeight;
         //      console.log("scrolling -- " + lastGridOffset + ", " + pageScrollOffset);
         if (pageScrollOffset >= lastGridOffset) {
-          const { playlistData, pageLimit } = this.state;
-          const newPageOffset = playlistData.length;
+          const { listData } = this.state;
+          const newPageOffset = listData.length;
           this.setState({
             pageOffset: newPageOffset,
           });
-          this.getPlaylists(newPageOffset, pageLimit);
+          this.getList(this.props.contextType, newPageOffset);
         }
       }
     }
   };
 
   handleClick = (id) => {
-    this.props.selectPlaylist(id);
+    this.props.setContextItem(id);
+  };
+
+  handleDropdownChange = (e, { value }) => {
+    this.props.setContextType(value);
+    this.getList(value, 0);
   };
 
   render() {
-    const { playlistData } = this.state;
+    const { listData } = this.state;
 
-    const PlaylistItem = (item, index) => (
+    const ListItem = (item, index) => (
       <List.Item key={index}>
         <Image src={item.image} size="mini" />
         <List.Content>
@@ -109,22 +123,22 @@ class Playlists extends Component {
       </List.Item>
     );
 
-    const PlaylistTable = () => (
+    const ListTable = () => (
       <List floated={'left'} divided relaxed>
-        {playlistData.map((item, index) => PlaylistItem(item, index))}
+        {listData.map((item, index) => ListItem(item, index))}
       </List>
     );
 
     const listOptions = [
       {
-        key: 'playlists',
+        key: 'playlists-key',
         text: 'Your Spotify Playlists',
-        value: 'playlists',
+        value: ContextType.Playlists,
       },
       {
-        key: 'favorite-artists',
+        key: 'favorite-artists-key',
         text: 'Your Favorite Artists',
-        value: 'favorite-artists',
+        value: ContextType.Artists,
       },
     ];
 
@@ -134,11 +148,12 @@ class Playlists extends Component {
           <Dropdown
             inline
             options={listOptions}
-            defaultValue={listOptions[0].value}
+            defaultValue={this.props.contextType}
+            onChange={this.handleDropdownChange}
           />
         </h1>
         <div className="left-align-list">
-          {playlistData && playlistData.length > 0 ? <PlaylistTable /> : null}
+          {listData && listData.length > 0 ? <ListTable /> : null}
         </div>
       </div>
     );
@@ -147,12 +162,13 @@ class Playlists extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
-  selectedPlaylist: getSelectedPlaylist(state),
+  contextType: getContextType(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  selectPlaylist: (playlistId) => dispatch(setSelectedPlaylist(playlistId)),
+  setContextType: (type) => dispatch(setContextType(type)),
+  setContextItem: (id) => dispatch(setContextItem(id)),
 });
 
 const mergeProps = (stateProps, dispatchProps) => ({
@@ -165,4 +181,4 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps,
   mergeProps
-)(Playlists);
+)(ContextList);
