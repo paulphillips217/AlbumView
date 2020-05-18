@@ -18,6 +18,9 @@ const getSpotifyUrl = (req) => {
     case /\/playlist-data*/.test(req.path):
       // information for a single playlist
       return `https://api.spotify.com/v1/playlists/${req.params.id}`;
+    case /\/album-list*/.test(req.path):
+      // list of favorite albums
+      return `https://api.spotify.com/v1/me/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
     case /\/album-data*/.test(req.path):
       // information for a single album
       return `https://api.spotify.com/v1/albums/${req.params.id}`;

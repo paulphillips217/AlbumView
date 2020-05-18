@@ -10,3 +10,9 @@ export const ContextType = {
   Artists: 'artists',
   Songs: 'songs'
 };
+
+export const GridDataType = {
+  Artist: 'artist',
+  Album: 'album',
+  Track: 'track'
+};

@@ -38,7 +38,7 @@ class ContextList extends Component {
     const { listData } = this.state;
 
     switch (contextType) {
-      case ContextType.Artists:
+      case ContextType.Albums:
         this.setState({
           listData: [],
           pageOffset: 0,
@@ -65,7 +65,7 @@ class ContextList extends Component {
           .catch((error) => console.log(error));
         break;
       default:
-        console.log('unknown context type in ContextList.getList');
+        console.log('unknown context type in ContextList.getList', contextType);
     }
   };
 
@@ -136,9 +136,9 @@ class ContextList extends Component {
         value: ContextType.Playlists,
       },
       {
-        key: 'favorite-artists-key',
-        text: 'Your Favorite Artists',
-        value: ContextType.Artists,
+        key: 'saved-album-key',
+        text: 'Your Saved Albums',
+        value: ContextType.Albums,
       },
     ];
 

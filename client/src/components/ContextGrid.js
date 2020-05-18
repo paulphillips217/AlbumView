@@ -3,9 +3,14 @@ import { connect } from 'react-redux';
 import '../styles/App.css';
 import { Grid } from 'semantic-ui-react';
 import { getImage } from '../util/utilities';
-import { getAuthenticationState, getContextItem } from '../store/selectors';
+import {
+  getAuthenticationState,
+  getContextType,
+  getContextItem,
+} from '../store/selectors';
 import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
+import { ContextType, GridDataType } from '../store/types';
 
 const PAGE_LIMIT = 50;
 
@@ -15,8 +20,8 @@ class ContextGrid extends Component {
 
     this.state = {
       contextData: {
-        id: '',
         name: '',
+        gridDataType: GridDataType.Track,
         description: '',
       },
       gridData: [],
@@ -28,53 +33,96 @@ class ContextGrid extends Component {
   }
 
   getContextData = () => {
-    const { isAuthenticated, contextItem } = this.props;
-    console.log('getContextData: ' + contextItem);
+    const { contextType, contextItem } = this.props;
 
-    if (isAuthenticated && contextItem) {
-      this.props.httpService
-        .get(`/playlist-data/${contextItem}`)
-        .then((data) => {
-          this.setState({
-            contextData: {
-              id: data.id,
-              name: data.name,
-              description: data.description,
-            },
-          });
-        })
-        .catch((error) => console.log(error));
+    switch (contextType) {
+      case ContextType.Albums:
+        this.setState({
+          contextData: {
+            name: 'Your Saved Albums',
+            gridDataType: GridDataType.Album,
+            description: '',
+          },
+        });
+        break;
+      case ContextType.Playlists:
+        this.props.httpService
+          .get(`/playlist-data/${contextItem}`)
+          .then((data) => {
+            this.setState({
+              contextData: {
+                name: data.name,
+                gridDataType: GridDataType.Track,
+                description: data.description,
+              },
+            });
+          })
+          .catch((error) => console.log(error));
+        break;
+      default:
+        console.log(
+          'unknown context type in ContextGrid.getContextData',
+          contextType
+        );
     }
   };
 
   getGridData = (pageOffset) => {
     const { gridData } = this.state;
-    const { isAuthenticated, contextItem } = this.props;
-    console.log('getGridData: ' + contextItem + ', ' + pageOffset);
+    const { contextType, contextItem } = this.props;
+    console.log('getGridData: ', contextType, contextItem, pageOffset);
 
-    if (isAuthenticated && contextItem) {
-      this.props.httpService
-        .get(`/playlist-tracks/${contextItem}/${pageOffset}/${PAGE_LIMIT}`)
-        .then((rawData) => {
-          const data = rawData.items.map((e) => ({
-            id: e.track.id,
-            name: e.track.name,
-            albumId: e.track.album.id,
-            albumName: e.track.album.name,
-            artist: e.track.album.artists[0].name,
-            image: getImage(e.track.album.images),
-            href: e.track.href,
-            uri: e.track.uri,
-          }));
-          const newData = pageOffset ? gridData.concat(data) : data;
-          this.setState({
-            gridData: newData,
-            moreDataAvailable: rawData.next != null,
-          });
-        })
-        .catch((error) => console.log(error));
-    } else {
-      this.props.history.push('/');
+    switch (contextType) {
+      case ContextType.Albums:
+        this.props.httpService
+          .get(`/album-list/${pageOffset}/${PAGE_LIMIT}`)
+          .then((rawData) => {
+            console.log('artist data', rawData);
+            const data = rawData.items.map((e) => ({
+              id: '',
+              name: '',
+              albumId: e.album.id,
+              albumName: e.album.name,
+              artist: e.album.artists[0].name,
+              image: getImage(e.album.images),
+              href: e.href,
+              uri: e.uri,
+            }));
+            const newData = pageOffset ? gridData.concat(data) : data;
+            this.setState({
+              gridData: newData,
+              moreDataAvailable: rawData.next != null,
+            });
+          })
+          .catch((error) => console.log(error));
+        break;
+      case ContextType.Playlists:
+        this.props.httpService
+          .get(`/playlist-tracks/${contextItem}/${pageOffset}/${PAGE_LIMIT}`)
+          .then((rawData) => {
+            const data = rawData.items.map((e) => ({
+              id: e.track.id,
+              name: e.track.name,
+              albumId: e.track.album.id,
+              albumName: e.track.album.name,
+              artist: e.track.album.artists[0].name,
+              image: getImage(e.track.album.images),
+              href: e.track.href,
+              uri: e.track.uri,
+            }));
+            const newData = pageOffset ? gridData.concat(data) : data;
+            this.setState({
+              gridData: newData,
+              moreDataAvailable: rawData.next != null,
+            });
+          })
+          .catch((error) => console.log(error));
+        break;
+      default:
+        console.log(
+          'unknown context type in ContextGrid.getGridData',
+          contextType
+        );
     }
   };
 
@@ -98,7 +146,10 @@ class ContextGrid extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.contextItem !== prevProps.contextItem) {
+    if (
+      this.props.contextType !== prevProps.contextType ||
+      this.props.contextItem !== prevProps.contextItem
+    ) {
       console.log('time to update the grid data');
 
       this.setState({
@@ -109,12 +160,9 @@ class ContextGrid extends Component {
         albumData: {},
       });
 
-      const { isAuthenticated, contextItem } = this.props;
-      if (isAuthenticated && contextItem) {
-        const { pageOffset } = this.state;
-        this.getContextData();
-        this.getGridData(pageOffset);
-      }
+      const { pageOffset } = this.state;
+      this.getContextData();
+      this.getGridData(pageOffset);
     }
   }
 
@@ -154,9 +202,10 @@ class ContextGrid extends Component {
     const GridItem = (item, index) => (
       <Grid.Column key={index}>
         <AlbumAccordion
-          item={item}
           activeIndex={activeIndex}
           index={index}
+          item={item}
+          gridDataType={contextData.gridDataType}
           handleAccordionClick={this.handleAccordionClick}
         />
       </Grid.Column>
@@ -184,6 +233,7 @@ class ContextGrid extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
+  contextType: getContextType(state),
   contextItem: getContextItem(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });

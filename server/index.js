@@ -84,6 +84,7 @@ app.get('/playlist-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-tracks/:id/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-data/:id', spotifyData.talkToSpotify);
 app.get('/album-data/:id', spotifyData.talkToSpotify);
+app.get('/album-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/albums/contains/:ids', spotifyData.talkToSpotify);
 app.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
 app.put('/save-tracks/:ids', spotifyData.talkToSpotify);
