@@ -1,7 +1,7 @@
-import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage, msToSongTime } from '../util/utilities';
 import httpService from '../util/httpUtils';

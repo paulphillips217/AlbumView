@@ -1,6 +1,5 @@
 .App {
   width: 100%;
-  margin: 0 10px;
   text-align: center;
 }
 
@@ -68,7 +67,7 @@ td:last-child {
   font-weight: 700;
   letter-spacing: 2px;
   line-height: 12px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   min-width: 160px;
   overflow-wrap: break-word;
   padding: 11px 32px 9px;

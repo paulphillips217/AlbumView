@@ -18,6 +18,7 @@ const Auth = ({ setRefreshToken, setAccessToken, history }) => {
 Auth.propTypes = {
   setAccessToken: PropTypes.func.isRequired,
   setRefreshToken: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired
 };
 
 const mapDispatchToProps = (dispatch) => ({

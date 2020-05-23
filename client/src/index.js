@@ -9,50 +9,21 @@ import {
   Route,
   BrowserRouter as Router,
   Switch,
-  NavLink,
 } from 'react-router-dom';
 import TrackHistory from './components/History';
 import { Provider } from 'react-redux';
 import store from './store';
-import { Icon, Menu } from 'semantic-ui-react';
-import Tester from './components/Tester';
 import Auth from './components/Auth';
+import AlbumViewHeader from './components/AlbumViewHeader';
 
 const routing = (
   <Provider store={store}>
     <React.StrictMode>
       <div>
         <Router>
-          <Menu
-            icon="labeled"
-            borderless
-            widths={4}
-            style={{
-              flexShrink: 0, //don't allow flexbox to shrink it
-              borderRadius: 0, //clear semantic-ui style
-              margin: 0, //clear semantic-ui style
-            }}
-          >
-            <Menu.Item as={NavLink} to="/home" active={false}>
-              <Icon name="home" />
-              Home
-            </Menu.Item>
-            <Menu.Item as={NavLink} to="/history">
-              <Icon name="list layout" />
-              History
-            </Menu.Item>
-            <Menu.Item as={NavLink} to="/tester">
-              <Icon name="browser" />
-              Tester
-            </Menu.Item>
-            <Menu.Item as={NavLink} to="/auth">
-              <Icon name="browser" />
-              Log Out
-            </Menu.Item>
-          </Menu>
           <Switch>
             <Route path="/history" component={TrackHistory} />
-            <Route path="/tester" component={Tester} />
+            <Route path="/header" component={AlbumViewHeader} />
             <Route path="/home" component={App} />
             <Route path="/auth" component={Auth} />
             <Route component={App} />

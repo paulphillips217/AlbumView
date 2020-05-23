@@ -10,7 +10,7 @@ const initialState = {
   authenticated: !!localStorage.getItem('accessToken'),
   accessToken: localStorage.getItem('accessToken') || '',
   refreshToken: localStorage.getItem('refreshToken') || '',
-  contextType: ContextType.Playlists,
+  contextType: ContextType.Albums,
   contextItem: '',
 };
 

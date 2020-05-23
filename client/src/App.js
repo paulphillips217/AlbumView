@@ -10,9 +10,10 @@ import SplitPane from 'react-split-pane';
 import './styles/App.css';
 import './styles/splitPane.css';
 import { setAccessToken, setRefreshToken } from './store/actions';
+import { getAuthenticationState, getContextItem } from './store/selectors';
 import ContextList from './components/ContextList';
 import ContextGrid from './components/ContextGrid';
-import { getAuthenticationState, getContextItem } from './store/selectors';
+import AlbumViewHeader from './components/AlbumViewHeader';
 
 class App extends Component {
   componentDidMount() {
@@ -48,11 +49,12 @@ class App extends Component {
     if (isAuthenticated) {
       return (
         <div className="App">
+          <AlbumViewHeader />
           <SplitPane
             split="vertical"
             minSize={50}
             defaultSize={400}
-            style={{ height: 'calc(100vh - 72.6px)' }}
+            style={{ height: 'calc(100vh - 80px)' }}
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
             <ContextList />
