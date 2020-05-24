@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { Grid, Visibility } from 'semantic-ui-react';
-import { getImage } from '../util/utilities';
+import { getImage, sortByArtistThenAlbum } from '../util/utilities';
 import { getContextType, getContextItem } from '../store/selectors';
 import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
@@ -36,7 +36,7 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
                 uri: e.uri,
               }));
               const newData = pageOffset ? gridData.concat(data) : data;
-              setGridData(newData);
+              setGridData(newData.sort(sortByArtistThenAlbum));
               setGridDataType(GridDataType.Album);
             })
             .catch((error) => console.log(error));

@@ -30,3 +30,18 @@ export const msToSongTime = (duration) => {
   return hours + minutes + ':' + seconds;
 };
 
+export const stripLeadingArticle = (string) => {
+  return string.replace(/^(an?|the)\s/i, '');
+};
+
+export const sortByArtistThenAlbum = (a, b) => {
+  const artist1 = stripLeadingArticle(a.artist);
+  const artist2 = stripLeadingArticle(b.artist);
+  // if the artists are the same, sort by the album names
+  if (artist1 === artist2) {
+    const albumName1 = stripLeadingArticle(a.albumName);
+    const albumName2 = stripLeadingArticle(b.albumName);
+    return albumName1 > albumName2;
+  }
+  return artist1 > artist2;
+};
