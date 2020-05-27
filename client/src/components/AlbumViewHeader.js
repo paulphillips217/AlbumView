@@ -6,8 +6,10 @@ import { Card, Button, Dropdown, Grid, Segment } from 'semantic-ui-react';
 import { ContextType } from '../store/types';
 import {
   setAccessToken,
-  setContextType,
   setRefreshToken,
+  setContextType,
+  setContextGridData,
+  setContextGridOffset,
 } from '../store/actions';
 import httpService from '../util/httpUtils';
 import { getContextItem, getContextType } from '../store/selectors';
@@ -16,10 +18,12 @@ import '../styles/App.css';
 const AlbumViewHeader = ({
   contextType,
   contextItem,
-  setContextType,
   setAccessToken,
   setRefreshToken,
-  httpService
+  setContextType,
+  setContextGridData,
+  setContextGridOffset,
+  httpService,
 }) => {
   const history = useHistory();
   const [contextData, setContextData] = useState({ name: '', description: '' });
@@ -30,6 +34,12 @@ const AlbumViewHeader = ({
         case ContextType.Albums:
           setContextData({
             name: 'Your Saved Albums',
+            description: '',
+          });
+          break;
+        case ContextType.Tracks:
+          setContextData({
+            name: 'Your Saved Tracks',
             description: '',
           });
           break;
@@ -68,6 +78,11 @@ const AlbumViewHeader = ({
       value: ContextType.Albums,
     },
     {
+      key: 'liked-song-key',
+      text: 'Your Saved Tracks',
+      value: ContextType.Tracks,
+    },
+    {
       key: 'playlists-key',
       text: 'Your Spotify Playlists',
       value: ContextType.Playlists,
@@ -76,12 +91,16 @@ const AlbumViewHeader = ({
 
   const handleDropdownChange = (e, { value }) => {
     setContextType(value);
+    setContextGridData([]);
+    setContextGridOffset(0);
     console.log('handle dropdown change', value);
   };
 
   const handleLogOut = () => {
     setRefreshToken('');
     setAccessToken('');
+    setContextGridData([]);
+    setContextGridOffset(0);
     history.push('/auth');
   };
 
@@ -127,9 +146,11 @@ const AlbumViewHeader = ({
 AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
-  setContextType: PropTypes.func.isRequired,
   setAccessToken: PropTypes.func.isRequired,
   setRefreshToken: PropTypes.func.isRequired,
+  setContextType: PropTypes.func.isRequired,
+  setContextGridData: PropTypes.func.isRequired,
+  setContextGridOffset: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -139,9 +160,11 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextType: (type) => dispatch(setContextType(type)),
   setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
+  setContextType: (type) => dispatch(setContextType(type)),
+  setContextGridData: (data) => dispatch(setContextGridData(data)),
+  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
 });
 
 const mergeProps = (stateProps, dispatchProps, props) => ({

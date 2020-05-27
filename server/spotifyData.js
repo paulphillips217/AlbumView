@@ -19,8 +19,11 @@ const getSpotifyUrl = (req) => {
       // information for a single playlist
       return `https://api.spotify.com/v1/playlists/${req.params.id}`;
     case /\/album-list*/.test(req.path):
-      // list of favorite albums
+      // list of saved albums
       return `https://api.spotify.com/v1/me/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
+    case /\/track-list*/.test(req.path):
+      // list of saved tracks
+      return `https://api.spotify.com/v1/me/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
     case /\/album-data*/.test(req.path):
       // information for a single album
       return `https://api.spotify.com/v1/albums/${req.params.id}`;
@@ -63,10 +66,11 @@ const talkToSpotify = (req, res) => {
   })
     .then((response) => {
       console.log('axios got response for ', url);
-      if (response.data) {
-        //console.log(`Got ${JSON.stringify(response.data)} from axios`);
-        res.json(isJson(response.data) ? response.data : {});
-      }
+      res.json(
+        response && response.data && isJson(response.data)
+          ? response.data
+          : { empty: true }
+      );
     })
     .catch((err) => {
       if (err.response) {

@@ -5,6 +5,8 @@ import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage, msToSongTime } from '../util/utilities';
 import httpService from '../util/httpUtils';
+import AlbumGridColumn from './AlbumGridColumn';
+import AlbumAccordion from './AlbumAccordion';
 
 const ModalAlbum = ({ albumId, httpService }) => {
   const [albumData, setAlbumData] = useState({});
@@ -37,17 +39,43 @@ const ModalAlbum = ({ albumId, httpService }) => {
     getHeartSettings();
   }, [modalOpen, albumId, albumData, httpService]);
 
-  const firstHalfTracks = albumData.tracks
-    ? albumData.tracks.items.slice(
-        0,
-        Math.ceil(albumData.tracks.items.length / 2)
-      )
-    : [];
+  const headerTitle = albumData.release_date
+    ? `${albumData.name} (${moment(albumData.release_date).format('YYYY')}) `
+    : `${albumData.name} `;
 
-  const secondHalfTracks =
-    albumData.tracks && albumData.tracks.items.length > 1
-      ? albumData.tracks.items.slice(albumData.tracks.items.length / -2)
-      : [];
+  let discTracks = [];
+  let leftSideTracks = [];
+  let rightSideTracks = [];
+  if (albumData.tracks) {
+    // first group the tracks by disc
+    // discTracks is an array of arrays (a track array for each disc)
+    discTracks = albumData.tracks.items.reduce((result, item) => {
+      if (result.length < item.disc_number) {
+        result.push([item]);
+      } else {
+        result[item.disc_number - 1].push(item);
+      }
+      return result;
+    }, []);
+    console.log('disc tracks', discTracks);
+
+    // now for each disc, break up the tracks by left and right side (ie, display columns)
+    leftSideTracks = discTracks.map((discArray) =>
+      discArray.slice(0, Math.ceil(discArray.length / 2))
+    );
+    rightSideTracks = discTracks.map((discArray) =>
+      discArray.length > 1 ? discArray.slice(discArray.length / -2) : []
+    );
+  }
+
+  const getTrackHeartOffset = (discNumber) => {
+    return discTracks.reduce((result, disc, index) => {
+      if (index < discNumber) {
+        return result + disc.length;
+      }
+      return result;
+    }, 0);
+  };
 
   const handleModalOpen = () => {
     if (albumId) {
@@ -62,30 +90,28 @@ const ModalAlbum = ({ albumId, httpService }) => {
   };
 
   const handleTrackHeartClick = (id, index, remove) => {
+    console.log('handle track heart click', id, index, remove);
     if (id) {
       if (remove) {
         httpService
           .delete(`/delete-tracks/${id}`)
           .then((data) => {
+            console.log('handleTrackHeartClick delete response');
           })
           .catch((error) => console.error(error));
-        setTrackHearts((h) => [
-          ...h.slice(0, index),
-          false,
-          ...h.slice(index + 1),
-        ]);
       } else {
         httpService
           .put(`/save-tracks/${id}`)
           .then((data) => {
+            console.log('handleTrackHeartClick save response');
           })
           .catch((error) => console.error(error));
-        setTrackHearts((h) => [
-          ...h.slice(0, index),
-          true,
-          ...h.slice(index + 1),
-        ]);
       }
+      setTrackHearts((h) => [
+        ...h.slice(0, index),
+        !remove,
+        ...h.slice(index + 1),
+      ]);
     }
   };
 
@@ -94,22 +120,47 @@ const ModalAlbum = ({ albumId, httpService }) => {
       httpService
         .delete(`/delete-albums/${albumId}`)
         .then((data) => {
+          console.log('handleAlbumHeartClick delete response');
         })
         .catch((error) => console.error(error));
-      setAlbumHeart(false);
     } else {
       httpService
         .put(`/save-albums/${albumId}`)
         .then((data) => {
+          console.log('handleAlbumHeartClick save response');
         })
         .catch((error) => console.error(error));
-      setAlbumHeart(true);
     }
+    setAlbumHeart(!remove);
   };
 
-  const headerTitle = albumData.release_date
-    ? `${albumData.name} (${moment(albumData.release_date).format('YYYY')}) `
-    : `${albumData.name} `;
+  const DiscBlock = (discNumber, trackHeartOffset) => (
+    <Grid columns={2}>
+      {discTracks.length > 1 && (
+        <Header size={'small'} className={'disc-number-header'}>
+          Disc {discNumber + 1}
+        </Header>
+      )}
+      <Grid.Row>
+        <Grid.Column>
+          <AlbumGridColumn
+            tracks={leftSideTracks[discNumber]}
+            trackHearts={trackHearts}
+            trackHeartOffset={trackHeartOffset}
+            handleTrackHeartClick={handleTrackHeartClick}
+          />
+        </Grid.Column>
+        <Grid.Column>
+          <AlbumGridColumn
+            tracks={rightSideTracks[discNumber]}
+            trackHearts={trackHearts}
+            trackHeartOffset={trackHeartOffset}
+            handleTrackHeartClick={handleTrackHeartClick}
+          />
+        </Grid.Column>
+      </Grid.Row>
+    </Grid>
+  );
 
   return (
     <Modal
@@ -136,89 +187,10 @@ const ModalAlbum = ({ albumId, httpService }) => {
           <Header style={{ 'padding-bottom': '10px' }}>
             {albumData.artists && albumData.artists[0].name}
           </Header>
-
-          {albumData.tracks && (
-            <Grid columns={2}>
-              <Grid.Row>
-                <Grid.Column>
-                  <Grid columns={3}>
-                    {firstHalfTracks.map((item) => (
-                      <Grid.Row style={{ padding: '0px' }}>
-                        <Grid.Column style={{ width: '2rem' }}>
-                          {' '}
-                          {item.track_number}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: 'calc(100% - 8rem)' }}>
-                          {' '}
-                          {item.name}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: '3rem' }}>
-                          {' '}
-                          {msToSongTime(item.duration_ms)}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: '3rem' }}>
-                          <Icon
-                            name={
-                              trackHearts[item.track_number - 1]
-                                ? 'heart'
-                                : 'heart outline'
-                            }
-                            size="small"
-                            color="red"
-                            onClick={() =>
-                              handleTrackHeartClick(
-                                item.id,
-                                item.track_number - 1,
-                                trackHearts[item.track_number - 1]
-                              )
-                            }
-                          />
-                        </Grid.Column>
-                      </Grid.Row>
-                    ))}
-                  </Grid>
-                </Grid.Column>
-                <Grid.Column>
-                  <Grid columns={3}>
-                    {secondHalfTracks.map((item) => (
-                      <Grid.Row style={{ padding: '0px' }}>
-                        <Grid.Column style={{ width: '2rem' }}>
-                          {' '}
-                          {item.track_number}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: 'calc(100% - 8rem)' }}>
-                          {' '}
-                          {item.name}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: '3rem' }}>
-                          {' '}
-                          {msToSongTime(item.duration_ms)}{' '}
-                        </Grid.Column>
-                        <Grid.Column style={{ width: '3rem' }}>
-                          <Icon
-                            name={
-                              trackHearts[item.track_number - 1]
-                                ? 'heart'
-                                : 'heart outline'
-                            }
-                            size="small"
-                            color="red"
-                            onClick={() =>
-                              handleTrackHeartClick(
-                                item.id,
-                                item.track_number - 1,
-                                trackHearts[item.track_number - 1]
-                              )
-                            }
-                          />
-                        </Grid.Column>
-                      </Grid.Row>
-                    ))}
-                  </Grid>
-                </Grid.Column>
-              </Grid.Row>
-            </Grid>
-          )}
+          {discTracks &&
+            discTracks.map((item, index) =>
+              DiscBlock(index, getTrackHeartOffset(index))
+            )}
         </Modal.Description>
       </Modal.Content>
     </Modal>

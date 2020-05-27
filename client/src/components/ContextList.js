@@ -6,10 +6,8 @@ import { getImage } from '../util/utilities';
 import { getContextType } from '../store/selectors';
 import { setContextItem } from '../store/actions';
 import httpService from '../util/httpUtils';
-import { ContextType } from '../store/types';
+import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
-
-const PAGE_LIMIT = 50;
 
 const ContextList = ({ contextType, setContextItem, httpService }) => {
   const [listData, setListData] = useState([]);
@@ -19,12 +17,13 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
     const getList = () => {
       switch (contextType) {
         case ContextType.Albums:
+        case ContextType.Tracks:
           setListData([]);
           setPageOffset(0);
           break;
         case ContextType.Playlists:
           httpService
-            .get(`/playlist-list/${pageOffset}/${PAGE_LIMIT}`)
+            .get(`/playlist-list/${pageOffset}/${SPOTIFY_PAGE_LIMIT}`)
             .then((data) => {
               const parsedData = data.items.map((e) => ({
                 id: e.id,

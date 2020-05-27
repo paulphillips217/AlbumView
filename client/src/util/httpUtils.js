@@ -49,6 +49,7 @@ class httpService {
       'X-Spotify-refresh-token': getRefreshToken(this.state),
     };
 
+    console.log('httpService making request', options);
     return axios(options).then(onSuccess).catch(onError);
   };
 

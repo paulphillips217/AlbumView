@@ -51,7 +51,7 @@ const AlbumAccordion = ({
         onClick={() => handleAccordionClick(index)}
       >
         <Image src={item.image} />
-        <p>{gridDataType === GridDataType.Album && <div>{item.artist}</div>}
+        <p>{!!item.artist && <div>{item.artist}</div>}
         {item.name || item.albumName}</p>
       </Accordion.Title>
       <Accordion.Content active={activeIndex === index}>

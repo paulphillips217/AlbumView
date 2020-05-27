@@ -79,3 +79,7 @@ td:last-child {
   vertical-align: middle;
   white-space: normal;
 }
+
+.disc-number-header {
+  padding-top: 20px !important;
+}

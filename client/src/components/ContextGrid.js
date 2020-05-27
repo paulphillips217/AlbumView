@@ -3,18 +3,33 @@ import { connect } from 'react-redux';
 import '../styles/App.css';
 import { Grid, Visibility } from 'semantic-ui-react';
 import { getImage, sortByArtistThenAlbum } from '../util/utilities';
-import { getContextType, getContextItem } from '../store/selectors';
+import {
+  getContextType,
+  getContextItem,
+  getContextGridData,
+  getContextGridOffset,
+} from '../store/selectors';
 import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
-import { ContextType, GridDataType } from '../store/types';
+import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
+import {
+  setContextGridData,
+  setContextGridOffset,
+  setContextGridType,
+} from '../store/actions';
 
-const PAGE_LIMIT = 50;
-
-const ContextGrid = ({ contextType, contextItem, httpService }) => {
-  const [gridData, setGridData] = useState([]);
-  const [gridDataType, setGridDataType] = useState(GridDataType.Track);
-  const [pageOffset, setPageOffset] = useState(0);
+const ContextGrid = ({
+  contextType,
+  contextItem,
+  contextGridData,
+  contextGridType,
+  contextGridOffset,
+  setContextGridData,
+  setContextGridType,
+  setContextGridOffset,
+  httpService,
+}) => {
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
@@ -22,7 +37,7 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
       switch (contextType) {
         case ContextType.Albums:
           httpService
-            .get(`/album-list/${pageOffset}/${PAGE_LIMIT}`)
+            .get(`/album-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
             .then((rawData) => {
               console.log('artist data', rawData);
               const data = rawData.items.map((e) => ({
@@ -35,9 +50,32 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
                 href: e.href,
                 uri: e.uri,
               }));
-              const newData = pageOffset ? gridData.concat(data) : data;
-              setGridData(newData.sort(sortByArtistThenAlbum));
-              setGridDataType(GridDataType.Album);
+              const newData = contextGridOffset ? contextGridData : data;
+              setContextGridData(newData.sort(sortByArtistThenAlbum));
+              setContextGridType(GridDataType.Album);
+            })
+            .catch((error) => console.log(error));
+          break;
+        case ContextType.Tracks:
+          httpService
+            .get(`/track-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
+            .then((rawData) => {
+              console.log('track data', rawData);
+              const data = rawData.items.map((e) => ({
+                id: e.track.id,
+                name: e.track.name,
+                albumId: e.track.album.id,
+                albumName: e.track.album.name,
+                artist: e.track.album.artists[0].name,
+                image: getImage(e.track.album.images),
+                href: e.track.href,
+                uri: e.track.uri,
+              }));
+              const newData = contextGridOffset
+                ? contextGridData.concat(data)
+                : data;
+              setContextGridData(newData.sort(sortByArtistThenAlbum));
+              setContextGridType(GridDataType.Track);
             })
             .catch((error) => console.log(error));
           break;
@@ -45,7 +83,7 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
           if (contextItem) {
             httpService
               .get(
-                `/playlist-tracks/${contextItem}/${pageOffset}/${PAGE_LIMIT}`
+                `/playlist-tracks/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
               )
               .then((rawData) => {
                 const data = rawData.items.map((e) => ({
@@ -58,32 +96,44 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
                   href: e.track.href,
                   uri: e.track.uri,
                 }));
-                const newData = pageOffset ? gridData.concat(data) : data;
-                setGridData(newData);
-                setGridDataType(GridDataType.Track);
+                const newData = contextGridOffset
+                  ? contextGridData.concat(data)
+                  : data;
+                setContextGridData(newData);
+                setContextGridType(GridDataType.Track);
               })
               .catch((error) => console.log(error));
           } else {
-            setGridData([]);
-            setGridDataType(GridDataType.Track);
+            setContextGridData([]);
+            setContextGridType(GridDataType.Track);
           }
           break;
         default:
-          setGridData([]);
-          setGridDataType(GridDataType.Track);
+          setContextGridData([]);
+          setContextGridType(GridDataType.Track);
           console.log(
             'unknown context type in ContextGrid.getGridData',
             contextType
           );
       }
     };
+    console.log(
+      'context grid - getGridData: ',
+      contextType,
+      contextItem,
+      contextGridOffset,
+      httpService
+    );
     getGridData();
-  }, [contextType, contextItem, pageOffset, httpService]);
+  }, [contextType, contextItem]);
 
   const handleVisibilityUpdate = (e, { calculations }) => {
-    if (calculations.bottomVisible && pageOffset < gridData.length) {
+    if (
+      calculations.bottomVisible &&
+      contextGridOffset < contextGridData.length
+    ) {
       console.log('bottom reached - increase page offset');
-      setPageOffset(gridData.length);
+      setContextGridOffset(contextGridData.length);
     }
   };
 
@@ -98,7 +148,7 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
         activeIndex={activeIndex}
         index={index}
         item={item}
-        gridDataType={gridDataType}
+        gridDataType={contextGridType}
         handleAccordionClick={handleAccordionClick}
       />
     </Grid.Column>
@@ -106,14 +156,14 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
 
   const AlbumGrid = () => (
     <Grid columns={6} style={{ width: '100%' }}>
-      {gridData.map((e, index) => GridItem(e, index))}
+      {contextGridData.map((e, index) => GridItem(e, index))}
     </Grid>
   );
 
   return (
     <div className="App">
       <Visibility onUpdate={handleVisibilityUpdate}>
-        {gridData && gridData.length > 0 ? <AlbumGrid /> : ''}
+        {contextGridData && contextGridData.length > 0 ? <AlbumGrid /> : ''}
       </Visibility>
     </div>
   );
@@ -122,12 +172,24 @@ const ContextGrid = ({ contextType, contextItem, httpService }) => {
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
+  contextGridData: PropTypes.array.isRequired,
+  contextGridType: PropTypes.string.isRequired,
+  contextGridOffset: PropTypes.number.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
+  contextGridData: getContextGridData(state),
+  contextGridType: getContextType(state),
+  contextGridOffset: getContextGridOffset(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setContextGridData: (data) => dispatch(setContextGridData(data)),
+  setContextGridType: (type) => dispatch(setContextGridType(type)),
+  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
 });
 
 const mergeProps = (stateProps, dispatchProps) => ({
@@ -136,4 +198,8 @@ const mergeProps = (stateProps, dispatchProps) => ({
   httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
 });
 
-export default connect(mapStateToProps, null, mergeProps)(ContextGrid);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  mergeProps
+)(ContextGrid);
