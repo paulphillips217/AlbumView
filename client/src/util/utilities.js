@@ -41,7 +41,19 @@ export const sortByArtistThenAlbum = (a, b) => {
   if (artist1 === artist2) {
     const albumName1 = stripLeadingArticle(a.albumName);
     const albumName2 = stripLeadingArticle(b.albumName);
+    if (albumName1 === albumName2) {
+      return 0;
+    }
     return albumName1 > albumName2;
+  }
+  return artist1 > artist2;
+};
+
+export const sortByArtist = (a, b) => {
+  const artist1 = stripLeadingArticle(a.name);
+  const artist2 = stripLeadingArticle(b.name);
+  if (artist1 === artist2) {
+    return 0;
   }
   return artist1 > artist2;
 };

@@ -33,6 +33,12 @@ const getSpotifyUrl = (req) => {
     case /\/albums\/contains*/.test(req.path):
       // check whether the comma-separated list of track ids are contained in my favorites
       return `https://api.spotify.com/v1/me/albums/contains?ids=${req.params.ids}`;
+    case /\/artist-list*/.test(req.path):
+      // list of saved artists
+      return `https://api.spotify.com/v1/me/following?type=artist&after=${req.params.offset}&limit=${req.params.limit}`;
+    case /\/artist-albums*/.test(req.path):
+      // list of artist's albums
+      return `https://api.spotify.com/v1/artists/${req.params.id}/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
     case /\/save-tracks*/.test(req.path):
     case /\/delete-tracks*/.test(req.path):
       // save or delete a favorite track

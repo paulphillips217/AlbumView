@@ -8,6 +8,7 @@ import {
   getContextItem,
   getContextGridData,
   getContextGridOffset,
+  getContextGridType,
 } from '../store/selectors';
 import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
@@ -79,6 +80,34 @@ const ContextGrid = ({
             })
             .catch((error) => console.log(error));
           break;
+        case ContextType.Artists:
+          if (contextItem) {
+            httpService
+              .get(
+                `/artist-albums/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
+              )
+              .then((rawData) => {
+                console.log('artist album data', rawData);
+                const data = rawData.items.map((e) => ({
+                  id: '',
+                  name: '',
+                  albumId: e.id,
+                  albumName: e.name,
+                  artist: e.artists[0].name,
+                  image: getImage(e.images),
+                  href: e.href,
+                  uri: e.uri,
+                }));
+                const newData = contextGridOffset ? contextGridData : data;
+                setContextGridData(newData.sort(sortByArtistThenAlbum));
+                setContextGridType(GridDataType.Album);
+              })
+              .catch((error) => console.log(error));
+          } else {
+            setContextGridData([]);
+            setContextGridType(GridDataType.Album);
+          }
+          break;
         case ContextType.Playlists:
           if (contextItem) {
             httpService
@@ -125,7 +154,7 @@ const ContextGrid = ({
       httpService
     );
     getGridData();
-  }, [contextType, contextItem]);
+  }, [contextType, contextItem, contextGridOffset]);
 
   const handleVisibilityUpdate = (e, { calculations }) => {
     if (
@@ -161,7 +190,7 @@ const ContextGrid = ({
   );
 
   return (
-    <div className="App">
+    <div className="grid-container">
       <Visibility onUpdate={handleVisibilityUpdate}>
         {contextGridData && contextGridData.length > 0 ? <AlbumGrid /> : ''}
       </Visibility>
@@ -175,13 +204,16 @@ ContextGrid.propTypes = {
   contextGridData: PropTypes.array.isRequired,
   contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
+  setContextGridData: PropTypes.func.isRequired,
+  setContextGridType: PropTypes.func.isRequired,
+  setContextGridOffset: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
   contextGridData: getContextGridData(state),
-  contextGridType: getContextType(state),
+  contextGridType: getContextGridType(state),
   contextGridOffset: getContextGridOffset(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });

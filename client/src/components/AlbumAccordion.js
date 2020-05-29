@@ -51,8 +51,10 @@ const AlbumAccordion = ({
         onClick={() => handleAccordionClick(index)}
       >
         <Image src={item.image} />
-        <p>{!!item.artist && <div>{item.artist}</div>}
-        {item.name || item.albumName}</p>
+        <div>
+          {!!item.artist && <div>{item.artist}</div>}
+          {item.name || item.albumName}
+        </div>
       </Accordion.Title>
       <Accordion.Content active={activeIndex === index}>
         <p className={'album-details'}>
@@ -69,7 +71,6 @@ AlbumAccordion.propTypes = {
   index: PropTypes.number.isRequired,
   item: PropTypes.object.isRequired,
   gridDataType: PropTypes.string.isRequired,
-  isTrack: PropTypes.bool.isRequired,
   handleAccordionClick: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };

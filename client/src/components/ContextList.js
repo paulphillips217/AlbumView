@@ -1,29 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { List, Image, Visibility } from 'semantic-ui-react';
-import { getImage } from '../util/utilities';
-import { getContextType } from '../store/selectors';
-import { setContextItem } from '../store/actions';
+import { getImage, sortByArtist } from '../util/utilities';
+import {
+  getContextListData,
+  getContextListOffset,
+  getContextType,
+} from '../store/selectors';
+import {
+  setContextItem,
+  setContextListData,
+  setContextListOffset,
+} from '../store/actions';
 import httpService from '../util/httpUtils';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
 
-const ContextList = ({ contextType, setContextItem, httpService }) => {
-  const [listData, setListData] = useState([]);
-  const [pageOffset, setPageOffset] = useState(0);
-
+const ContextList = ({
+  contextType,
+  contextListData,
+  contextListOffset,
+  setContextItem,
+  setContextListData,
+  setContextListOffset,
+  httpService,
+}) => {
   useEffect(() => {
     const getList = () => {
+      console.log('get context list', contextType);
       switch (contextType) {
         case ContextType.Albums:
         case ContextType.Tracks:
-          setListData([]);
-          setPageOffset(0);
+          setContextListData([]);
+          setContextListOffset(0);
+          break;
+        case ContextType.Artists:
+          httpService
+            .get(`/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
+            .then((data) => {
+              console.log('artist list data', data);
+              const parsedData = data.artists.items.map((e) => ({
+                id: e.id,
+                name: e.name,
+                author: '',
+                description: '',
+                image: getImage(e.images),
+              }));
+              setContextListData(
+                contextListData.concat(parsedData).sort(sortByArtist)
+              );
+              setContextListOffset(0);
+            })
+            .catch((error) => console.log(error));
           break;
         case ContextType.Playlists:
           httpService
-            .get(`/playlist-list/${pageOffset}/${SPOTIFY_PAGE_LIMIT}`)
+            .get(`/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
             .then((data) => {
               const parsedData = data.items.map((e) => ({
                 id: e.id,
@@ -32,7 +65,7 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
                 description: e.description,
                 image: getImage(e.images),
               }));
-              setListData(listData.concat(parsedData));
+              setContextListData(contextListData.concat(parsedData));
             })
             .catch((error) => console.log(error));
           break;
@@ -45,7 +78,7 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
     };
 
     getList();
-  }, [contextType, pageOffset, httpService]);
+  }, [contextType, contextListOffset]);
 
   const handleClick = (id) => {
     console.log('handle click id', id);
@@ -53,10 +86,13 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
   };
 
   const handleVisibilityUpdate = (e, { calculations }) => {
-    if (calculations.bottomVisible && pageOffset < listData.length) {
+    if (
+      calculations.bottomVisible &&
+      contextListOffset < contextListData.length
+    ) {
       console.log('list bottom reached - increase page offset');
-      const newPageOffset = listData.length;
-      setPageOffset(newPageOffset);
+      const newPageOffset = contextListData.length;
+      setContextListOffset(newPageOffset);
     }
   };
 
@@ -72,25 +108,27 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
             {item.name}
           </button>
         </List.Header>
-        <List.Description>
-          <div>
-            by: {item.author} <br />
-          </div>
-        </List.Description>
+        {item.author && (
+          <List.Description>
+            <div>
+              by: {item.author} <br />
+            </div>
+          </List.Description>
+        )}
       </List.Content>
     </List.Item>
   );
 
   const ListTable = () => (
     <List floated={'left'} divided relaxed>
-      {listData.map((item, index) => ListItem(item, index))}
+      {contextListData.map((item, index) => ListItem(item, index))}
     </List>
   );
 
   return (
     <Visibility onUpdate={handleVisibilityUpdate}>
       <div className="left-align-list">
-        {listData && listData.length > 0 ? <ListTable /> : null}
+        {contextListData && contextListData.length > 0 ? <ListTable /> : null}
       </div>
     </Visibility>
   );
@@ -98,16 +136,24 @@ const ContextList = ({ contextType, setContextItem, httpService }) => {
 
 ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
+  contextListData: PropTypes.array.isRequired,
+  contextListOffset: PropTypes.number.isRequired,
   setContextItem: PropTypes.func.isRequired,
+  setContextListData: PropTypes.func.isRequired,
+  setContextListOffset: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
+  contextListData: getContextListData(state),
+  contextListOffset: getContextListOffset(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setContextItem: (id) => dispatch(setContextItem(id)),
+  setContextListData: (data) => dispatch(setContextListData(data)),
+  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
 });
 
 const mergeProps = (stateProps, dispatchProps) => ({

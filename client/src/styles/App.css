@@ -3,6 +3,17 @@
   text-align: center;
 }
 
+.grid-container {
+  width: 100%;
+  text-align: center;
+  padding-left: 20px;
+}
+
+.single-panel-display {
+  height: calc( 100vh - 80px );
+  overflow-y: scroll;
+}
+
 table {
   width: 100%;
   text-align: center;
