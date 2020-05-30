@@ -12,6 +12,7 @@ import {
   setContextGridOffset,
   setContextListData,
   setContextListOffset,
+  setContextItem,
 } from '../store/actions';
 import httpService from '../util/httpUtils';
 import { getContextItem, getContextType } from '../store/selectors';
@@ -22,6 +23,7 @@ const AlbumViewHeader = ({
   contextItem,
   setAccessToken,
   setRefreshToken,
+  setContextItem,
   setContextType,
   setContextGridData,
   setContextGridOffset,
@@ -105,11 +107,12 @@ const AlbumViewHeader = ({
   ];
 
   const handleDropdownChange = (e, { value }) => {
-    setContextType(value);
-    setContextGridData([]);
     setContextGridOffset(0);
-    setContextListData([]);
     setContextListOffset(0);
+    setContextGridData([]);
+    setContextListData([]);
+    setContextType(value);
+    setContextItem('');
     console.log('handle dropdown change', value);
   };
 
@@ -168,6 +171,7 @@ AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
   setContextType: PropTypes.func.isRequired,
+  setContextItem: PropTypes.func.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
@@ -184,6 +188,7 @@ const mapDispatchToProps = (dispatch) => ({
   setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
   setContextType: (type) => dispatch(setContextType(type)),
+  setContextItem: (type) => dispatch(setContextItem(type)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextListData: (data) => dispatch(setContextListData(data)),

@@ -5,7 +5,7 @@ import { Image, Accordion } from 'semantic-ui-react';
 import ModalAlbum from './ModalAlbum';
 import PropTypes from 'prop-types';
 import httpService from '../util/httpUtils';
-import { GridDataType } from '../store/types';
+import { ContextType, GridDataType } from '../store/types';
 
 const AlbumAccordion = ({
   activeIndex,
@@ -43,6 +43,8 @@ const AlbumAccordion = ({
     </div>
   );
 
+  console.log('in album accordion and gridDataType is ', gridDataType);
+
   return (
     <Accordion>
       <Accordion.Title
@@ -58,7 +60,7 @@ const AlbumAccordion = ({
       </Accordion.Title>
       <Accordion.Content active={activeIndex === index}>
         <p className={'album-details'}>
-          {gridDataType === GridDataType.Track && <TrackDisplay />}
+          <TrackDisplay />
           <ModalAlbum albumId={item.albumId} />
         </p>
       </Accordion.Content>

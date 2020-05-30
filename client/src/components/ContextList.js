@@ -5,12 +5,17 @@ import { List, Image, Visibility } from 'semantic-ui-react';
 import { getImage, sortByArtist } from '../util/utilities';
 import {
   getContextListData,
+  getContextListMore,
   getContextListOffset,
   getContextType,
 } from '../store/selectors';
 import {
+  setContextGridData,
+  setContextGridMore,
+  setContextGridOffset,
   setContextItem,
   setContextListData,
+  setContextListMore,
   setContextListOffset,
 } from '../store/actions';
 import httpService from '../util/httpUtils';
@@ -21,9 +26,14 @@ const ContextList = ({
   contextType,
   contextListData,
   contextListOffset,
+  contextListMore,
   setContextItem,
   setContextListData,
   setContextListOffset,
+  setContextListMore,
+  setContextGridData,
+  setContextGridOffset,
+  setContextGridMore,
   httpService,
 }) => {
   useEffect(() => {
@@ -34,6 +44,7 @@ const ContextList = ({
         case ContextType.Tracks:
           setContextListData([]);
           setContextListOffset(0);
+          setContextListMore(false);
           break;
         case ContextType.Artists:
           httpService
@@ -50,7 +61,7 @@ const ContextList = ({
               setContextListData(
                 contextListData.concat(parsedData).sort(sortByArtist)
               );
-              setContextListOffset(0);
+              setContextListMore(!!data.artists.next);
             })
             .catch((error) => console.log(error));
           break;
@@ -66,6 +77,7 @@ const ContextList = ({
                 image: getImage(e.images),
               }));
               setContextListData(contextListData.concat(parsedData));
+              setContextListMore(!!data.next);
             })
             .catch((error) => console.log(error));
           break;
@@ -82,13 +94,17 @@ const ContextList = ({
 
   const handleClick = (id) => {
     console.log('handle click id', id);
+    setContextGridData([]);
+    setContextGridOffset(0);
+    setContextGridMore(false);
     setContextItem(id);
   };
 
   const handleVisibilityUpdate = (e, { calculations }) => {
     if (
       calculations.bottomVisible &&
-      contextListOffset < contextListData.length
+      contextListOffset < contextListData.length &&
+      contextListMore
     ) {
       console.log('list bottom reached - increase page offset');
       const newPageOffset = contextListData.length;
@@ -138,15 +154,21 @@ ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextListData: PropTypes.array.isRequired,
   contextListOffset: PropTypes.number.isRequired,
+  contextListMore: PropTypes.bool.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
   setContextListOffset: PropTypes.func.isRequired,
+  setContextListMore: PropTypes.func.isRequired,
+  setContextGridData: PropTypes.func.isRequired,
+  setContextGridOffset: PropTypes.func.isRequired,
+  setContextGridMore: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextListData: getContextListData(state),
   contextListOffset: getContextListOffset(state),
+  contextListMore: getContextListMore(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
@@ -154,6 +176,10 @@ const mapDispatchToProps = (dispatch) => ({
   setContextItem: (id) => dispatch(setContextItem(id)),
   setContextListData: (data) => dispatch(setContextListData(data)),
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
+  setContextListMore: (offset) => dispatch(setContextListMore(offset)),
+  setContextGridData: (data) => dispatch(setContextGridData(data)),
+  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
+  setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
 });
 
 const mergeProps = (stateProps, dispatchProps) => ({

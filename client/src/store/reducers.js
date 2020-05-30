@@ -8,7 +8,7 @@ import {
   CONTEXT_GRID_TYPE,
   CONTEXT_GRID_OFFSET,
   CONTEXT_LIST_DATA,
-  CONTEXT_LIST_OFFSET,
+  CONTEXT_LIST_OFFSET, CONTEXT_GRID_MORE, CONTEXT_LIST_MORE
 } from './types';
 
 const initialState = {
@@ -20,8 +20,10 @@ const initialState = {
   contextGridData: [],
   contextGridType: ContextType.Tracks,
   contextGridOffset: 0,
+  contextGridMore: false,
   contextListData: [],
   contextListOffset: 0,
+  contextListMore: false,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -64,6 +66,11 @@ export function albumViewReducer(state = initialState, action) {
       return Object.assign({}, state, {
         contextGridOffset: action.payload,
       });
+    case CONTEXT_GRID_MORE:
+      console.log('setting context grid more');
+      return Object.assign({}, state, {
+        contextGridMore: action.payload,
+      });
     case CONTEXT_LIST_DATA:
       console.log('setting context list data');
       return Object.assign({}, state, {
@@ -73,6 +80,11 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting context list offset');
       return Object.assign({}, state, {
         contextListOffset: action.payload,
+      });
+    case CONTEXT_LIST_MORE:
+      console.log('setting context list more');
+      return Object.assign({}, state, {
+        contextListMore: action.payload,
       });
     default:
       return state;

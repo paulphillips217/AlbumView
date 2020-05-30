@@ -8,6 +8,8 @@ import {
   CONTEXT_GRID_OFFSET,
   CONTEXT_LIST_DATA,
   CONTEXT_LIST_OFFSET,
+  CONTEXT_GRID_MORE,
+  CONTEXT_LIST_MORE,
 } from './types';
 
 export const setAccessToken = (accessToken) => ({
@@ -45,6 +47,11 @@ export const setContextGridOffset = (offset) => ({
   payload: offset,
 });
 
+export const setContextGridMore = (more) => ({
+  type: CONTEXT_GRID_MORE,
+  payload: more,
+});
+
 export const setContextListData = (data) => ({
   type: CONTEXT_LIST_DATA,
   payload: data,
@@ -53,4 +60,9 @@ export const setContextListData = (data) => ({
 export const setContextListOffset = (offset) => ({
   type: CONTEXT_LIST_OFFSET,
   payload: offset,
+});
+
+export const setContextListMore = (more) => ({
+  type: CONTEXT_LIST_MORE,
+  payload: more,
 });

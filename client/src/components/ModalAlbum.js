@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
+import { Grid, Image, Header, Modal, Icon, Accordion } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage, msToSongTime } from '../util/utilities';
 import httpService from '../util/httpUtils';
 import AlbumGridColumn from './AlbumGridColumn';
-import AlbumAccordion from './AlbumAccordion';
 
-const ModalAlbum = ({ albumId, httpService }) => {
+const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
   const [albumData, setAlbumData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [trackHearts, setTrackHearts] = useState([]);
@@ -165,9 +164,14 @@ const ModalAlbum = ({ albumId, httpService }) => {
   return (
     <Modal
       trigger={
-        <button style={{ width: '95%' }} onClick={() => handleModalOpen()}>
-          Album Info
-        </button>
+        <div>
+          {useImage && <Image src={image} onClick={() => handleModalOpen()} />}
+          {!useImage && (
+            <button style={{ width: '95%' }} onClick={() => handleModalOpen()}>
+              Album Info
+            </button>
+          )}
+        </div>
       }
       open={modalOpen}
       onClose={() => setModalOpen(false)}
@@ -199,8 +203,12 @@ const ModalAlbum = ({ albumId, httpService }) => {
 
 ModalAlbum.propTypes = {
   albumId: PropTypes.string.isRequired,
+  image: PropTypes.string,
+  useImage: PropTypes.bool,
   httpService: PropTypes.object.isRequired,
 };
+
+ModalAlbum.defaultProps = { image: '', useImage: false };
 
 const mapStateToProps = (state) => ({
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),

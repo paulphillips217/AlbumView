@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
-import { Grid, Visibility } from 'semantic-ui-react';
+import { Accordion, Grid, Visibility } from 'semantic-ui-react';
 import { getImage, sortByArtistThenAlbum } from '../util/utilities';
 import {
   getContextType,
@@ -9,6 +9,7 @@ import {
   getContextGridData,
   getContextGridOffset,
   getContextGridType,
+  getContextGridMore,
 } from '../store/selectors';
 import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
@@ -16,9 +17,11 @@ import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
 import {
   setContextGridData,
+  setContextGridMore,
   setContextGridOffset,
   setContextGridType,
 } from '../store/actions';
+import ModalAlbum from './ModalAlbum';
 
 const ContextGrid = ({
   contextType,
@@ -26,15 +29,23 @@ const ContextGrid = ({
   contextGridData,
   contextGridType,
   contextGridOffset,
+  contextGridMore,
   setContextGridData,
   setContextGridType,
   setContextGridOffset,
+  setContextGridMore,
   httpService,
 }) => {
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
     const getGridData = () => {
+      console.log(
+        'get context grid',
+        contextType,
+        contextItem,
+        contextGridOffset
+      );
       switch (contextType) {
         case ContextType.Albums:
           httpService
@@ -54,6 +65,7 @@ const ContextGrid = ({
               const newData = contextGridOffset ? contextGridData : data;
               setContextGridData(newData.sort(sortByArtistThenAlbum));
               setContextGridType(GridDataType.Album);
+              setContextGridMore(!!rawData.next);
             })
             .catch((error) => console.log(error));
           break;
@@ -77,6 +89,7 @@ const ContextGrid = ({
                 : data;
               setContextGridData(newData.sort(sortByArtistThenAlbum));
               setContextGridType(GridDataType.Track);
+              setContextGridMore(!!rawData.next);
             })
             .catch((error) => console.log(error));
           break;
@@ -101,11 +114,13 @@ const ContextGrid = ({
                 const newData = contextGridOffset ? contextGridData : data;
                 setContextGridData(newData.sort(sortByArtistThenAlbum));
                 setContextGridType(GridDataType.Album);
+                setContextGridMore(!!rawData.next);
               })
               .catch((error) => console.log(error));
           } else {
             setContextGridData([]);
             setContextGridType(GridDataType.Album);
+            setContextGridMore(false);
           }
           break;
         case ContextType.Playlists:
@@ -130,16 +145,19 @@ const ContextGrid = ({
                   : data;
                 setContextGridData(newData);
                 setContextGridType(GridDataType.Track);
+                setContextGridMore(!!rawData.next);
               })
               .catch((error) => console.log(error));
           } else {
             setContextGridData([]);
             setContextGridType(GridDataType.Track);
+            setContextGridMore(false);
           }
           break;
         default:
           setContextGridData([]);
           setContextGridType(GridDataType.Track);
+          setContextGridMore(false);
           console.log(
             'unknown context type in ContextGrid.getGridData',
             contextType
@@ -151,6 +169,7 @@ const ContextGrid = ({
       contextType,
       contextItem,
       contextGridOffset,
+      contextGridMore,
       httpService
     );
     getGridData();
@@ -159,7 +178,8 @@ const ContextGrid = ({
   const handleVisibilityUpdate = (e, { calculations }) => {
     if (
       calculations.bottomVisible &&
-      contextGridOffset < contextGridData.length
+      contextGridOffset < contextGridData.length &&
+      contextGridMore
     ) {
       console.log('bottom reached - increase page offset');
       setContextGridOffset(contextGridData.length);
@@ -173,13 +193,26 @@ const ContextGrid = ({
 
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
-      <AlbumAccordion
-        activeIndex={activeIndex}
-        index={index}
-        item={item}
-        gridDataType={contextGridType}
-        handleAccordionClick={handleAccordionClick}
-      />
+      {contextGridType === GridDataType.Track && (
+        <AlbumAccordion
+          activeIndex={activeIndex}
+          index={index}
+          item={item}
+          gridDataType={contextGridType}
+          handleAccordionClick={handleAccordionClick}
+        />
+      )}
+      {contextGridType === GridDataType.Album && (
+        <div>
+          <ModalAlbum
+            albumId={item.albumId}
+            image={item.image}
+            useImage={true}
+          />
+          {!!item.artist && <div>{item.artist}</div>}
+          {item.name || item.albumName}
+        </div>
+      )}
     </Grid.Column>
   );
 
@@ -204,9 +237,11 @@ ContextGrid.propTypes = {
   contextGridData: PropTypes.array.isRequired,
   contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
+  contextGridMore: PropTypes.bool.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
+  setContextGridMore: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -215,6 +250,7 @@ const mapStateToProps = (state) => ({
   contextGridData: getContextGridData(state),
   contextGridType: getContextGridType(state),
   contextGridOffset: getContextGridOffset(state),
+  contextGridMore: getContextGridMore(state),
   httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
@@ -222,6 +258,7 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridType: (type) => dispatch(setContextGridType(type)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
+  setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
 });
 
 const mergeProps = (stateProps, dispatchProps) => ({
