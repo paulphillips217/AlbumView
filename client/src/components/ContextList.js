@@ -51,7 +51,7 @@ const ContextList = ({
             .get(`/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
             .then((data) => {
               console.log('artist list data', data);
-              const parsedData = data.artists.items.map((e) => ({
+              const parsedData = data.map((e) => ({
                 id: e.id,
                 name: e.name,
                 author: '',

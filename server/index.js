@@ -88,7 +88,7 @@ app.get('/album-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/albums/contains/:ids', spotifyData.talkToSpotify);
 app.get('/track-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
-app.get('/artist-list/:offset/:limit', spotifyData.talkToSpotify);
+app.get('/artist-list/:offset/:limit', spotifyData.aggregateSpotifyArtistData);
 app.get('/artist-albums/:id/:offset/:limit', spotifyData.talkToSpotify);
 app.put('/save-tracks/:ids', spotifyData.talkToSpotify);
 app.put('/save-albums/:ids', spotifyData.talkToSpotify);

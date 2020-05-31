@@ -5,13 +5,11 @@ import { Image, Accordion } from 'semantic-ui-react';
 import ModalAlbum from './ModalAlbum';
 import PropTypes from 'prop-types';
 import httpService from '../util/httpUtils';
-import { ContextType, GridDataType } from '../store/types';
 
 const AlbumAccordion = ({
   activeIndex,
   index,
   item,
-  gridDataType,
   handleAccordionClick,
   httpService,
 }) => {
@@ -43,8 +41,6 @@ const AlbumAccordion = ({
     </div>
   );
 
-  console.log('in album accordion and gridDataType is ', gridDataType);
-
   return (
     <Accordion>
       <Accordion.Title
@@ -72,7 +68,6 @@ AlbumAccordion.propTypes = {
   activeIndex: PropTypes.number.isRequired,
   index: PropTypes.number.isRequired,
   item: PropTypes.object.isRequired,
-  gridDataType: PropTypes.string.isRequired,
   handleAccordionClick: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };

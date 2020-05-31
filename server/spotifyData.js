@@ -56,6 +56,21 @@ const getSpotifyUrl = (req) => {
   }
 };
 
+const handleDataFetchError = (err, req, res) => {
+  console.log('handleDataFetchError: ', JSON.stringify(err));
+  if (err.response) {
+    console.log(err.response.data);
+
+    if (err.response.status === 401) {
+      console.log('attempting to refresh spotify token');
+      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
+      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+    }
+  } else {
+    console.error(JSON.stringify(err));
+  }
+};
+
 const talkToSpotify = (req, res) => {
   const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
   const url = getSpotifyUrl(req);
@@ -78,21 +93,136 @@ const talkToSpotify = (req, res) => {
           : { empty: true }
       );
     })
-    .catch((err) => {
-      if (err.response) {
-        console.log(err.response.data);
+    .catch((err) => handleDataFetchError(err, req, res));
+};
 
-        if (err.response.status === 401) {
-          console.log('attempting to refresh spotify token');
-          const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
-          spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
-        }
-      } else {
-        console.error(JSON.stringify(err));
-      }
+const aggregateSpotifyArtistData = async (req, res) => {
+  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+  let url = `https://api.spotify.com/v1/me/following?type=artist&after=${req.params.offset}&limit=${req.params.limit}`;
+  console.log(
+    'aggregateSpotifyArtistData first url',
+    req.path,
+    url,
+    req.method
+  );
+  let artistList = [];
+
+  // first we get the artists you're following
+
+  try {
+    let response = await axios({
+      url: url,
+      method: req.method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
+    console.log('axios got response for ', url);
+    //    console.log(
+    //      'aggregateSpotifyArtistData raw: ',
+    //      JSON.stringify(response.data)
+    //    );
+    if (response && response.data && isJson(response.data)) {
+      response.data.artists.items.map((item) => {
+        artistList.push({
+          id: item.id,
+          name: item.name,
+          images: item.images,
+        });
+      });
+    }
+    //console.log(
+    //  'aggregateSpotifyArtistData artistList: ',
+    //  JSON.stringify(artistList)
+    //);
+
+    // second is the list of favorite albums
+
+    url = `https://api.spotify.com/v1/me/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
+    console.log(
+      'aggregateSpotifyArtistData second url',
+      req.path,
+      url,
+      req.method
+    );
+    response = await axios({
+      url: url,
+      method: req.method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log('axios got response for ', url);
+    //console.log(
+    //  'aggregateSpotifyArtistData 2 raw: ',
+    //  JSON.stringify(response.data)
+    //);
+    if (response && response.data && isJson(response.data)) {
+      response.data.items.map((item) => {
+        if (!artistList.some((a) => a.id === item.album.artists[0].id)) {
+          artistList.push({
+            id: item.album.artists[0].id,
+            name: item.album.artists[0].name,
+            images: '',
+          });
+        }
+      });
+    }
+    //console.log(
+    //  'aggregateSpotifyArtistData artistList: ',
+    //  JSON.stringify(artistList)
+    //);
+
+    // third is the list of favorite tracks
+
+    url = `https://api.spotify.com/v1/me/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
+    console.log(
+      'aggregateSpotifyArtistData third url',
+      req.path,
+      url,
+      req.method
+    );
+    response = await axios({
+      url: url,
+      method: req.method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log('axios got response for ', url);
+    //console.log(
+    //  'aggregateSpotifyArtistData 2 raw: ',
+    //  JSON.stringify(response.data)
+    //);
+    if (response && response.data && isJson(response.data)) {
+      response.data.items.map((item) => {
+        if (!artistList.some((a) => a.id === item.track.artists[0].id)) {
+          artistList.push({
+            id: item.track.artists[0].id,
+            name: item.track.artists[0].name,
+            images: '',
+          });
+        }
+      });
+    }
+    //console.log(
+    //  'aggregateSpotifyArtistData artistList: ',
+    //  JSON.stringify(artistList)
+    //);
+
+    res.json(artistList);
+  } catch (err) {
+    handleDataFetchError(err, req, res);
+  }
 };
 
 module.exports = {
   talkToSpotify,
+  aggregateSpotifyArtistData,
 };

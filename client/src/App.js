@@ -50,7 +50,7 @@ class App extends Component {
       <SplitPane
         split="vertical"
         minSize={50}
-        defaultSize={400}
+        defaultSize={350}
         style={{ height: 'calc(100vh - 80px)' }}
         paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
       >

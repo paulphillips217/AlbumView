@@ -198,7 +198,6 @@ const ContextGrid = ({
           activeIndex={activeIndex}
           index={index}
           item={item}
-          gridDataType={contextGridType}
           handleAccordionClick={handleAccordionClick}
         />
       )}
