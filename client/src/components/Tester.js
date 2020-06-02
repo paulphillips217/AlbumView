@@ -1,21 +1,81 @@
 import React from 'react';
-import { Header, Segment, Sidebar } from 'semantic-ui-react';
-import ContextList from './ContextList';
-import ContextGrid from './ContextGrid';
+import '../styles/flex-height.css';
 
 const Tester = () => (
-  <Sidebar.Pushable as={Segment}>
-    <Sidebar animation="push" icon="labeled" vertical visible width="thin">
-      <ContextList />
-    </Sidebar>
-
-    <Sidebar.Pusher>
-      <Segment basic style={{ height: 'calc(100vh - 80px)' }}>
-        <Header as="h3">Application Content</Header>
-        <ContextGrid />
-      </Segment>
-    </Sidebar.Pusher>
-  </Sidebar.Pushable>
+  <div className="box">
+    <div className="row header">
+      <p><b>header</b>
+        <br/>
+        <br/>(sized to content)</p>
+    </div>
+    <div className="row content">
+      <p>
+        <b>content</b>
+        (fills remaining space)
+        a<br/>
+        b<br/>
+        c<br/>
+        c<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        e<br/>
+        <p>
+          <b>content</b> (fills remaining space)
+        </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p> <p>
+        <b>content</b> (fills remaining space)
+      </p>
+      </p>
+    </div>
+    <div className="row footer">
+      <p><b>footer</b> (fixed height)</p>
+    </div>
+  </div>
 );
 
 export default Tester;

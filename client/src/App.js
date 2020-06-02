@@ -3,12 +3,13 @@
 
 // testing: to log out use      localStorage.setItem('accessToken', '');
 
-import React, { Component, createRef } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SplitPane from 'react-split-pane';
 
 import './styles/App.css';
 import './styles/splitPane.css';
+import './styles/flex-height.css';
 import { setAccessToken, setRefreshToken } from './store/actions';
 import { getAuthenticationState, getContextType } from './store/selectors';
 import ContextList from './components/ContextList';
@@ -51,7 +52,7 @@ class App extends Component {
         split="vertical"
         minSize={50}
         defaultSize={350}
-        style={{ height: 'calc(100vh - 80px)' }}
+        style={{ height: '50%', position: 'relative' }}
         paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
       >
         <ContextList />
@@ -59,21 +60,22 @@ class App extends Component {
       </SplitPane>
     );
 
-    const SinglePanelDisplay = () => (
-      <div className={'single-panel-display'}>
-        <ContextGrid />
-      </div>
-    );
+    const SinglePanelDisplay = () => <ContextGrid />;
 
     // split-pane height is 100% minus height of the menu (72.6px)
     if (isAuthenticated) {
       return (
-        <div className="App">
-          <AlbumViewHeader />
-          {(contextType === ContextType.Artists ||
-            contextType === ContextType.Playlists) && <TwoPanelDisplay />}
-          {contextType !== ContextType.Artists &&
-            contextType !== ContextType.Playlists && <SinglePanelDisplay />}
+        <div className="box">
+          <div className="row header">
+            <AlbumViewHeader />
+          </div>
+          <div className="row content">
+            {(contextType === ContextType.Artists ||
+              contextType === ContextType.Playlists) && <TwoPanelDisplay />}
+            {contextType !== ContextType.Artists &&
+              contextType !== ContextType.Playlists && <SinglePanelDisplay />}
+          </div>
+          <div className="row footer">   </div>
         </div>
       );
     } else {

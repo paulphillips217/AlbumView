@@ -28,8 +28,6 @@ const AlbumAccordion = ({
       <br />
       <strong>Album</strong>: {item.albumName}
       <br />
-      <a href={`http://open.spotify.com/track/${item.id}`}>Open in Player</a>
-      <br />
       <button
         style={{ width: '95%' }}
         value={item.uri}

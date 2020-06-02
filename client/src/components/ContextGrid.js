@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
-import { Accordion, Grid, Visibility } from 'semantic-ui-react';
+import { Grid, Visibility } from 'semantic-ui-react';
 import { getImage, sortByArtistThenAlbum } from '../util/utilities';
 import {
   getContextType,

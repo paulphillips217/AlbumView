@@ -5,31 +5,25 @@ import ReactDOM from 'react-dom';
 import './styles/index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-} from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import TrackHistory from './components/History';
 import { Provider } from 'react-redux';
 import store from './store';
 import Auth from './components/Auth';
-import AlbumViewHeader from './components/AlbumViewHeader';
+import Tester from './components/Tester';
 
 const routing = (
   <Provider store={store}>
     <React.StrictMode>
-      <div>
-        <Router>
-          <Switch>
-            <Route path="/history" component={TrackHistory} />
-            <Route path="/header" component={AlbumViewHeader} />
-            <Route path="/home" component={App} />
-            <Route path="/auth" component={Auth} />
-            <Route component={App} />
-          </Switch>
-        </Router>
-      </div>
+      <Router>
+        <Switch>
+          <Route path="/history" component={TrackHistory} />
+          <Route path="/tester" component={Tester} />
+          <Route path="/home" component={App} />
+          <Route path="/auth" component={Auth} />
+          <Route component={App} />
+        </Switch>
+      </Router>
     </React.StrictMode>
   </Provider>
 );
