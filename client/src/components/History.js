@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { getAuthenticationState } from '../store/selectors';
-import httpService from '../util/httpUtils';
 
 class TrackHistory extends Component {
   constructor(props) {
@@ -74,13 +73,6 @@ class TrackHistory extends Component {
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
-const mergeProps = (stateProps, dispatchProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
-export default connect(mapStateToProps, null, mergeProps)(TrackHistory);
+export default connect(mapStateToProps)(TrackHistory);

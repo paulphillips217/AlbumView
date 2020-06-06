@@ -1,10 +1,8 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import '../styles/App.css';
 import { Image, Accordion } from 'semantic-ui-react';
 import ModalAlbum from './ModalAlbum';
 import PropTypes from 'prop-types';
-import httpService from '../util/httpUtils';
 
 const AlbumAccordion = ({
   activeIndex,
@@ -55,7 +53,7 @@ const AlbumAccordion = ({
       <Accordion.Content active={activeIndex === index}>
         <p className={'album-details'}>
           <TrackDisplay />
-          <ModalAlbum albumId={item.albumId} />
+          <ModalAlbum albumId={item.albumId} httpService={httpService} />
         </p>
       </Accordion.Content>
     </Accordion>
@@ -66,19 +64,8 @@ AlbumAccordion.propTypes = {
   activeIndex: PropTypes.number.isRequired,
   index: PropTypes.number.isRequired,
   item: PropTypes.object.isRequired,
-  handleAccordionClick: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
+  handleAccordionClick: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = (state) => ({
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
-});
-
-const mergeProps = (stateProps, dispatchProps, props) => ({
-  ...props,
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
-export default connect(mapStateToProps, null, mergeProps)(AlbumAccordion);
+export default AlbumAccordion;

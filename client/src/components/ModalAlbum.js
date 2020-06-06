@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage } from '../util/utilities';
-import httpService from '../util/httpUtils';
 import AlbumGridColumn from './AlbumGridColumn';
 
 const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
@@ -210,15 +208,4 @@ ModalAlbum.propTypes = {
 
 ModalAlbum.defaultProps = { image: '', useImage: false };
 
-const mapStateToProps = (state) => ({
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
-});
-
-const mergeProps = (stateProps, dispatchProps, props) => ({
-  ...props,
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
-export default connect(mapStateToProps, null, mergeProps)(ModalAlbum);
+export default ModalAlbum;

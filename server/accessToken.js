@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const moment = require('moment');
 const spotify = require('./credentials');
 
 const getSpotifyAccessToken = (req, res, next) => {
@@ -26,13 +27,21 @@ const getSpotifyAccessToken = (req, res, next) => {
     });
 
     console.log('posting access token to spotify');
+    let responseTime = null;
     fetch(url, {
       method: 'POST',
       headers,
       body: searchParams,
     })
-      .then((res) => res.json())
+      .then((res) => {
+        responseTime = moment();
+        console.log('access token received at ', responseTime.format());
+        return res.json();
+      })
       .then((credentials) => {
+        credentials.token_expiration = responseTime
+          .add(credentials.expires_in, 'seconds')
+          .format();
         req.credentials = credentials;
         next();
       })
@@ -74,23 +83,46 @@ const getAccessTokenFromDatabase = (pool, callback) => {
   }
 };
 
+const getCredentialsFromHeader = async (req) => {
+  const tokenExpirationRaw = getTokenExpirationFromHeader(req);
+  const refreshToken = getRefreshTokenFromHeader(req);
+  const tokenExpiration = moment(tokenExpirationRaw);
+  const currentTime = moment();
+  if (tokenExpiration <= currentTime && refreshToken) {
+    console.log('getCredentialsFromHeader refreshing credentials');
+    console.log('getCredentialsFromHeader token before refresh: ', getAccessTokenFromHeader(req));
+    return await refreshSpotifyAccessToken(refreshToken);
+  }
+  console.log('getCredentialsFromHeader using existing credentials');
+  return {
+    access_token: getAccessTokenFromHeader(req),
+    refresh_token: getRefreshTokenFromHeader(req),
+    token_expiration: getTokenExpirationFromHeader(req),
+  };
+};
+
 const getAccessTokenFromHeader = (req) => {
-  return req.header('X-Spotify-access-token');
+  return req.header('x-spotify-access-token');
 };
 
 const getRefreshTokenFromHeader = (req) => {
-  return req.header('X-Spotify-refresh-token');
+  return req.header('x-spotify-refresh-token');
 };
 
-const refreshSpotifyAccessToken = (req, res, refresh_token) => {
+const getTokenExpirationFromHeader = (req) => {
+  return req.header('x-spotify-token-expiration');
+};
+
+const refreshSpotifyAccessToken = async (refresh_token) => {
   if (!refresh_token) {
-    console.log('Refresh token is empty, logging out');
-    req.credentials = {
+    console.log(
+      'refreshSpotifyAccessToken: refresh token is empty, logging out'
+    );
+    return {
       access_token: '',
       refresh_token: '',
+      token_expiration: moment().format(),
     };
-    res.json({ credentials: req.credentials });
-    return;
   }
 
   const url = 'https://accounts.spotify.com/api/token';
@@ -111,21 +143,28 @@ const refreshSpotifyAccessToken = (req, res, refresh_token) => {
   });
 
   console.log('posting refresh token to spotify');
+  let responseTime = null;
   try {
-    fetch(url, {
+    const fetchResponse = await fetch(url, {
       method: 'POST',
       headers,
       body: searchParams,
-    })
-      .then((res) => res.json())
-      .then((credentials) => {
-        req.credentials = credentials;
-        req.credentials.refresh_token =
-          req.credentials.refresh_token || refresh_token;
-        res.json({ credentials: req.credentials });
-      });
+    });
+    responseTime = moment();
+    const credentials = await fetchResponse.json();
+    credentials.token_expiration = responseTime
+      .add(credentials.expires_in, 'seconds')
+      .format();
+    credentials.refresh_token = refresh_token;
+    console.log('refreshSpotifyAccessToken got credentials');
+    return credentials;
   } catch (err) {
     console.error(err);
+    return {
+      access_token: '',
+      refresh_token: '',
+      token_expiration: moment().format(),
+    };
   }
 };
 
@@ -133,6 +172,7 @@ module.exports = {
   getSpotifyAccessToken,
   storeAccessTokenInDatabase,
   getAccessTokenFromDatabase,
+  getCredentialsFromHeader,
   getAccessTokenFromHeader,
   getRefreshTokenFromHeader,
   refreshSpotifyAccessToken,

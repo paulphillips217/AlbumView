@@ -55,26 +55,41 @@ const getSpotifyUrl = (req) => {
       return '';
   }
 };
-
+/*
 const handleDataFetchError = (err, req, res) => {
   console.log('handleDataFetchError: ', JSON.stringify(err));
   if (err.response) {
     console.log(err.response.data);
 
     if (err.response.status === 401) {
-      console.log('attempting to refresh spotify token');
+      console.log('handleDataFetchError attempting to refresh spotify token');
       const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
-      spotifyTokens.refreshSpotifyAccessToken(req, res, refreshToken);
+      const credentials = spotifyTokens.refreshSpotifyAccessToken(
+        req,
+        refreshToken
+      );
+      console.log('handleDataFetchError sending credentials: ', JSON.stringify(credentials));
+      res.json(credentials);
     }
   } else {
     console.error(JSON.stringify(err));
   }
 };
-
-const talkToSpotify = (req, res) => {
-  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+*/
+const talkToSpotify = async (req, res) => {
+  const credentials = await spotifyTokens.getCredentialsFromHeader(req);
+  const accessToken = credentials.access_token;
+  console.log('talkToSpotify token: ', accessToken);
   const url = getSpotifyUrl(req);
   console.log('talkToSpotify: ', req.path, url, req.method);
+
+  res.set({
+    'Access-Control-Expose-Headers':
+      'x-spotify-access-token, x-spotify-refresh-token, x-spotify-token-expiration',
+    'x-spotify-access-token': credentials.access_token,
+    'x-spotify-refresh-token': credentials.refresh_token,
+    'x-spotify-token-expiration': credentials.token_expiration,
+  });
 
   axios({
     url: url,
@@ -87,17 +102,21 @@ const talkToSpotify = (req, res) => {
   })
     .then((response) => {
       console.log('axios got response for ', url);
-      res.json(
-        response && response.data && isJson(response.data)
-          ? response.data
-          : { empty: true }
-      );
+      if (response && response.data && isJson(response.data)) {
+        res.json(response.data);
+      } else {
+        res.json({ 'empty-test': true });
+      }
     })
-    .catch((err) => handleDataFetchError(err, req, res));
+    .catch((err) => {
+      console.error('caught error in talkToSpotify: ', JSON.stringify(err));
+      res.json({ empty: true });
+    });
 };
 
 const aggregateSpotifyArtistData = async (req, res) => {
-  const accessToken = spotifyTokens.getAccessTokenFromHeader(req);
+  const credentials = await spotifyTokens.getCredentialsFromHeader(req);
+  const accessToken = credentials.access_token;
   let url = `https://api.spotify.com/v1/me/following?type=artist&after=${req.params.offset}&limit=${req.params.limit}`;
   console.log(
     'aggregateSpotifyArtistData first url',
@@ -106,6 +125,14 @@ const aggregateSpotifyArtistData = async (req, res) => {
     req.method
   );
   let artistList = [];
+
+  res.set({
+    'Access-Control-Expose-Headers':
+      'x-spotify-access-token, x-spotify-refresh-token, x-spotify-token-expiration',
+    'x-spotify-access-token': credentials.access_token,
+    'x-spotify-refresh-token': credentials.refresh_token,
+    'x-spotify-token-expiration': credentials.token_expiration,
+  });
 
   // first we get the artists you're following
 
@@ -218,7 +245,8 @@ const aggregateSpotifyArtistData = async (req, res) => {
 
     res.json(artistList);
   } catch (err) {
-    handleDataFetchError(err, req, res);
+    console.error(JSON.stringify(err));
+    res.json({ empty: true });
   }
 };
 

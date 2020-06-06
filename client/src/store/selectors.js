@@ -3,6 +3,8 @@ export const getAccessToken = (store) =>
   store.albumView.accessToken || localStorage.getItem('accessToken') || '';
 export const getRefreshToken = (store) =>
   store.albumView.refreshToken || localStorage.getItem('refreshToken') || '';
+export const getTokenExpiration = (store) =>
+  store.albumView.tokenExpiration || localStorage.getItem('tokenExpiration') || '';
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;
 export const getContextGridData = (store) => store.albumView.contextGridData;

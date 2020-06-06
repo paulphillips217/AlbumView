@@ -18,7 +18,6 @@ import {
   setContextListMore,
   setContextListOffset,
 } from '../store/actions';
-import httpService from '../util/httpUtils';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
 
@@ -155,6 +154,7 @@ ContextList.propTypes = {
   contextListData: PropTypes.array.isRequired,
   contextListOffset: PropTypes.number.isRequired,
   contextListMore: PropTypes.bool.isRequired,
+  httpService: PropTypes.object.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
   setContextListOffset: PropTypes.func.isRequired,
@@ -169,7 +169,6 @@ const mapStateToProps = (state) => ({
   contextListData: getContextListData(state),
   contextListOffset: getContextListOffset(state),
   contextListMore: getContextListMore(state),
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -182,14 +181,7 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
 });
 
-const mergeProps = (stateProps, dispatchProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  mergeProps
 )(ContextList);

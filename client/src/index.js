@@ -10,18 +10,29 @@ import TrackHistory from './components/History';
 import { Provider } from 'react-redux';
 import store from './store';
 import Auth from './components/Auth';
-import Tester from './components/Tester';
+import httpService from './util/httpUtils';
+
+const commService = new httpService(store);
 
 const routing = (
   <Provider store={store}>
     <React.StrictMode>
       <Router>
         <Switch>
-          <Route path="/history" component={TrackHistory} />
-          <Route path="/tester" component={Tester} />
-          <Route path="/home" component={App} />
+          <Route
+            path="/history"
+            render={(props) => (
+              <TrackHistory {...props} httpService={commService} />
+            )}
+          />
+          <Route
+            path="/home"
+            render={(props) => <App {...props} httpService={commService} />}
+          />
           <Route path="/auth" component={Auth} />
-          <Route component={App} />
+          <Route
+            render={(props) => <App {...props} httpService={commService} />}
+          />
         </Switch>
       </Router>
     </React.StrictMode>

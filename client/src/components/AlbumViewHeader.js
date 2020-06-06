@@ -14,7 +14,6 @@ import {
   setContextListOffset,
   setContextItem,
 } from '../store/actions';
-import httpService from '../util/httpUtils';
 import { getContextItem, getContextType } from '../store/selectors';
 import '../styles/App.css';
 
@@ -170,6 +169,7 @@ AlbumViewHeader.propTypes = {
   setRefreshToken: PropTypes.func.isRequired,
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
+  httpService: PropTypes.object.isRequired,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setContextGridData: PropTypes.func.isRequired,
@@ -181,7 +181,6 @@ AlbumViewHeader.propTypes = {
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -195,15 +194,7 @@ const mapDispatchToProps = (dispatch) => ({
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
 });
 
-const mergeProps = (stateProps, dispatchProps, props) => ({
-  ...props,
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  mergeProps
 )(AlbumViewHeader);

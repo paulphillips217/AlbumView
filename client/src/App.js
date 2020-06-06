@@ -1,7 +1,7 @@
 // this originally comes from the tutorial at https://pusher.com/tutorials/spotify-history-react-node
 // Spotify api reference: https://developer.spotify.com/documentation/web-api/reference/
 
-// testing: to log out use      localStorage.setItem('accessToken', '');
+// for testing: to log out use      localStorage.setItem('accessToken', '');
 
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
@@ -16,10 +16,10 @@ import ContextList from './components/ContextList';
 import ContextGrid from './components/ContextGrid';
 import AlbumViewHeader from './components/AlbumViewHeader';
 import { ContextType } from './store/types';
+import PropTypes from 'prop-types';
 
 class App extends Component {
   componentDidMount() {
-    console.log('app is mounting, context: ', this.context);
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('refresh_token')) {
       this.props.setRefreshToken(urlParams.get('refresh_token'));
@@ -55,19 +55,22 @@ class App extends Component {
         style={{ height: '50%', position: 'relative' }}
         paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
       >
-        <ContextList />
-        <ContextGrid />
+        <ContextList httpService={this.props.httpService} />
+        <ContextGrid httpService={this.props.httpService} />
       </SplitPane>
     );
 
-    const SinglePanelDisplay = () => <ContextGrid />;
+    const SinglePanelDisplay = () => (
+      <ContextGrid httpService={this.props.httpService} />
+    );
 
     // split-pane height is 100% minus height of the menu (72.6px)
     if (isAuthenticated) {
+      console.log('we are authenticated');
       return (
         <div className="box">
           <div className="row header">
-            <AlbumViewHeader />
+            <AlbumViewHeader httpService={this.props.httpService} />
           </div>
           <div className="row content">
             {(contextType === ContextType.Artists ||
@@ -75,14 +78,22 @@ class App extends Component {
             {contextType !== ContextType.Artists &&
               contextType !== ContextType.Playlists && <SinglePanelDisplay />}
           </div>
-          <div className="row footer">   </div>
+          <div className="row footer"> </div>
         </div>
       );
     } else {
+      console.log('we are NOT authenticated');
       return loginComponent;
     }
   }
 }
+
+App.propTypes = {
+  isAuthenticated: PropTypes.bool.isRequired,
+  contextType: PropTypes.string.isRequired,
+  setAccessToken: PropTypes.func.isRequired,
+  setRefreshToken: PropTypes.func.isRequired,
+};
 
 const mapStateToProps = (state) => ({
   isAuthenticated: getAuthenticationState(state),

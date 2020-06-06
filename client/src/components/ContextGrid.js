@@ -11,7 +11,6 @@ import {
   getContextGridType,
   getContextGridMore,
 } from '../store/selectors';
-import httpService from '../util/httpUtils';
 import AlbumAccordion from './AlbumAccordion';
 import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
@@ -198,6 +197,7 @@ const ContextGrid = ({
           activeIndex={activeIndex}
           index={index}
           item={item}
+          httpService={httpService}
           handleAccordionClick={handleAccordionClick}
         />
       )}
@@ -207,6 +207,7 @@ const ContextGrid = ({
             albumId={item.albumId}
             image={item.image}
             useImage={true}
+            httpService={httpService}
           />
           {!!item.artist && <div>{item.artist}</div>}
           {item.name || item.albumName}
@@ -237,6 +238,7 @@ ContextGrid.propTypes = {
   contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
   contextGridMore: PropTypes.bool.isRequired,
+  httpService: PropTypes.object.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
@@ -250,7 +252,6 @@ const mapStateToProps = (state) => ({
   contextGridType: getContextGridType(state),
   contextGridOffset: getContextGridOffset(state),
   contextGridMore: getContextGridMore(state),
-  httpServiceFromState: (dispatch) => new httpService(state, dispatch),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -260,14 +261,4 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
 });
 
-const mergeProps = (stateProps, dispatchProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  httpService: stateProps.httpServiceFromState(dispatchProps.dispatch),
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(ContextGrid);
+export default connect(mapStateToProps, mapDispatchToProps)(ContextGrid);

@@ -1,6 +1,7 @@
 import {
   ACCESS_TOKEN,
   REFRESH_TOKEN,
+  TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
   CONTEXT_GRID_DATA,
@@ -20,6 +21,11 @@ export const setAccessToken = (accessToken) => ({
 export const setRefreshToken = (refreshToken) => ({
   type: REFRESH_TOKEN,
   payload: refreshToken,
+});
+
+export const setTokenExpiration = (tokenExpiration) => ({
+  type: TOKEN_EXPIRATION,
+  payload: tokenExpiration,
 });
 
 export const setContextType = (type) => ({
