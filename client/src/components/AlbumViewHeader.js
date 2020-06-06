@@ -13,6 +13,7 @@ import {
   setContextListData,
   setContextListOffset,
   setContextItem,
+  setTokenExpiration,
 } from '../store/actions';
 import { getContextItem, getContextType } from '../store/selectors';
 import '../styles/App.css';
@@ -22,6 +23,7 @@ const AlbumViewHeader = ({
   contextItem,
   setAccessToken,
   setRefreshToken,
+  setTokenExpiration,
   setContextItem,
   setContextType,
   setContextGridData,
@@ -118,11 +120,12 @@ const AlbumViewHeader = ({
   const handleLogOut = () => {
     setRefreshToken('');
     setAccessToken('');
+    setTokenExpiration('');
     setContextGridData([]);
     setContextGridOffset(0);
     setContextListData([]);
     setContextListOffset(0);
-    history.push('/auth');
+    history.push('/');
   };
 
   const createDescriptionMarkup = (text) => {
@@ -167,6 +170,7 @@ const AlbumViewHeader = ({
 AlbumViewHeader.propTypes = {
   setAccessToken: PropTypes.func.isRequired,
   setRefreshToken: PropTypes.func.isRequired,
+  setTokenExpiration: PropTypes.func.isRequired,
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
   httpService: PropTypes.object.isRequired,
@@ -186,6 +190,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
+  setTokenExpiration: (expiration) => dispatch(setTokenExpiration(expiration)),
   setContextType: (type) => dispatch(setContextType(type)),
   setContextItem: (type) => dispatch(setContextItem(type)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
@@ -194,7 +199,4 @@ const mapDispatchToProps = (dispatch) => ({
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(AlbumViewHeader);
+export default connect(mapStateToProps, mapDispatchToProps)(AlbumViewHeader);

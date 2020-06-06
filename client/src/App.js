@@ -64,7 +64,6 @@ class App extends Component {
       <ContextGrid httpService={this.props.httpService} />
     );
 
-    // split-pane height is 100% minus height of the menu (72.6px)
     if (isAuthenticated) {
       console.log('we are authenticated');
       return (
