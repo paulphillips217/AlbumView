@@ -16,7 +16,7 @@ import {
   setContextItem,
   setContextListData,
   setContextListMore,
-  setContextListOffset,
+  setContextListOffset, setRelatedToArtist
 } from '../store/actions';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
@@ -27,6 +27,7 @@ const ContextList = ({
   contextListOffset,
   contextListMore,
   setContextItem,
+  setRelatedToArtist,
   setContextListData,
   setContextListOffset,
   setContextListMore,
@@ -45,6 +46,7 @@ const ContextList = ({
           setContextListOffset(0);
           setContextListMore(false);
           break;
+        case ContextType.RelatedArtists:
         case ContextType.Artists:
           httpService
             .get(`/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
@@ -60,7 +62,7 @@ const ContextList = ({
               setContextListData(
                 contextListData.concat(parsedData).sort(sortByArtist)
               );
-              setContextListMore(!!data.artists.next);
+              setContextListMore(data && data.artists && !!(data.artists.next));
             })
             .catch((error) => console.log(error));
           break;
@@ -96,7 +98,12 @@ const ContextList = ({
     setContextGridData([]);
     setContextGridOffset(0);
     setContextGridMore(false);
-    setContextItem(id);
+    if (contextType === ContextType.Artists) {
+      setContextItem(id);
+    }
+    else {
+      setRelatedToArtist(id);
+    }
   };
 
   const handleVisibilityUpdate = (e, { calculations }) => {
@@ -156,6 +163,7 @@ ContextList.propTypes = {
   contextListMore: PropTypes.bool.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextItem: PropTypes.func.isRequired,
+  setRelatedToArtist: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
   setContextListOffset: PropTypes.func.isRequired,
   setContextListMore: PropTypes.func.isRequired,
@@ -173,6 +181,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setContextItem: (id) => dispatch(setContextItem(id)),
+  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
   setContextListData: (data) => dispatch(setContextListData(data)),
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
   setContextListMore: (offset) => dispatch(setContextListMore(offset)),

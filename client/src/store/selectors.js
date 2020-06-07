@@ -7,6 +7,7 @@ export const getTokenExpiration = (store) =>
   store.albumView.tokenExpiration || localStorage.getItem('tokenExpiration') || '';
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;
+export const getRelatedToArtist = (store) => store.albumView.relatedToArtist;
 export const getContextGridData = (store) => store.albumView.contextGridData;
 export const getContextGridType = (store) => store.albumView.contextGridType;
 export const getContextGridOffset = (store) => store.albumView.contextGridOffset;

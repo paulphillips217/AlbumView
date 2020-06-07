@@ -6,6 +6,7 @@ import {
   TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
+  RELATED_TO_ARTIST,
   CONTEXT_GRID_DATA,
   CONTEXT_GRID_TYPE,
   CONTEXT_GRID_OFFSET,
@@ -26,6 +27,7 @@ const initialState = {
     : moment().format(),
   contextType: ContextType.Albums,
   contextItem: '',
+  relatedToArtist: '',
   contextGridData: [],
   contextGridType: ContextType.Tracks,
   contextGridOffset: 0,
@@ -65,6 +67,11 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting context item', action.payload);
       return Object.assign({}, state, {
         contextItem: action.payload,
+      });
+    case RELATED_TO_ARTIST:
+      console.log('setting related to artist', action.payload);
+      return Object.assign({}, state, {
+        relatedToArtist: action.payload,
       });
     case CONTEXT_GRID_DATA:
       console.log('setting context grid data', action.payload);

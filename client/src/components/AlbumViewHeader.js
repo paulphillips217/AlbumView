@@ -14,6 +14,7 @@ import {
   setContextListOffset,
   setContextItem,
   setTokenExpiration,
+  setRelatedToArtist,
 } from '../store/actions';
 import { getContextItem, getContextType } from '../store/selectors';
 import '../styles/App.css';
@@ -25,6 +26,7 @@ const AlbumViewHeader = ({
   setRefreshToken,
   setTokenExpiration,
   setContextItem,
+  setRelatedToArtist,
   setContextType,
   setContextGridData,
   setContextGridOffset,
@@ -53,6 +55,12 @@ const AlbumViewHeader = ({
         case ContextType.Artists:
           setContextData({
             name: 'Your Saved Artists',
+            description: '',
+          });
+          break;
+        case ContextType.RelatedArtists:
+          setContextData({
+            name: 'Related Artists',
             description: '',
           });
           break;
@@ -105,6 +113,11 @@ const AlbumViewHeader = ({
       text: 'Your Spotify Playlists',
       value: ContextType.Playlists,
     },
+    {
+      key: 'related-artist-key',
+      text: 'Related Artists',
+      value: ContextType.RelatedArtists,
+    },
   ];
 
   const handleDropdownChange = (e, { value }) => {
@@ -114,6 +127,7 @@ const AlbumViewHeader = ({
     setContextListData([]);
     setContextType(value);
     setContextItem('');
+    setRelatedToArtist('');
     console.log('handle dropdown change', value);
   };
 
@@ -176,6 +190,7 @@ AlbumViewHeader.propTypes = {
   httpService: PropTypes.object.isRequired,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
+  setRelatedToArtist: PropTypes.func.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
@@ -192,7 +207,8 @@ const mapDispatchToProps = (dispatch) => ({
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
   setTokenExpiration: (expiration) => dispatch(setTokenExpiration(expiration)),
   setContextType: (type) => dispatch(setContextType(type)),
-  setContextItem: (type) => dispatch(setContextItem(type)),
+  setContextItem: (id) => dispatch(setContextItem(id)),
+  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextListData: (data) => dispatch(setContextListData(data)),

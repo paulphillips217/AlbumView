@@ -6,7 +6,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import SplitPane from 'react-split-pane';
-
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
@@ -17,6 +16,7 @@ import ContextGrid from './components/ContextGrid';
 import AlbumViewHeader from './components/AlbumViewHeader';
 import { ContextType } from './store/types';
 import PropTypes from 'prop-types';
+import RelatedArtistList from './components/RelatedArtistList';
 
 class App extends Component {
   componentDidMount() {
@@ -47,6 +47,28 @@ class App extends Component {
       </div>
     );
 
+    const ThreePanelDisplay = () => (
+      <SplitPane
+        split="vertical"
+        minSize={50}
+        defaultSize={350}
+        style={{ height: '50%', position: 'relative' }}
+        paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+      >
+        <ContextList httpService={this.props.httpService} />
+        <SplitPane
+          split="vertical"
+          minSize={50}
+          defaultSize={350}
+          style={{ position: 'relative' }}
+          paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+        >
+          <RelatedArtistList httpService={this.props.httpService} />
+          <ContextGrid httpService={this.props.httpService} />
+        </SplitPane>
+      </SplitPane>
+    );
+
     const TwoPanelDisplay = () => (
       <SplitPane
         split="vertical"
@@ -74,8 +96,11 @@ class App extends Component {
           <div className="row content">
             {(contextType === ContextType.Artists ||
               contextType === ContextType.Playlists) && <TwoPanelDisplay />}
-            {contextType !== ContextType.Artists &&
-              contextType !== ContextType.Playlists && <SinglePanelDisplay />}
+            {(contextType === ContextType.Albums ||
+              contextType === ContextType.Tracks) && <SinglePanelDisplay />}
+            {contextType === ContextType.RelatedArtists && (
+              <ThreePanelDisplay />
+            )}
           </div>
           <div className="row footer"> </div>
         </div>

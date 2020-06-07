@@ -3,6 +3,7 @@ export const REFRESH_TOKEN = 'REFRESH_TOKEN';
 export const TOKEN_EXPIRATION = 'TOKEN_EXPIRATION';
 export const CONTEXT_TYPE = 'CONTEXT_TYPE';
 export const CONTEXT_ITEM = 'CONTEXT_ITEM';
+export const RELATED_TO_ARTIST = 'RELATED_TO_ARTIST';
 export const CONTEXT_GRID_DATA = 'CONTEXT_GRID_DATA';
 export const CONTEXT_GRID_TYPE = 'CONTEXT_GRID_TYPE';
 export const CONTEXT_GRID_OFFSET = 'CONTEXT_GRID_OFFSET';
@@ -17,7 +18,8 @@ export const ContextType = {
   Albums: 'albums',
   RecentlyPlayed: 'recently-played',
   Artists: 'artists',
-  Tracks: 'tracks'
+  Tracks: 'tracks',
+  RelatedArtists: 'related-artists'
 };
 
 export const GridDataType = {

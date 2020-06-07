@@ -4,6 +4,7 @@ import {
   TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
+  RELATED_TO_ARTIST,
   CONTEXT_GRID_DATA,
   CONTEXT_GRID_TYPE,
   CONTEXT_GRID_OFFSET,
@@ -36,6 +37,11 @@ export const setContextType = (type) => ({
 export const setContextItem = (id) => ({
   type: CONTEXT_ITEM,
   payload: id,
+});
+
+export const setRelatedToArtist = (artist) => ({
+  type: RELATED_TO_ARTIST,
+  payload: artist,
 });
 
 export const setContextGridData = (data) => ({

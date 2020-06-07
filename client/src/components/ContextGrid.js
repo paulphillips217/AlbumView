@@ -93,6 +93,7 @@ const ContextGrid = ({
             .catch((error) => console.log(error));
           break;
         case ContextType.Artists:
+        case ContextType.RelatedArtists:
           if (contextItem) {
             httpService
               .get(

@@ -39,6 +39,9 @@ const getSpotifyUrl = (req) => {
     case /\/artist-albums*/.test(req.path):
       // list of artist's albums
       return `https://api.spotify.com/v1/artists/${req.params.id}/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
+    case /\/related-artists*/.test(req.path):
+      // list of related artists
+      return `https://api.spotify.com/v1/artists/${req.params.id}/related-artists`;
     case /\/save-tracks*/.test(req.path):
     case /\/delete-tracks*/.test(req.path):
       // save or delete a favorite track
