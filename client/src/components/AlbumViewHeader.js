@@ -1,41 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { Card, Button, Dropdown, Grid, Segment } from 'semantic-ui-react';
+import {
+  Card,
+  Dropdown,
+  Grid,
+  Segment,
+} from 'semantic-ui-react';
+import { useTheme } from 'emotion-theming';
+import '../styles/App.css';
 import { ContextType } from '../store/types';
 import {
-  setAccessToken,
-  setRefreshToken,
   setContextType,
   setContextGridData,
   setContextGridOffset,
   setContextListData,
   setContextListOffset,
   setContextItem,
-  setTokenExpiration,
   setRelatedToArtist,
 } from '../store/actions';
-import { getContextItem, getContextType } from '../store/selectors';
-import '../styles/App.css';
+import {
+  getContextItem,
+  getContextType,
+} from '../store/selectors';
+import ModalConfig from './ModalConfig';
 
 const AlbumViewHeader = ({
   contextType,
   contextItem,
-  setAccessToken,
-  setRefreshToken,
-  setTokenExpiration,
   setContextItem,
-  setRelatedToArtist,
   setContextType,
+  setRelatedToArtist,
   setContextGridData,
   setContextGridOffset,
   setContextListData,
   setContextListOffset,
   httpService,
 }) => {
-  const history = useHistory();
+  const theme = useTheme();
   const [contextData, setContextData] = useState({ name: '', description: '' });
+  console.log('albumViewHeader theme: ', theme);
 
   useEffect(() => {
     const getContextData = () => {
@@ -131,23 +135,12 @@ const AlbumViewHeader = ({
     console.log('handle dropdown change', value);
   };
 
-  const handleLogOut = () => {
-    setRefreshToken('');
-    setAccessToken('');
-    setTokenExpiration('');
-    setContextGridData([]);
-    setContextGridOffset(0);
-    setContextListData([]);
-    setContextListOffset(0);
-    history.push('/');
-  };
-
   const createDescriptionMarkup = (text) => {
     return { __html: text };
   };
 
   return (
-    <Card fluid>
+    <Card fluid style={theme}>
       <Grid columns="equal">
         <Grid.Column>
           <Segment basic textAlign="center">
@@ -173,7 +166,7 @@ const AlbumViewHeader = ({
         </Grid.Column>
         <Grid.Column>
           <Segment basic textAlign="center">
-            <Button onClick={handleLogOut}>Log Out</Button>
+            <ModalConfig />
           </Segment>
         </Grid.Column>
       </Grid>
@@ -182,9 +175,6 @@ const AlbumViewHeader = ({
 };
 
 AlbumViewHeader.propTypes = {
-  setAccessToken: PropTypes.func.isRequired,
-  setRefreshToken: PropTypes.func.isRequired,
-  setTokenExpiration: PropTypes.func.isRequired,
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
   httpService: PropTypes.object.isRequired,
@@ -203,9 +193,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
-  setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
-  setTokenExpiration: (expiration) => dispatch(setTokenExpiration(expiration)),
   setContextType: (type) => dispatch(setContextType(type)),
   setContextItem: (id) => dispatch(setContextItem(id)),
   setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),

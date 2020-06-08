@@ -10,7 +10,6 @@ import TrackHistory from './components/History';
 import { Provider } from 'react-redux';
 import store from './store';
 import httpService from './util/httpUtils';
-
 const commService = new httpService(store);
 
 const routing = (

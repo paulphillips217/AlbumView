@@ -16,7 +16,8 @@ import {
   setContextItem,
   setContextListData,
   setContextListMore,
-  setContextListOffset, setRelatedToArtist
+  setContextListOffset,
+  setRelatedToArtist,
 } from '../store/actions';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
@@ -62,7 +63,7 @@ const ContextList = ({
               setContextListData(
                 contextListData.concat(parsedData).sort(sortByArtist)
               );
-              setContextListMore(data && data.artists && !!(data.artists.next));
+              setContextListMore(data && data.artists && !!data.artists.next);
             })
             .catch((error) => console.log(error));
           break;
@@ -98,11 +99,10 @@ const ContextList = ({
     setContextGridData([]);
     setContextGridOffset(0);
     setContextGridMore(false);
-    if (contextType === ContextType.Artists) {
-      setContextItem(id);
-    }
-    else {
+    if (contextType === ContextType.RelatedArtists) {
       setRelatedToArtist(id);
+    } else {
+      setContextItem(id);
     }
   };
 
@@ -190,7 +190,4 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(ContextList);
+export default connect(mapStateToProps, mapDispatchToProps)(ContextList);

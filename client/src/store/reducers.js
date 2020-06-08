@@ -1,6 +1,8 @@
 import moment from 'moment';
 import {
   ContextType,
+  GridDataType,
+  AlbumViewTheme,
   ACCESS_TOKEN,
   REFRESH_TOKEN,
   TOKEN_EXPIRATION,
@@ -14,6 +16,7 @@ import {
   CONTEXT_LIST_OFFSET,
   CONTEXT_GRID_MORE,
   CONTEXT_LIST_MORE,
+  ALBUM_VIEW_THEME,
 } from './types';
 
 const initialState = {
@@ -29,12 +32,14 @@ const initialState = {
   contextItem: '',
   relatedToArtist: '',
   contextGridData: [],
-  contextGridType: ContextType.Tracks,
+  contextGridType: GridDataType.Album,
   contextGridOffset: 0,
   contextGridMore: false,
   contextListData: [],
   contextListOffset: 0,
   contextListMore: false,
+  albumViewTheme:
+    localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -107,6 +112,12 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting context list more', action.payload);
       return Object.assign({}, state, {
         contextListMore: action.payload,
+      });
+    case ALBUM_VIEW_THEME:
+      console.log('setting album view theme', action.payload);
+      localStorage.setItem('albumViewTheme', action.payload);
+      return Object.assign({}, state, {
+        albumViewTheme: action.payload,
       });
     default:
       return state;

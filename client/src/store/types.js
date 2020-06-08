@@ -12,6 +12,7 @@ export const CONTEXT_LIST_DATA = 'CONTEXT_LIST_DATA';
 export const CONTEXT_LIST_OFFSET = 'CONTEXT_LIST_OFFSET';
 export const CONTEXT_LIST_MORE = 'CONTEXT_LIST_MORE';
 export const SPOTIFY_PAGE_LIMIT = 50;
+export const ALBUM_VIEW_THEME = 'ALBUM_VIEW_THEME';
 
 export const ContextType = {
   Playlists: 'playlists',
@@ -19,11 +20,16 @@ export const ContextType = {
   RecentlyPlayed: 'recently-played',
   Artists: 'artists',
   Tracks: 'tracks',
-  RelatedArtists: 'related-artists'
+  RelatedArtists: 'related-artists',
 };
 
 export const GridDataType = {
   Artist: 'artist',
   Album: 'album',
-  Track: 'track'
+  Track: 'track',
+};
+
+export const AlbumViewTheme = {
+  Light: 'light',
+  Dark: 'dark',
 };

@@ -94,3 +94,7 @@ td:last-child {
 .disc-number-header {
   padding-top: 20px !important;
 }
+
+.config-div {
+  padding-bottom: 20px;
+}

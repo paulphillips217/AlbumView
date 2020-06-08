@@ -15,3 +15,4 @@ export const getContextGridMore = (store) => store.albumView.contextGridMore;
 export const getContextListData = (store) => store.albumView.contextListData;
 export const getContextListOffset = (store) => store.albumView.contextListOffset;
 export const getContextListMore = (store) => store.albumView.contextListMore;
+export const getAlbumViewTheme = (store) => store.albumView.albumViewTheme;

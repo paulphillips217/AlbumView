@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { List, Image } from 'semantic-ui-react';
 import '../styles/App.css';
-import { getImage, sortByArtist } from '../util/utilities';
+import { sortByArtist } from '../util/utilities';
 import { getRelatedToArtist } from '../store/selectors';
 import {
   setContextGridData,
