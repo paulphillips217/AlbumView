@@ -18,6 +18,7 @@ import {
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AlbumViewTheme, ContextType } from '../store/types';
+import { useTheme } from 'emotion-theming';
 
 const ModalConfig = ({
   albumViewTheme,
@@ -33,6 +34,7 @@ const ModalConfig = ({
   setContextListData,
   setContextListOffset,
 }) => {
+  const theme = useTheme();
   const history = useHistory();
 
   const listOptions = [
@@ -68,11 +70,11 @@ const ModalConfig = ({
   };
 
   return (
-    <Modal size={'mini'} trigger={<Button icon="options" />}>
-      <Modal.Header>Album View Configuration Settings</Modal.Header>
-      <Modal.Content>
+    <Modal size={'mini'} trigger={<Button icon="options" />} style={theme}>
+      <Modal.Header style={theme}>Album View Configuration Settings</Modal.Header>
+      <Modal.Content style={theme}>
         <Modal.Description>
-          <div className='config-div'>
+          <div className='config-div' style={theme}>
             <strong>AlbumView Theme </strong>
             <Dropdown
               selection

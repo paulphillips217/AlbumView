@@ -4,8 +4,10 @@ import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
+import { useTheme } from 'emotion-theming';
 
 const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
+  const theme = useTheme();
   const [albumData, setAlbumData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [trackHearts, setTrackHearts] = useState([]);
@@ -134,7 +136,7 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
   const DiscBlock = (discNumber, trackHeartOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
-        <Header size={'small'} className={'disc-number-header'}>
+        <Header size={'small'} className={'disc-number-header'} style={theme}>
           Disc {discNumber + 1}
         </Header>
       )}
@@ -174,7 +176,7 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
       open={modalOpen}
       onClose={() => setModalOpen(false)}
     >
-      <Modal.Header>
+      <Modal.Header style={theme}>
         {headerTitle}
         <Icon
           name={albumHeart ? 'heart' : 'heart outline'}
@@ -183,10 +185,10 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
           onClick={() => handleAlbumHeartClick(albumHeart)}
         />
       </Modal.Header>
-      <Modal.Content image>
+      <Modal.Content image style={theme}>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
-          <Header style={{ 'padding-bottom': '10px' }}>
+          <Header style={{ ...theme, 'padding-bottom': '10px' }}>
             {albumData.artists && albumData.artists[0].name}
           </Header>
           {discTracks &&

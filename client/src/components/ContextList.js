@@ -21,6 +21,7 @@ import {
 } from '../store/actions';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
+import { useTheme } from 'emotion-theming';
 
 const ContextList = ({
   contextType,
@@ -37,6 +38,8 @@ const ContextList = ({
   setContextGridMore,
   httpService,
 }) => {
+  const theme = useTheme();
+
   useEffect(() => {
     const getList = () => {
       console.log('get context list', contextType);
@@ -132,7 +135,7 @@ const ContextList = ({
         </List.Header>
         {item.author && (
           <List.Description>
-            <div>
+            <div style={theme}>
               by: {item.author} <br />
             </div>
           </List.Description>

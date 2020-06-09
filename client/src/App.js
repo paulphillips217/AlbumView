@@ -30,7 +30,7 @@ const lightTheme = {
 };
 
 const darkTheme = {
-  backgroundColor: 'DimGray',
+  backgroundColor: '#202020',
   color: 'white',
 };
 

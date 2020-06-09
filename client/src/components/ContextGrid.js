@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
-import { Grid, Visibility } from 'semantic-ui-react';
+import { Grid, Segment, Visibility } from 'semantic-ui-react';
+import { useTheme } from 'emotion-theming';
 import { getImage, sortByArtistThenAlbum } from '../util/utilities';
 import {
   getContextType,
@@ -35,6 +36,7 @@ const ContextGrid = ({
   setContextGridMore,
   httpService,
 }) => {
+  const theme = useTheme();
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
@@ -204,18 +206,21 @@ const ContextGrid = ({
           item={item}
           httpService={httpService}
           handleAccordionClick={handleAccordionClick}
+          style={theme}
         />
       )}
       {contextGridType === GridDataType.Album && (
-        <div>
+        <div className={'pp-test'} style={theme}>
           <ModalAlbum
             albumId={item.albumId}
             image={item.image}
             useImage={true}
             httpService={httpService}
           />
+          <div style={theme}>
           {!!item.artist && <div>{item.artist}</div>}
           {item.name || item.albumName}
+          </div>
         </div>
       )}
     </Grid.Column>

@@ -1,8 +1,9 @@
 import React from 'react';
 import '../styles/App.css';
-import { Image, Accordion } from 'semantic-ui-react';
+import { Image, Accordion, Segment } from 'semantic-ui-react';
 import ModalAlbum from './ModalAlbum';
 import PropTypes from 'prop-types';
+import { useTheme } from 'emotion-theming';
 
 const AlbumAccordion = ({
   activeIndex,
@@ -11,6 +12,8 @@ const AlbumAccordion = ({
   handleAccordionClick,
   httpService,
 }) => {
+  const theme = useTheme();
+
   const handleQueueClick = (uri) => {
     console.log('handleQueueClick: ' + encodeURI(uri));
     httpService
@@ -45,7 +48,7 @@ const AlbumAccordion = ({
         onClick={() => handleAccordionClick(index)}
       >
         <Image src={item.image} />
-        <div>
+        <div style={theme}>
           {!!item.artist && <div>{item.artist}</div>}
           {item.name || item.albumName}
         </div>
