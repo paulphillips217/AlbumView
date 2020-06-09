@@ -35,12 +35,12 @@ export const stripLeadingArticle = (string) => {
 };
 
 export const sortByArtistThenAlbum = (a, b) => {
-  const artist1 = stripLeadingArticle(a.artist);
-  const artist2 = stripLeadingArticle(b.artist);
+  const artist1 = stripLeadingArticle(a.artist).toLowerCase();
+  const artist2 = stripLeadingArticle(b.artist).toLowerCase();
   // if the artists are the same, sort by the album names
   if (artist1 === artist2) {
-    const albumName1 = stripLeadingArticle(a.albumName);
-    const albumName2 = stripLeadingArticle(b.albumName);
+    const albumName1 = stripLeadingArticle(a.albumName).toLowerCase();
+    const albumName2 = stripLeadingArticle(b.albumName).toLowerCase();
     if (albumName1 === albumName2) {
       return 0;
     }
@@ -50,8 +50,8 @@ export const sortByArtistThenAlbum = (a, b) => {
 };
 
 export const sortByArtist = (a, b) => {
-  const artist1 = stripLeadingArticle(a.name);
-  const artist2 = stripLeadingArticle(b.name);
+  const artist1 = stripLeadingArticle(a.name).toLowerCase();
+  const artist2 = stripLeadingArticle(b.name).toLowerCase();
   if (artist1 === artist2) {
     return 0;
   }

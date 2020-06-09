@@ -50,7 +50,7 @@ const ContextGrid = ({
           httpService
             .get(`/album-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
             .then((rawData) => {
-              console.log('artist data', rawData);
+              console.log('saved album data', rawData, contextGridOffset);
               const data = rawData.items.map((e) => ({
                 id: '',
                 name: '',
@@ -61,7 +61,9 @@ const ContextGrid = ({
                 href: e.href,
                 uri: e.uri,
               }));
-              const newData = contextGridOffset ? contextGridData : data;
+              const newData = contextGridOffset
+                ? contextGridData.concat(data)
+                : data;
               setContextGridData(newData.sort(sortByArtistThenAlbum));
               setContextGridType(GridDataType.Album);
               setContextGridMore(!!rawData.next);
@@ -111,7 +113,9 @@ const ContextGrid = ({
                   href: e.href,
                   uri: e.uri,
                 }));
-                const newData = contextGridOffset ? contextGridData : data;
+                const newData = contextGridOffset
+                  ? contextGridData.concat(data)
+                  : data;
                 setContextGridData(newData.sort(sortByArtistThenAlbum));
                 setContextGridType(GridDataType.Album);
                 setContextGridMore(!!rawData.next);
