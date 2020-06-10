@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
+import {
+  Grid,
+  Image,
+  Header,
+  Modal,
+  Icon,
+  Button,
+  Container,
+} from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
@@ -12,6 +20,7 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [trackHearts, setTrackHearts] = useState([]);
   const [albumHeart, setAlbumHeart] = useState(false);
+  const [playerInactive, setPlayerInactive] = useState(false);
 
   useEffect(() => {
     const getHeartSettings = () => {
@@ -133,6 +142,32 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
     setAlbumHeart(!remove);
   };
 
+  const handlePlayAlbum = async () => {
+    try {
+      setPlayerInactive(false);
+      let status = await httpService.get(`/player-status`);
+      if (status.emptyResponse) {
+        setPlayerInactive(true);
+        return;
+      }
+      await httpService.put(`/player-shuffle/false`);
+      await httpService.put(`/player-pause`);
+      //await httpService.post(`/player-next`);
+
+      for (let index = 0; index < albumData.tracks.items.length; index++) {
+        await httpService.post(
+          `/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
+        );
+      }
+
+      //await httpService.post(`/queue-track/${}`)
+      //status = await httpService.get(`/player-status`);
+      //console.log('play album status: ', status);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const DiscBlock = (discNumber, trackHeartOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
@@ -184,6 +219,15 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
           color="red"
           onClick={() => handleAlbumHeartClick(albumHeart)}
         />
+        <Icon
+          name={'play'}
+          size="small"
+          color="green"
+          onClick={() => handlePlayAlbum()}
+        />
+        {playerInactive && (
+          <span style={{ float: 'right' }}>Player is inactive</span>
+        )}
       </Modal.Header>
       <Modal.Content image style={theme}>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />

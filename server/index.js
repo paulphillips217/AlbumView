@@ -92,11 +92,15 @@ app.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
 app.get('/artist-list/:offset/:limit', spotifyData.aggregateSpotifyArtistData);
 app.get('/artist-albums/:id/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/related-artists/:id', spotifyData.talkToSpotify);
+app.get('/player-status', spotifyData.talkToSpotify);
+app.put('/player-pause', spotifyData.talkToSpotify);
+app.put('/player-shuffle/:state', spotifyData.talkToSpotify);
 app.put('/save-tracks/:ids', spotifyData.talkToSpotify);
 app.put('/save-albums/:ids', spotifyData.talkToSpotify);
 app.delete('/delete-tracks/:ids', spotifyData.talkToSpotify);
 app.delete('/delete-albums/:ids', spotifyData.talkToSpotify);
 app.post('/queue-track/:uri', spotifyData.talkToSpotify);
+app.post('/player-next', spotifyData.talkToSpotify);
 
 // All remaining requests return the React app, so it can handle routing.
 app.get('*', function (request, response) {

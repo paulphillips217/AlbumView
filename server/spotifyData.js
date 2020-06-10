@@ -42,6 +42,18 @@ const getSpotifyUrl = (req) => {
     case /\/related-artists*/.test(req.path):
       // list of related artists
       return `https://api.spotify.com/v1/artists/${req.params.id}/related-artists`;
+    case /\/player-status*/.test(req.path):
+      // get player context
+      return `https://api.spotify.com/v1/me/player`;
+    case /\/player-pause*/.test(req.path):
+      // pause player
+      return `https://api.spotify.com/v1/me/player/pause`;
+    case /\/player-shuffle*/.test(req.path):
+      // set shuffle status
+      return `https://api.spotify.com/v1/me/player/shuffle?state=${req.params.state}`;
+    case /\/player-next*/.test(req.path):
+      // skip player to next track
+      return `https://api.spotify.com/v1/me/player/next`;
     case /\/save-tracks*/.test(req.path):
     case /\/delete-tracks*/.test(req.path):
       // save or delete a favorite track
@@ -58,27 +70,7 @@ const getSpotifyUrl = (req) => {
       return '';
   }
 };
-/*
-const handleDataFetchError = (err, req, res) => {
-  console.log('handleDataFetchError: ', JSON.stringify(err));
-  if (err.response) {
-    console.log(err.response.data);
 
-    if (err.response.status === 401) {
-      console.log('handleDataFetchError attempting to refresh spotify token');
-      const refreshToken = spotifyTokens.getRefreshTokenFromHeader(req);
-      const credentials = spotifyTokens.refreshSpotifyAccessToken(
-        req,
-        refreshToken
-      );
-      console.log('handleDataFetchError sending credentials: ', JSON.stringify(credentials));
-      res.json(credentials);
-    }
-  } else {
-    console.error(JSON.stringify(err));
-  }
-};
-*/
 const talkToSpotify = async (req, res) => {
   const credentials = await spotifyTokens.getCredentialsFromHeader(req);
   const accessToken = credentials.access_token;
@@ -105,10 +97,19 @@ const talkToSpotify = async (req, res) => {
   })
     .then((response) => {
       console.log('axios got response for ', url);
-      if (response && response.data && isJson(response.data)) {
+      //if (response && response.data && isJson(response.data)) {
+      if (response && response.data) {
         res.json(response.data);
       } else {
-        res.json({ 'empty-test': true });
+        console.log('axios got empty response');
+        /*
+        if (typeof response === 'undefined') {
+          console.log('axios response is undefined');
+        } else {
+          console.log('axios response object: ', response);
+        }
+         */
+        res.json({ emptyResponse: true });
       }
     })
     .catch((err) => {
