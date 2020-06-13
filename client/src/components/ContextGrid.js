@@ -244,7 +244,11 @@ const ContextGrid = ({
     <Fragment>
       {contextGridData.some((item) => filterByAlbumType(item, 'album')) && (
         <Fragment>
-          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+          <Header
+            as="h2"
+            floated="left"
+            style={{ ...theme, paddingTop: '50px' }}
+          >
             Albums
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
@@ -256,7 +260,11 @@ const ContextGrid = ({
       )}
       {contextGridData.some((item) => filterByAlbumType(item, 'single')) && (
         <Fragment>
-          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+          <Header
+            as="h2"
+            floated="left"
+            style={{ ...theme, paddingTop: '50px' }}
+          >
             Singles
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
@@ -270,7 +278,11 @@ const ContextGrid = ({
         filterByAlbumType(item, 'compilation')
       ) && (
         <Fragment>
-          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+          <Header
+            as="h2"
+            floated="left"
+            style={{ ...theme, paddingTop: '50px' }}
+          >
             Compilations
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
@@ -284,7 +296,11 @@ const ContextGrid = ({
         filterByAlbumType(item, 'appears_on')
       ) && (
         <Fragment>
-          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+          <Header
+            as="h2"
+            floated="left"
+            style={{ ...theme, paddingTop: '50px' }}
+          >
             Appears On
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
