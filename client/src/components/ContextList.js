@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
-import { List, Image, Visibility } from 'semantic-ui-react';
-import { getImage, sortByArtist } from '../util/utilities';
+import { List, Image } from 'semantic-ui-react';
+import { getImage, sortByName } from '../util/utilities';
 import {
   getContextListData,
   getContextListMore,
@@ -64,7 +64,7 @@ const ContextList = ({
                 image: getImage(e.images),
               }));
               setContextListData(
-                contextListData.concat(parsedData).sort(sortByArtist)
+                contextListData.concat(parsedData).sort(sortByName)
               );
               setContextListMore(data && data.artists && !!data.artists.next);
             })
@@ -81,7 +81,9 @@ const ContextList = ({
                 description: e.description,
                 image: getImage(e.images),
               }));
-              setContextListData(contextListData.concat(parsedData));
+              setContextListData(
+                contextListData.concat(parsedData).sort(sortByName)
+              );
               setContextListMore(!!data.next);
             })
             .catch((error) => console.log(error));
@@ -93,9 +95,16 @@ const ContextList = ({
           );
       }
     };
-
     getList();
   }, [contextType, contextListOffset]);
+
+  useEffect(() => {
+    // get all the pages in the background
+    if (contextListOffset < contextListData.length && contextListMore) {
+      const newPageOffset = contextListData.length;
+      setContextListOffset(newPageOffset);
+    }
+  }, [contextListData, contextListOffset, contextListMore]);
 
   const handleClick = (id) => {
     console.log('handle click id', id);
@@ -109,21 +118,14 @@ const ContextList = ({
     }
   };
 
-  const handleVisibilityUpdate = (e, { calculations }) => {
-    if (
-      calculations.bottomVisible &&
-      contextListOffset < contextListData.length &&
-      contextListMore
-    ) {
-      console.log('list bottom reached - increase page offset');
-      const newPageOffset = contextListData.length;
-      setContextListOffset(newPageOffset);
-    }
-  };
-
   const ListItem = (item, index) => (
     <List.Item key={index}>
-      <Image src={item.image} size="mini" />
+      <Image
+        src={item.image}
+        size="mini"
+        onClick={(e) => handleClick(item.id, e)}
+        style={{cursor: 'pointer'}}
+      />
       <List.Content>
         <List.Header>
           <button
@@ -152,11 +154,9 @@ const ContextList = ({
   );
 
   return (
-    <Visibility onUpdate={handleVisibilityUpdate}>
-      <div className="left-align-list">
-        {contextListData && contextListData.length > 0 ? <ListTable /> : null}
-      </div>
-    </Visibility>
+    <div className="left-align-list">
+      {contextListData && contextListData.length > 0 ? <ListTable /> : null}
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { List, Image } from 'semantic-ui-react';
 import '../styles/App.css';
-import { sortByArtist } from '../util/utilities';
+import { sortByName } from '../util/utilities';
 import { getRelatedToArtist } from '../store/selectors';
 import {
   setContextGridData,
@@ -39,7 +39,7 @@ const RelatedArtistList = ({
               description: '',
               image: '',
             }));
-            setRelatedArtistListData(parsedData.sort(sortByArtist));
+            setRelatedArtistListData(parsedData.sort(sortByName));
           })
           .catch((error) => console.log(error));
       }

@@ -49,7 +49,7 @@ export const sortByArtistThenAlbum = (a, b) => {
   return artist1 > artist2;
 };
 
-export const sortByArtist = (a, b) => {
+export const sortByName = (a, b) => {
   const artist1 = stripLeadingArticle(a.name).toLowerCase();
   const artist2 = stripLeadingArticle(b.name).toLowerCase();
   if (artist1 === artist2) {
