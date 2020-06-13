@@ -17,6 +17,7 @@ import {
   setContextListData,
   setContextListMore,
   setContextListOffset,
+  setDataLoading,
   setRelatedToArtist,
 } from '../store/actions';
 import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
@@ -29,6 +30,7 @@ const ContextList = ({
   contextListOffset,
   contextListMore,
   setContextItem,
+  setDataLoading,
   setRelatedToArtist,
   setContextListData,
   setContextListOffset,
@@ -110,11 +112,12 @@ const ContextList = ({
     console.log('handle click id', id);
     setContextGridData([]);
     setContextGridOffset(0);
-    setContextGridMore(false);
+    setContextGridMore(true);
     if (contextType === ContextType.RelatedArtists) {
       setRelatedToArtist(id);
     } else {
       setContextItem(id);
+      setDataLoading(true);
     }
   };
 
@@ -124,7 +127,7 @@ const ContextList = ({
         src={item.image}
         size="mini"
         onClick={(e) => handleClick(item.id, e)}
-        style={{cursor: 'pointer'}}
+        style={{ cursor: 'pointer' }}
       />
       <List.Content>
         <List.Header>
@@ -174,6 +177,7 @@ ContextList.propTypes = {
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
+  setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -191,7 +195,8 @@ const mapDispatchToProps = (dispatch) => ({
   setContextListMore: (offset) => dispatch(setContextListMore(offset)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContextList);

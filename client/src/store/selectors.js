@@ -22,3 +22,4 @@ export const getContextListMore = (store) => store.albumView.contextListMore;
 export const getAlbumViewTheme = (store) => store.albumView.albumViewTheme;
 export const getContextGridColumns = (store) =>
   store.albumView.contextGridColumns;
+export const getDataLoading = (store) => store.albumView.dataLoading;

@@ -17,7 +17,7 @@ import {
   CONTEXT_GRID_MORE,
   CONTEXT_LIST_MORE,
   ALBUM_VIEW_THEME,
-  CONTEXT_GRID_COLUMNS,
+  CONTEXT_GRID_COLUMNS, DATA_LOADING
 } from './types';
 
 const initialState = {
@@ -43,6 +43,7 @@ const initialState = {
   albumViewTheme:
     localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
   contextGridColumns: localStorage.getItem('contextGridColumns') || 6,
+  dataLoading: true,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -127,6 +128,11 @@ export function albumViewReducer(state = initialState, action) {
       localStorage.setItem('contextGridColumns', action.payload);
       return Object.assign({}, state, {
         contextGridColumns: action.payload,
+      });
+    case DATA_LOADING:
+      console.log('setting data loading', action.payload);
+      return Object.assign({}, state, {
+        dataLoading: action.payload,
       });
     default:
       return state;

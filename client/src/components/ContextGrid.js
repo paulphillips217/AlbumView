@@ -16,6 +16,7 @@ import {
   getContextGridType,
   getContextGridMore,
   getContextGridColumns,
+  getDataLoading,
 } from '../store/selectors';
 import AlbumAccordion from './AlbumAccordion';
 import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
@@ -25,12 +26,14 @@ import {
   setContextGridMore,
   setContextGridOffset,
   setContextGridType,
+  setDataLoading,
 } from '../store/actions';
 import ModalAlbum from './ModalAlbum';
 
 const ContextGrid = ({
   contextType,
   contextItem,
+  dataLoading,
   contextGridData,
   contextGridType,
   contextGridOffset,
@@ -40,6 +43,7 @@ const ContextGrid = ({
   setContextGridType,
   setContextGridOffset,
   setContextGridMore,
+  setDataLoading,
   httpService,
 }) => {
   const theme = useTheme();
@@ -47,6 +51,9 @@ const ContextGrid = ({
 
   useEffect(() => {
     const getGridData = () => {
+      if (!dataLoading) {
+        return;
+      }
       switch (contextType) {
         case ContextType.Albums:
           httpService
@@ -69,6 +76,9 @@ const ContextGrid = ({
               setContextGridData(newData.sort(sortByArtistThenAlbum));
               setContextGridType(GridDataType.Album);
               setContextGridMore(!!rawData.next);
+              if (!rawData.next) {
+                setDataLoading(false);
+              }
             })
             .catch((error) => console.log(error));
           break;
@@ -93,6 +103,9 @@ const ContextGrid = ({
               setContextGridData(newData.sort(sortByArtistThenAlbum));
               setContextGridType(GridDataType.Track);
               setContextGridMore(!!rawData.next);
+              if (!rawData.next) {
+                setDataLoading(false);
+              }
             })
             .catch((error) => console.log(error));
           break;
@@ -123,12 +136,16 @@ const ContextGrid = ({
                 setContextGridData(newData.sort(sortByArtistThenAlbum));
                 setContextGridType(GridDataType.Album);
                 setContextGridMore(!!rawData.next);
+                if (!rawData.next) {
+                  setDataLoading(false);
+                }
               })
               .catch((error) => console.log(error));
           } else {
             setContextGridData([]);
             setContextGridType(GridDataType.Album);
             setContextGridMore(false);
+            setDataLoading(false);
           }
           break;
         case ContextType.Playlists:
@@ -154,18 +171,23 @@ const ContextGrid = ({
                 setContextGridData(newData);
                 setContextGridType(GridDataType.Track);
                 setContextGridMore(!!rawData.next);
+                if (!rawData.next) {
+                  setDataLoading(false);
+                }
               })
               .catch((error) => console.log(error));
           } else {
             setContextGridData([]);
             setContextGridType(GridDataType.Track);
             setContextGridMore(false);
+            setDataLoading(false);
           }
           break;
         default:
           setContextGridData([]);
           setContextGridType(GridDataType.Track);
           setContextGridMore(false);
+          setDataLoading(false);
           console.log(
             'unknown context type in ContextGrid.getGridData',
             contextType
@@ -177,10 +199,28 @@ const ContextGrid = ({
 
   useEffect(() => {
     // get all the pages in the background
-    if (contextGridOffset < contextGridData.length && contextGridMore) {
+    if (
+      dataLoading &&
+      contextGridOffset < contextGridData.length &&
+      contextGridMore
+    ) {
       setContextGridOffset(contextGridData.length);
     }
-  }, [contextGridData, contextGridOffset, contextGridMore]);
+    /*
+    if (
+      dataLoading &&
+      contextGridOffset >= contextGridData.length &&
+      !contextGridMore
+    ) {
+      console.log(
+        'cancelling loading from context grid: ',
+        contextGridOffset,
+        contextGridMore
+      );
+      setDataLoading(false);
+    }
+     */
+  }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
 
   const handleAccordionClick = (index) => {
     const newIndex = activeIndex === index ? -1 : index;
@@ -277,6 +317,7 @@ const ContextGrid = ({
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
   contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
@@ -287,11 +328,13 @@ ContextGrid.propTypes = {
   setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
+  setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
+  dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
   contextGridData: getContextGridData(state),
   contextGridType: getContextGridType(state),
@@ -303,7 +346,8 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridType: (type) => dispatch(setContextGridType(type)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContextGrid);

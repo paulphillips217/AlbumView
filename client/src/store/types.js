@@ -14,6 +14,7 @@ export const CONTEXT_LIST_MORE = 'CONTEXT_LIST_MORE';
 export const SPOTIFY_PAGE_LIMIT = 50;
 export const ALBUM_VIEW_THEME = 'ALBUM_VIEW_THEME';
 export const CONTEXT_GRID_COLUMNS = 'CONTEXT_GRID_COLUMNS';
+export const DATA_LOADING = 'DATA_LOADING';
 
 export const ContextType = {
   Playlists: 'playlists',

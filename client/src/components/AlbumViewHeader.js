@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import {
-  Card,
-  Dropdown,
-  Grid,
-  Segment,
-} from 'semantic-ui-react';
+import { Button, Card, Dropdown, Grid, Segment } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import { ContextType } from '../store/types';
@@ -18,23 +13,28 @@ import {
   setContextListOffset,
   setContextItem,
   setRelatedToArtist,
+  setDataLoading, setContextGridMore
 } from '../store/actions';
 import {
   getContextItem,
   getContextType,
+  getDataLoading,
 } from '../store/selectors';
 import ModalConfig from './ModalConfig';
 
 const AlbumViewHeader = ({
   contextType,
   contextItem,
+  dataLoading,
   setContextItem,
+  setDataLoading,
   setContextType,
   setRelatedToArtist,
   setContextGridData,
   setContextGridOffset,
   setContextListData,
   setContextListOffset,
+  setContextGridMore,
   httpService,
 }) => {
   const theme = useTheme();
@@ -132,7 +132,14 @@ const AlbumViewHeader = ({
     setContextType(value);
     setContextItem('');
     setRelatedToArtist('');
+    setContextGridMore(true);
+    setDataLoading(true);
     console.log('handle dropdown change', value);
+  };
+
+  const handleCancelLoading = () => {
+    console.log('cancelling loading from header');
+    setDataLoading(false);
   };
 
   const createDescriptionMarkup = (text) => {
@@ -167,6 +174,9 @@ const AlbumViewHeader = ({
         <Grid.Column>
           <Segment basic textAlign="center">
             <ModalConfig />
+            {dataLoading && (
+              <Button onClick={handleCancelLoading}>Cancel Loading</Button>
+            )}
           </Segment>
         </Grid.Column>
       </Grid>
@@ -177,6 +187,7 @@ const AlbumViewHeader = ({
 AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
@@ -185,11 +196,14 @@ AlbumViewHeader.propTypes = {
   setContextGridOffset: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
   setContextListOffset: PropTypes.func.isRequired,
+  setContextGridMore: PropTypes.func.isRequired,
+  setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
+  dataLoading: getDataLoading(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -200,6 +214,8 @@ const mapDispatchToProps = (dispatch) => ({
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextListData: (data) => dispatch(setContextListData(data)),
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumViewHeader);

@@ -10,12 +10,14 @@ import {
   setContextGridMore,
   setContextGridOffset,
   setContextItem,
+  setDataLoading,
 } from '../store/actions';
 import { useTheme } from 'emotion-theming';
 
 const RelatedArtistList = ({
   relatedToArtist,
   setContextItem,
+  setDataLoading,
   setContextGridData,
   setContextGridOffset,
   setContextGridMore,
@@ -52,8 +54,9 @@ const RelatedArtistList = ({
     console.log('handle click id', id);
     setContextGridData([]);
     setContextGridOffset(0);
-    setContextGridMore(false);
+    setContextGridMore(true);
     setContextItem(id);
+    setDataLoading(true);
   };
 
   const ListItem = (item, index) => (
@@ -102,6 +105,7 @@ RelatedArtistList.propTypes = {
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
+  setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -112,7 +116,8 @@ const mapDispatchToProps = (dispatch) => ({
   setContextItem: (id) => dispatch(setContextItem(id)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (offset) => dispatch(setContextGridMore(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RelatedArtistList);
