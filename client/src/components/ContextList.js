@@ -127,6 +127,7 @@ const ContextList = ({
       <List.Content>
         <List.Header>
           <button
+            style={theme}
             className="link-button"
             onClick={(e) => handleClick(item.id, e)}
           >

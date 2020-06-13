@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
-import { Grid, Segment, Visibility } from 'semantic-ui-react';
+import { Grid, Header, Modal, Segment, Visibility } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
-import { getImage, sortByArtistThenAlbum } from '../util/utilities';
+import {
+  filterByAlbumType,
+  getImage,
+  sortByArtistThenAlbum,
+} from '../util/utilities';
 import {
   getContextType,
   getContextItem,
@@ -11,6 +15,7 @@ import {
   getContextGridOffset,
   getContextGridType,
   getContextGridMore,
+  getContextGridColumns,
 } from '../store/selectors';
 import AlbumAccordion from './AlbumAccordion';
 import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
@@ -30,6 +35,7 @@ const ContextGrid = ({
   contextGridType,
   contextGridOffset,
   contextGridMore,
+  contextGridColumns,
   setContextGridData,
   setContextGridType,
   setContextGridOffset,
@@ -114,6 +120,8 @@ const ContextGrid = ({
                   image: getImage(e.images),
                   href: e.href,
                   uri: e.uri,
+                  albumGroup: e.album_group,
+                  albumType: e.album_type,
                 }));
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)
@@ -218,8 +226,8 @@ const ContextGrid = ({
             httpService={httpService}
           />
           <div style={theme}>
-          {!!item.artist && <div>{item.artist}</div>}
-          {item.name || item.albumName}
+            {!!item.artist && <div>{item.artist}</div>}
+            {item.name || item.albumName}
           </div>
         </div>
       )}
@@ -227,15 +235,87 @@ const ContextGrid = ({
   );
 
   const AlbumGrid = () => (
-    <Grid columns={6} style={{ width: '100%' }}>
+    <Grid columns={contextGridColumns} style={{ width: '100%' }}>
       {contextGridData.map((e, index) => GridItem(e, index))}
     </Grid>
   );
 
+  const ArtistAlbumGrid = () => (
+    <Fragment>
+      {contextGridData.some((item) => filterByAlbumType(item, 'album')) && (
+        <Fragment>
+          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+            Albums
+          </Header>
+          <Grid columns={contextGridColumns} style={{ width: '100%' }}>
+            {contextGridData
+              .filter((item) => filterByAlbumType(item, 'album'))
+              .map((e, index) => GridItem(e, index))}
+          </Grid>
+        </Fragment>
+      )}
+      {contextGridData.some((item) => filterByAlbumType(item, 'single')) && (
+        <Fragment>
+          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+            Singles
+          </Header>
+          <Grid columns={contextGridColumns} style={{ width: '100%' }}>
+            {contextGridData
+              .filter((item) => filterByAlbumType(item, 'single'))
+              .map((e, index) => GridItem(e, index))}
+          </Grid>
+        </Fragment>
+      )}
+      {contextGridData.some((item) =>
+        filterByAlbumType(item, 'compilation')
+      ) && (
+        <Fragment>
+          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+            Compilations
+          </Header>
+          <Grid columns={contextGridColumns} style={{ width: '100%' }}>
+            {contextGridData
+              .filter((item) => filterByAlbumType(item, 'compilation'))
+              .map((e, index) => GridItem(e, index))}
+          </Grid>
+        </Fragment>
+      )}
+      {contextGridData.some((item) =>
+        filterByAlbumType(item, 'appears_on')
+      ) && (
+        <Fragment>
+          <Header as="h2" floated="left" style={{ paddingTop: '50px' }}>
+            Appears On
+          </Header>
+          <Grid columns={contextGridColumns} style={{ width: '100%' }}>
+            {contextGridData
+              .filter((item) => filterByAlbumType(item, 'appears_on'))
+              .map((e, index) => GridItem(e, index))}
+          </Grid>
+        </Fragment>
+      )}
+    </Fragment>
+  );
+
+  const useArtistAlbumGrid =
+    contextType === ContextType.Artists ||
+    contextType === ContextType.RelatedArtists;
+
   return (
     <div className="grid-container">
       <Visibility onUpdate={handleVisibilityUpdate}>
-        {contextGridData && contextGridData.length > 0 ? <AlbumGrid /> : ''}
+        {useArtistAlbumGrid && contextGridData && contextGridData.length > 0 ? (
+          <ArtistAlbumGrid />
+        ) : (
+          ''
+        )}
+        {!useArtistAlbumGrid &&
+        contextGridData &&
+        contextGridData.length > 0 ? (
+          <AlbumGrid />
+        ) : (
+          ''
+        )}
       </Visibility>
     </div>
   );
@@ -248,6 +328,7 @@ ContextGrid.propTypes = {
   contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
   contextGridMore: PropTypes.bool.isRequired,
+  contextGridColumns: PropTypes.number.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridType: PropTypes.func.isRequired,
@@ -258,6 +339,7 @@ ContextGrid.propTypes = {
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
+  contextGridColumns: getContextGridColumns(state),
   contextGridData: getContextGridData(state),
   contextGridType: getContextGridType(state),
   contextGridOffset: getContextGridOffset(state),

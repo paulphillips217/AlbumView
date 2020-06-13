@@ -11,7 +11,7 @@ import {
   CONTEXT_LIST_DATA,
   CONTEXT_LIST_OFFSET,
   CONTEXT_GRID_MORE,
-  CONTEXT_LIST_MORE, ALBUM_VIEW_THEME, SHOW_CONFIG
+  CONTEXT_LIST_MORE, ALBUM_VIEW_THEME, SHOW_CONFIG, CONTEXT_GRID_COLUMNS
 } from './types';
 
 export const setAccessToken = (accessToken) => ({
@@ -82,4 +82,9 @@ export const setContextListMore = (more) => ({
 export const setAlbumViewTheme = (theme) => ({
   type: ALBUM_VIEW_THEME,
   payload: theme,
+});
+
+export const setContextGridColumns = (columns) => ({
+  type: CONTEXT_GRID_COLUMNS,
+  payload: columns,
 });

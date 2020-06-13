@@ -11,6 +11,7 @@ import {
   setContextGridOffset,
   setContextItem,
 } from '../store/actions';
+import { useTheme } from 'emotion-theming';
 
 const RelatedArtistList = ({
   relatedToArtist,
@@ -20,6 +21,7 @@ const RelatedArtistList = ({
   setContextGridMore,
   httpService,
 }) => {
+  const theme = useTheme();
   const [relatedArtistListData, setRelatedArtistListData] = useState([]);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const RelatedArtistList = ({
       <List.Content>
         <List.Header>
           <button
+            style={theme}
             className="link-button"
             onClick={(e) => handleClick(item.id, e)}
           >

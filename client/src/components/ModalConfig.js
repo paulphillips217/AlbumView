@@ -1,10 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import PropTypes, { number } from 'prop-types';
 import { Button, Dropdown, Modal } from 'semantic-ui-react';
-import { getAlbumViewTheme, getContextItem } from '../store/selectors';
+import { getAlbumViewTheme, getContextGridColumns } from '../store/selectors';
 import {
   setAccessToken,
   setAlbumViewTheme,
+  setContextGridColumns,
   setContextGridData,
   setContextGridOffset,
   setContextItem,
@@ -17,15 +18,17 @@ import {
 } from '../store/actions';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { AlbumViewTheme, ContextType } from '../store/types';
+import { AlbumViewTheme } from '../store/types';
 import { useTheme } from 'emotion-theming';
 
 const ModalConfig = ({
   albumViewTheme,
+  contextGridColumns,
   setAccessToken,
   setRefreshToken,
   setTokenExpiration,
   setAlbumViewTheme,
+  setContextGridColumns,
   setContextItem,
   setContextType,
   setRelatedToArtist,
@@ -52,7 +55,10 @@ const ModalConfig = ({
 
   const handleDropdownChange = (e, { value }) => {
     setAlbumViewTheme(value);
-    console.log('handle dropdown change', value);
+  };
+
+  const handleContextGridColumnsChange = (e) => {
+    setContextGridColumns(e.target.value);
   };
 
   const handleLogOut = () => {
@@ -71,16 +77,29 @@ const ModalConfig = ({
 
   return (
     <Modal size={'mini'} trigger={<Button icon="options" />} style={theme}>
-      <Modal.Header style={theme}>Album View Configuration Settings</Modal.Header>
+      <Modal.Header style={theme}>
+        Album View Configuration Settings
+      </Modal.Header>
       <Modal.Content style={theme}>
         <Modal.Description>
-          <div className='config-div' style={theme}>
-            <strong>AlbumView Theme </strong>
+          <div className="config-div" style={theme}>
+            <strong>AlbumView Theme</strong>
             <Dropdown
               selection
               options={listOptions}
               defaultValue={albumViewTheme}
               onChange={handleDropdownChange}
+            />
+          </div>
+          <strong>Albums Per Row</strong>
+          <span style={{paddingLeft: '20px'}}>{contextGridColumns}</span>
+          <div>
+            <input
+              type="range"
+              min={3}
+              max={10}
+              value={contextGridColumns}
+              onChange={handleContextGridColumnsChange}
             />
           </div>
           <Button onClick={handleLogOut}>Log Out</Button>
@@ -91,7 +110,10 @@ const ModalConfig = ({
 };
 
 ModalConfig.propTypes = {
+  albumViewTheme: PropTypes.string.isRequired,
+  contextGridColumns: PropTypes.number.isRequired,
   setAccessToken: PropTypes.func.isRequired,
+  setContextGridColumns: PropTypes.func.isRequired,
   setRefreshToken: PropTypes.func.isRequired,
   setTokenExpiration: PropTypes.func.isRequired,
   setContextType: PropTypes.func.isRequired,
@@ -106,10 +128,12 @@ ModalConfig.propTypes = {
 
 const mapStateToProps = (state) => ({
   albumViewTheme: getAlbumViewTheme(state),
+  contextGridColumns: getContextGridColumns(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
+  setContextGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
   setTokenExpiration: (expiration) => dispatch(setTokenExpiration(expiration)),
   setAlbumViewTheme: (theme) => dispatch(setAlbumViewTheme(theme)),

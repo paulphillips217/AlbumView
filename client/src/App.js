@@ -114,7 +114,7 @@ const App = ({
     return (
       <ThemeProvider theme={activeTheme}>
         <div className="box" style={activeTheme}>
-          <div className="row header">
+          <div className="row header" style={{ paddingBottom: '5px' }}>
             <AlbumViewHeader httpService={httpService} />
           </div>
           <div className="row content">

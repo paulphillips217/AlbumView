@@ -57,3 +57,10 @@ export const sortByArtist = (a, b) => {
   }
   return artist1 > artist2;
 };
+
+export const filterByAlbumType = (album, type) => {
+  if (album.albumGroup) {
+    return album.albumGroup === type;
+  }
+  return album.albumType === type;
+};
