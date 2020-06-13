@@ -21,6 +21,7 @@ import {
 
 const initialState = {
   authenticated:
+    localStorage.getItem('accessToken') &&
     localStorage.getItem('accessToken').length > 0 &&
     localStorage.getItem('accessToken') !== 'undefined',
   accessToken: localStorage.getItem('accessToken') || '',
