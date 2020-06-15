@@ -1,20 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Grid,
-  Image,
-  Header,
-  Modal,
-  Icon,
-  Button,
-  Container,
-} from 'semantic-ui-react';
+import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import moment from 'moment';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
 import { useTheme } from 'emotion-theming';
 
-const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
+const ModalAlbum = ({ albumId, image, httpService }) => {
   const theme = useTheme();
   const [albumData, setAlbumData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
@@ -200,12 +192,11 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
     <Modal
       trigger={
         <div>
-          {useImage && <Image src={image} onClick={() => handleModalOpen()} />}
-          {!useImage && (
-            <button style={{ width: '95%' }} onClick={() => handleModalOpen()}>
-              Album Info
-            </button>
-          )}
+          <Image
+            style={{ cursor: 'pointer' }}
+            src={image}
+            onClick={() => handleModalOpen()}
+          />
         </div>
       }
       open={modalOpen}
@@ -248,10 +239,7 @@ const ModalAlbum = ({ albumId, image, useImage, httpService }) => {
 ModalAlbum.propTypes = {
   albumId: PropTypes.string.isRequired,
   image: PropTypes.string,
-  useImage: PropTypes.bool,
   httpService: PropTypes.object.isRequired,
 };
-
-ModalAlbum.defaultProps = { image: '', useImage: false };
 
 export default ModalAlbum;

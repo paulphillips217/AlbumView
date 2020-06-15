@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes, { number } from 'prop-types';
+import PropTypes from 'prop-types';
 import { Button, Dropdown, Modal } from 'semantic-ui-react';
 import { getAlbumViewTheme, getContextGridColumns } from '../store/selectors';
 import {

@@ -3,7 +3,7 @@
 
 // for testing: to log out use      localStorage.setItem('accessToken', '');
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import SplitPane from 'react-split-pane';
 import { ThemeProvider } from 'emotion-theming';

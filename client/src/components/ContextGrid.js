@@ -18,7 +18,6 @@ import {
   getContextGridColumns,
   getDataLoading,
 } from '../store/selectors';
-import AlbumAccordion from './AlbumAccordion';
 import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
 import PropTypes from 'prop-types';
 import {
@@ -65,10 +64,10 @@ const ContextGrid = ({
                 name: '',
                 albumId: e.album.id,
                 albumName: e.album.name,
-                artist: e.album.artists[0].name,
+                artist: e.album.artists[0]
+                  ? e.album.artists[0].name
+                  : 'unknown artist',
                 image: getImage(e.album.images),
-                href: e.href,
-                uri: e.uri,
               }));
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
@@ -92,10 +91,10 @@ const ContextGrid = ({
                 name: e.track.name,
                 albumId: e.track.album.id,
                 albumName: e.track.album.name,
-                artist: e.track.album.artists[0].name,
+                artist: e.track.album.artists[0]
+                  ? e.track.album.artists[0].name
+                  : 'unknown artist',
                 image: getImage(e.track.album.images),
-                href: e.track.href,
-                uri: e.track.uri,
               }));
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
@@ -125,8 +124,6 @@ const ContextGrid = ({
                   albumName: e.name,
                   artist: e.artists[0].name,
                   image: getImage(e.images),
-                  href: e.href,
-                  uri: e.uri,
                   albumGroup: e.album_group,
                   albumType: e.album_type,
                 }));
@@ -160,10 +157,10 @@ const ContextGrid = ({
                   name: e.track.name,
                   albumId: e.track.album.id,
                   albumName: e.track.album.name,
-                  artist: e.track.album.artists[0].name,
+                  artist: e.track.album.artists[0]
+                    ? e.track.album.artists[0].name
+                    : 'unknown artist',
                   image: getImage(e.track.album.images),
-                  href: e.track.href,
-                  uri: e.track.uri,
                 }));
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)
@@ -206,20 +203,6 @@ const ContextGrid = ({
     ) {
       setContextGridOffset(contextGridData.length);
     }
-    /*
-    if (
-      dataLoading &&
-      contextGridOffset >= contextGridData.length &&
-      !contextGridMore
-    ) {
-      console.log(
-        'cancelling loading from context grid: ',
-        contextGridOffset,
-        contextGridMore
-      );
-      setDataLoading(false);
-    }
-     */
   }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
 
   const handleAccordionClick = (index) => {
@@ -229,30 +212,17 @@ const ContextGrid = ({
 
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
-      {contextGridType === GridDataType.Track && (
-        <AlbumAccordion
-          activeIndex={activeIndex}
-          index={index}
-          item={item}
+      <div style={theme}>
+        <ModalAlbum
+          albumId={item.albumId}
+          image={item.image}
           httpService={httpService}
-          handleAccordionClick={handleAccordionClick}
-          style={theme}
         />
-      )}
-      {contextGridType === GridDataType.Album && (
-        <div className={'pp-test'} style={theme}>
-          <ModalAlbum
-            albumId={item.albumId}
-            image={item.image}
-            useImage={true}
-            httpService={httpService}
-          />
-          <div style={theme}>
-            {!!item.artist && <div>{item.artist}</div>}
-            {item.name || item.albumName}
-          </div>
+        <div style={theme}>
+          {!!item.artist && <div>{item.artist}</div>}
+          {item.name || item.albumName}
         </div>
-      )}
+      </div>
     </Grid.Column>
   );
 

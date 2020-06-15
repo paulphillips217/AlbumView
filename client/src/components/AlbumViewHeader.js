@@ -13,7 +13,8 @@ import {
   setContextListOffset,
   setContextItem,
   setRelatedToArtist,
-  setDataLoading, setContextGridMore
+  setDataLoading,
+  setContextGridMore,
 } from '../store/actions';
 import {
   getContextItem,
@@ -39,7 +40,6 @@ const AlbumViewHeader = ({
 }) => {
   const theme = useTheme();
   const [contextData, setContextData] = useState({ name: '', description: '' });
-  console.log('albumViewHeader theme: ', theme);
 
   useEffect(() => {
     const getContextData = () => {
@@ -159,7 +159,10 @@ const AlbumViewHeader = ({
             />
           </Segment>
         </Grid.Column>
-        <Grid.Column width={8}>
+        <Grid.Column>
+          <Segment basic textAlign="center"></Segment>
+        </Grid.Column>
+        <Grid.Column width={7}>
           <Segment basic textAlign="center">
             <h1>{contextData.name}</h1>
             {contextData.description && (
@@ -173,10 +176,18 @@ const AlbumViewHeader = ({
         </Grid.Column>
         <Grid.Column>
           <Segment basic textAlign="center">
-            <ModalConfig />
             {dataLoading && (
-              <Button onClick={handleCancelLoading}>Cancel Loading</Button>
+              <Button onClick={handleCancelLoading}>
+                Loading
+                <br />
+                (click to cancel)
+              </Button>
             )}
+          </Segment>
+        </Grid.Column>
+        <Grid.Column>
+          <Segment basic textAlign="center">
+            <ModalConfig />
           </Segment>
         </Grid.Column>
       </Grid>
