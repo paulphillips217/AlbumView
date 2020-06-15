@@ -6,7 +6,7 @@ import { useTheme } from 'emotion-theming';
 import {
   filterByAlbumType,
   getImage,
-  sortByArtistThenAlbum,
+  sortByArtistThenAlbumName,
 } from '../util/utilities';
 import {
   getContextType,
@@ -68,11 +68,12 @@ const ContextGrid = ({
                   ? e.album.artists[0].name
                   : 'unknown artist',
                 image: getImage(e.album.images),
+                releaseDate: e.album.release_date,
               }));
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
                 : data;
-              setContextGridData(newData.sort(sortByArtistThenAlbum));
+              setContextGridData(newData.sort(sortByArtistThenAlbumName));
               setContextGridType(GridDataType.Album);
               setContextGridMore(!!rawData.next);
               if (!rawData.next) {
@@ -95,11 +96,12 @@ const ContextGrid = ({
                   ? e.track.album.artists[0].name
                   : 'unknown artist',
                 image: getImage(e.track.album.images),
+                releaseDate: e.track.album.release_date,
               }));
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
                 : data;
-              setContextGridData(newData.sort(sortByArtistThenAlbum));
+              setContextGridData(newData.sort(sortByArtistThenAlbumName));
               setContextGridType(GridDataType.Track);
               setContextGridMore(!!rawData.next);
               if (!rawData.next) {
@@ -124,13 +126,14 @@ const ContextGrid = ({
                   albumName: e.name,
                   artist: e.artists[0].name,
                   image: getImage(e.images),
+                  releaseDate: e.release_date,
                   albumGroup: e.album_group,
                   albumType: e.album_type,
                 }));
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)
                   : data;
-                setContextGridData(newData.sort(sortByArtistThenAlbum));
+                setContextGridData(newData.sort(sortByArtistThenAlbumName));
                 setContextGridType(GridDataType.Album);
                 setContextGridMore(!!rawData.next);
                 if (!rawData.next) {
@@ -161,6 +164,7 @@ const ContextGrid = ({
                     ? e.track.album.artists[0].name
                     : 'unknown artist',
                   image: getImage(e.track.album.images),
+                  releaseDate: e.track.album.release_date,
                 }));
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)

@@ -34,13 +34,28 @@ export const stripLeadingArticle = (string) => {
   return string.replace(/^(an?|the)\s/i, '');
 };
 
-export const sortByArtistThenAlbum = (a, b) => {
+export const sortByArtistThenAlbumName = (a, b) => {
   const artist1 = stripLeadingArticle(a.artist).toLowerCase();
   const artist2 = stripLeadingArticle(b.artist).toLowerCase();
   // if the artists are the same, sort by the album names
   if (artist1 === artist2) {
     const albumName1 = stripLeadingArticle(a.albumName).toLowerCase();
     const albumName2 = stripLeadingArticle(b.albumName).toLowerCase();
+    if (albumName1 === albumName2) {
+      return 0;
+    }
+    return albumName1 > albumName2;
+  }
+  return artist1 > artist2;
+};
+
+export const sortByArtistThenAlbumDate = (a, b) => {
+  const artist1 = stripLeadingArticle(a.artist).toLowerCase();
+  const artist2 = stripLeadingArticle(b.artist).toLowerCase();
+  // if the artists are the same, sort by the album names
+  if (artist1 === artist2) {
+    const albumName1 = stripLeadingArticle(a.releaseDate).toLowerCase();
+    const albumName2 = stripLeadingArticle(b.releaseDate).toLowerCase();
     if (albumName1 === albumName2) {
       return 0;
     }

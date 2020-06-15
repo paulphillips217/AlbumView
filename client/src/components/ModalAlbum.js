@@ -68,7 +68,7 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
     );
   }
 
-  const getTrackHeartOffset = (discNumber) => {
+  const getTrackIndexOffset = (discNumber) => {
     return discTracks.reduce((result, disc, index) => {
       if (index < discNumber) {
         return result + disc.length;
@@ -144,23 +144,37 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
       }
       await httpService.put(`/player-shuffle/false`);
       await httpService.put(`/player-pause`);
-      //await httpService.post(`/player-next`);
 
       for (let index = 0; index < albumData.tracks.items.length; index++) {
         await httpService.post(
           `/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
         );
       }
-
-      //await httpService.post(`/queue-track/${}`)
-      //status = await httpService.get(`/player-status`);
-      //console.log('play album status: ', status);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const DiscBlock = (discNumber, trackHeartOffset) => (
+  const handleTrackPlayClick = async (index) => {
+    try {
+      setPlayerInactive(false);
+      let status = await httpService.get(`/player-status`);
+      if (status.emptyResponse) {
+        setPlayerInactive(true);
+        return;
+      }
+      await httpService.put(`/player-shuffle/false`);
+      await httpService.put(`/player-pause`);
+
+      await httpService.post(
+        `/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const DiscBlock = (discNumber, trackIndexOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
         <Header size={'small'} className={'disc-number-header'} style={theme}>
@@ -172,16 +186,18 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
           <AlbumGridColumn
             tracks={leftSideTracks[discNumber]}
             trackHearts={trackHearts}
-            trackHeartOffset={trackHeartOffset}
+            trackIndexOffset={trackIndexOffset}
             handleTrackHeartClick={handleTrackHeartClick}
+            handleTrackPlayClick={handleTrackPlayClick}
           />
         </Grid.Column>
         <Grid.Column>
           <AlbumGridColumn
             tracks={rightSideTracks[discNumber]}
             trackHearts={trackHearts}
-            trackHeartOffset={trackHeartOffset}
+            trackIndexOffset={trackIndexOffset}
             handleTrackHeartClick={handleTrackHeartClick}
+            handleTrackPlayClick={handleTrackPlayClick}
           />
         </Grid.Column>
       </Grid.Row>
@@ -228,7 +244,7 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
           </Header>
           {discTracks &&
             discTracks.map((item, index) =>
-              DiscBlock(index, getTrackHeartOffset(index))
+              DiscBlock(index, getTrackIndexOffset(index))
             )}
         </Modal.Description>
       </Modal.Content>

@@ -6,30 +6,19 @@ import PropTypes from 'prop-types';
 const AlbumGridColumn = ({
   tracks,
   trackHearts,
-  trackHeartOffset,
+  trackIndexOffset,
   handleTrackHeartClick,
+  handleTrackPlayClick,
 }) => {
-  console.log('AlbumGridColumn trackHeartOffset', trackHeartOffset);
+  console.log('AlbumGridColumn trackIndexOffset', trackIndexOffset);
   return (
     <Grid columns={3}>
       {tracks.map((item) => (
         <Grid.Row style={{ padding: '0px' }}>
-          <Grid.Column style={{ width: '2rem' }}>
-            {' '}
-            {item.track_number}{' '}
-          </Grid.Column>
-          <Grid.Column style={{ width: 'calc(100% - 8rem)' }}>
-            {' '}
-            {item.name}{' '}
-          </Grid.Column>
-          <Grid.Column style={{ width: '3rem' }}>
-            {' '}
-            {msToSongTime(item.duration_ms)}{' '}
-          </Grid.Column>
-          <Grid.Column style={{ width: '3rem' }}>
+          <Grid.Column style={{ width: '3rem', paddingLeft: '0.5rem', paddingRight: '0' }}>
             <Icon
               name={
-                trackHearts[trackHeartOffset + item.track_number - 1]
+                trackHearts[trackIndexOffset + item.track_number - 1]
                   ? 'heart'
                   : 'heart outline'
               }
@@ -38,11 +27,26 @@ const AlbumGridColumn = ({
               onClick={() =>
                 handleTrackHeartClick(
                   item.id,
-                  trackHeartOffset + item.track_number - 1,
-                  trackHearts[trackHeartOffset + item.track_number - 1]
+                  trackIndexOffset + item.track_number - 1,
+                  trackHearts[trackIndexOffset + item.track_number - 1]
                 )
               }
             />
+            <Icon
+              name={'play'}
+              size="small"
+              color="green"
+              onClick={() => handleTrackPlayClick(trackIndexOffset + item.track_number - 1)}
+            />
+          </Grid.Column>
+          <Grid.Column style={{ width: '1.5rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
+            {item.track_number}
+          </Grid.Column>
+          <Grid.Column style={{ width: 'calc(100% - 8.5rem)', paddingLeft: '0.5rem', paddingRight: '0.5rem'}}>
+            {item.name}
+          </Grid.Column>
+          <Grid.Column style={{ width: '3rem', paddingLeft: '0.5rem', paddingRight: '0.5rem'}}>
+            {msToSongTime(item.duration_ms)}
           </Grid.Column>
         </Grid.Row>
       ))}
@@ -54,6 +58,7 @@ AlbumGridColumn.propTypes = {
   tracks: PropTypes.array.isRequired,
   trackHearts: PropTypes.array.isRequired,
   handleTrackHeartClick: PropTypes.func.isRequired,
+  handleTrackPlayClick: PropTypes.func.isRequired
 };
 
 export default AlbumGridColumn;
