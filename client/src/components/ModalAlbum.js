@@ -5,8 +5,34 @@ import moment from 'moment';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
 import { useTheme } from 'emotion-theming';
+import {
+  setContextGridData,
+  setContextGridMore,
+  setContextGridOffset,
+  setContextItem,
+  setContextListData,
+  setContextListOffset,
+  setContextType,
+  setDataLoading,
+  setRelatedToArtist,
+} from '../store/actions';
+import { connect } from 'react-redux';
+import { ContextType } from '../store/types';
 
-const ModalAlbum = ({ albumId, image, httpService }) => {
+const ModalAlbum = ({
+  albumId,
+  image,
+  setContextType,
+  setContextItem,
+  setDataLoading,
+  setRelatedToArtist,
+  setContextGridData,
+  setContextGridOffset,
+  setContextListData,
+  setContextListOffset,
+  setContextGridMore,
+  httpService,
+}) => {
   const theme = useTheme();
   const [albumData, setAlbumData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,8 +66,8 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
   }, [modalOpen, albumId, albumData, httpService]);
 
   const headerTitle = albumData.release_date
-    ? `${albumData.name} (${moment(albumData.release_date).format('YYYY')}) `
-    : `${albumData.name} `;
+    ? `${albumData.name} (${moment(albumData.release_date).format('YYYY')})`
+    : `${albumData.name}`;
 
   let discTracks = [];
   let leftSideTracks = [];
@@ -174,6 +200,20 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
     }
   };
 
+  const handleArtistClick = () => {
+    if (albumData.artists) {
+      setContextGridOffset(0);
+      setContextListOffset(0);
+      setContextGridData([]);
+      setContextListData([]);
+      setRelatedToArtist('');
+      setContextGridMore(true);
+      setDataLoading(true);
+      setContextItem(albumData.artists[0].id);
+      setContextType(ContextType.Artists);
+    }
+  };
+
   const DiscBlock = (discNumber, trackIndexOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
@@ -239,7 +279,10 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
       <Modal.Content image style={theme}>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
-          <Header style={{ ...theme, 'padding-bottom': '10px' }}>
+          <Header
+            style={{ ...theme, 'padding-bottom': '10px', cursor: 'pointer' }}
+            onClick={() => handleArtistClick()}
+          >
             {albumData.artists && albumData.artists[0].name}
           </Header>
           {discTracks &&
@@ -255,7 +298,27 @@ const ModalAlbum = ({ albumId, image, httpService }) => {
 ModalAlbum.propTypes = {
   albumId: PropTypes.string.isRequired,
   image: PropTypes.string,
+  setContextType: PropTypes.func.isRequired,
+  setContextItem: PropTypes.func.isRequired,
+  setRelatedToArtist: PropTypes.func.isRequired,
+  setContextGridData: PropTypes.func.isRequired,
+  setContextGridOffset: PropTypes.func.isRequired,
+  setContextListData: PropTypes.func.isRequired,
+  setContextListOffset: PropTypes.func.isRequired,
+  setContextGridMore: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
 
-export default ModalAlbum;
+const mapDispatchToProps = (dispatch) => ({
+  setContextType: (type) => dispatch(setContextType(type)),
+  setContextItem: (id) => dispatch(setContextItem(id)),
+  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
+  setContextGridData: (data) => dispatch(setContextGridData(data)),
+  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
+  setContextListData: (data) => dispatch(setContextListData(data)),
+  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+});
+
+export default connect(null, mapDispatchToProps)(ModalAlbum);

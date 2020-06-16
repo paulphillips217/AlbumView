@@ -20,12 +20,14 @@ import {
   getContextItem,
   getContextType,
   getDataLoading,
+  getRelatedToArtist,
 } from '../store/selectors';
 import ModalConfig from './ModalConfig';
 
 const AlbumViewHeader = ({
   contextType,
   contextItem,
+  relatedToArtist,
   dataLoading,
   setContextItem,
   setDataLoading,
@@ -57,16 +59,52 @@ const AlbumViewHeader = ({
           });
           break;
         case ContextType.Artists:
-          setContextData({
-            name: 'Your Saved Artists',
-            description: '',
-          });
+          if (contextItem) {
+            httpService
+              .get(`/artist-data/${contextItem}`)
+              .then((data) => {
+                setContextData({
+                  name: data.name,
+                  description: '',
+                });
+              })
+              .catch((error) => console.log(error));
+          } else {
+            setContextData({
+              name: 'Your Saved Artists',
+              description: '',
+            });
+          }
           break;
         case ContextType.RelatedArtists:
-          setContextData({
-            name: 'Related Artists',
-            description: '',
-          });
+          if (!relatedToArtist && !contextItem) {
+            setContextData({
+              name: 'Related Artists (choose one)',
+              description: '',
+            });
+          }
+          if (relatedToArtist && !contextItem) {
+            httpService
+              .get(`/artist-data/${relatedToArtist}`)
+              .then((data) => {
+                setContextData({
+                  name: `${data.name} (choose related artist)`,
+                  description: '',
+                });
+              })
+              .catch((error) => console.log(error));
+          }
+          if (contextItem) {
+            httpService
+              .get(`/artist-data/${contextItem}`)
+              .then((data) => {
+                setContextData({
+                  name: data.name,
+                  description: '',
+                });
+              })
+              .catch((error) => console.log(error));
+          }
           break;
         case ContextType.Playlists:
           if (contextItem) {
@@ -94,7 +132,7 @@ const AlbumViewHeader = ({
       }
     };
     getContextData();
-  }, [contextType, contextItem, httpService]);
+  }, [contextType, contextItem, relatedToArtist, httpService]);
 
   const listOptions = [
     {
@@ -198,6 +236,7 @@ const AlbumViewHeader = ({
 AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextItem: PropTypes.string.isRequired,
+  relatedToArtist: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextType: PropTypes.func.isRequired,
@@ -214,6 +253,7 @@ AlbumViewHeader.propTypes = {
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextItem: getContextItem(state),
+  relatedToArtist: getRelatedToArtist(state),
   dataLoading: getDataLoading(state),
 });
 

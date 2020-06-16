@@ -11,7 +11,7 @@ const getSpotifyUrl = (req) => {
       return 'https://api.spotify.com/v1/me/player/recently-played?limit=10';
     case /\/playlist-tracks*/.test(req.path):
       // list tracks for a playlist
-      return `https://api.spotify.com/v1/playlists/${req.params.id}/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
+      return `https://api.spotify.com/v1/playlists/${req.params.id}/tracks?offset=${req.params.offset}&limit=${req.params.limit}&market=US`;
     case /\/playlist-lists*/.test(req.path):
       // list of playlists
       return `https://api.spotify.com/v1/me/playlists?offset=${req.params.offset}&limit=${req.params.limit}`;
@@ -23,16 +23,19 @@ const getSpotifyUrl = (req) => {
       return `https://api.spotify.com/v1/me/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
     case /\/track-list*/.test(req.path):
       // list of saved tracks
-      return `https://api.spotify.com/v1/me/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
+      return `https://api.spotify.com/v1/me/tracks?offset=${req.params.offset}&limit=${req.params.limit}&market=US`;
     case /\/album-data*/.test(req.path):
       // information for a single album
-      return `https://api.spotify.com/v1/albums/${req.params.id}`;
+      return `https://api.spotify.com/v1/albums/${req.params.id}?market=US`;
     case /\/tracks\/contains*/.test(req.path):
       // check whether the comma-separated list of track ids are contained in my favorites
       return `https://api.spotify.com/v1/me/tracks/contains?ids=${req.params.ids}`;
     case /\/albums\/contains*/.test(req.path):
       // check whether the comma-separated list of track ids are contained in my favorites
       return `https://api.spotify.com/v1/me/albums/contains?ids=${req.params.ids}`;
+    case /\/artist-data*/.test(req.path):
+      // information for a single artist
+      return `https://api.spotify.com/v1/artists/${req.params.id}`;
     case /\/artist-list*/.test(req.path):
       // list of saved artists
       return `https://api.spotify.com/v1/me/following?type=artist&after=${req.params.offset}&limit=${req.params.limit}`;
