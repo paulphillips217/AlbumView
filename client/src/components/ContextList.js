@@ -2,12 +2,14 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { List, Image } from 'semantic-ui-react';
-import { getImage, sortByName } from '../util/utilities';
+import { getImage } from '../util/utilities';
+import { sortByName, sortGridData } from '../util/sortUtils';
 import {
   getContextListData,
   getContextListMore,
   getContextListOffset,
   getContextType,
+  getPlaylistSort,
 } from '../store/selectors';
 import {
   setContextGridData,
@@ -29,6 +31,7 @@ const ContextList = ({
   contextListData,
   contextListOffset,
   contextListMore,
+  playlistSortType,
   setContextItem,
   setDataLoading,
   setRelatedToArtist,
@@ -84,7 +87,7 @@ const ContextList = ({
                 image: getImage(e.images),
               }));
               setContextListData(
-                contextListData.concat(parsedData).sort(sortByName)
+                sortGridData(contextListData.concat(parsedData), playlistSortType)
               );
               setContextListMore(!!data.next);
             })
@@ -168,6 +171,7 @@ ContextList.propTypes = {
   contextListData: PropTypes.array.isRequired,
   contextListOffset: PropTypes.number.isRequired,
   contextListMore: PropTypes.bool.isRequired,
+  playlistSortType: PropTypes.string.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setRelatedToArtist: PropTypes.func.isRequired,
@@ -185,6 +189,7 @@ const mapStateToProps = (state) => ({
   contextListData: getContextListData(state),
   contextListOffset: getContextListOffset(state),
   contextListMore: getContextListMore(state),
+  playlistSortType: getPlaylistSort(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

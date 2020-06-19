@@ -17,8 +17,14 @@ import {
   getContextGridMore,
   getContextGridColumns,
   getDataLoading,
+  getContextSortType,
 } from '../store/selectors';
-import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import {
+  ContextType,
+  GridDataType,
+  SortTypes,
+  SPOTIFY_PAGE_LIMIT,
+} from '../store/types';
 import PropTypes from 'prop-types';
 import {
   setContextGridData,
@@ -28,16 +34,17 @@ import {
   setDataLoading,
 } from '../store/actions';
 import ModalAlbum from './ModalAlbum';
+import { sortGridData } from '../util/sortUtils';
 
 const ContextGrid = ({
   contextType,
   contextItem,
   dataLoading,
   contextGridData,
-  contextGridType,
   contextGridOffset,
   contextGridMore,
   contextGridColumns,
+  contextSortType,
   setContextGridData,
   setContextGridType,
   setContextGridOffset,
@@ -60,8 +67,8 @@ const ContextGrid = ({
             .then((rawData) => {
               console.log('saved album data', rawData, contextGridOffset);
               const data = rawData.items.map((e) => ({
-                id: '',
-                name: '',
+                trackId: '',
+                trackName: '',
                 albumId: e.album.id,
                 albumName: e.album.name,
                 artist: e.album.artists[0]
@@ -73,7 +80,7 @@ const ContextGrid = ({
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
                 : data;
-              setContextGridData(newData.sort(sortByArtistThenAlbumName));
+              setContextGridData(sortGridData(newData, contextSortType));
               setContextGridType(GridDataType.Album);
               setContextGridMore(!!rawData.next);
               if (!rawData.next) {
@@ -88,8 +95,8 @@ const ContextGrid = ({
             .then((rawData) => {
               console.log('track data', rawData);
               const data = rawData.items.map((e) => ({
-                id: e.track.id,
-                name: e.track.name,
+                trackId: e.track.id,
+                trackName: e.track.name,
                 albumId: e.track.album.id,
                 albumName: e.track.album.name,
                 artist: e.track.album.artists[0]
@@ -101,7 +108,7 @@ const ContextGrid = ({
               const newData = contextGridOffset
                 ? contextGridData.concat(data)
                 : data;
-              setContextGridData(newData.sort(sortByArtistThenAlbumName));
+              setContextGridData(sortGridData(newData, contextSortType));
               setContextGridType(GridDataType.Track);
               setContextGridMore(!!rawData.next);
               if (!rawData.next) {
@@ -120,8 +127,8 @@ const ContextGrid = ({
               .then((rawData) => {
                 console.log('artist album data', rawData);
                 const data = rawData.items.map((e) => ({
-                  id: '',
-                  name: '',
+                  trackId: '',
+                  trackName: '',
                   albumId: e.id,
                   albumName: e.name,
                   artist: e.artists[0].name,
@@ -133,7 +140,7 @@ const ContextGrid = ({
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)
                   : data;
-                setContextGridData(newData.sort(sortByArtistThenAlbumName));
+                setContextGridData(sortGridData(newData, contextSortType));
                 setContextGridType(GridDataType.Album);
                 setContextGridMore(!!rawData.next);
                 if (!rawData.next) {
@@ -156,8 +163,8 @@ const ContextGrid = ({
               )
               .then((rawData) => {
                 const data = rawData.items.map((e) => ({
-                  id: e.track.id,
-                  name: e.track.name,
+                  trackId: e.track.id,
+                  trackName: e.track.name,
                   albumId: e.track.album.id,
                   albumName: e.track.album.name,
                   artist: e.track.album.artists[0]
@@ -169,7 +176,7 @@ const ContextGrid = ({
                 const newData = contextGridOffset
                   ? contextGridData.concat(data)
                   : data;
-                setContextGridData(newData);
+                setContextGridData(sortGridData(newData, contextSortType));
                 setContextGridType(GridDataType.Track);
                 setContextGridMore(!!rawData.next);
                 if (!rawData.next) {
@@ -224,7 +231,7 @@ const ContextGrid = ({
         />
         <div style={theme}>
           {!!item.artist && <div>{item.artist}</div>}
-          {item.name || item.albumName}
+          {item.trackName || item.albumName}
         </div>
       </div>
     </Grid.Column>
@@ -293,10 +300,10 @@ ContextGrid.propTypes = {
   contextItem: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
-  contextGridType: PropTypes.string.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
   contextGridMore: PropTypes.bool.isRequired,
   contextGridColumns: PropTypes.number.isRequired,
+  contextSortType: PropTypes.string.isRequired,
   httpService: PropTypes.object.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridType: PropTypes.func.isRequired,
@@ -311,9 +318,9 @@ const mapStateToProps = (state) => ({
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
   contextGridData: getContextGridData(state),
-  contextGridType: getContextGridType(state),
   contextGridOffset: getContextGridOffset(state),
   contextGridMore: getContextGridMore(state),
+  contextSortType: getContextSortType(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

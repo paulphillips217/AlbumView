@@ -1,3 +1,5 @@
+import { ContextType } from './types';
+
 export const getAuthenticationState = (store) => store.albumView.authenticated;
 export const getAccessToken = (store) =>
   store.albumView.accessToken || localStorage.getItem('accessToken') || '';
@@ -23,3 +25,24 @@ export const getAlbumViewTheme = (store) => store.albumView.albumViewTheme;
 export const getContextGridColumns = (store) =>
   store.albumView.contextGridColumns;
 export const getDataLoading = (store) => store.albumView.dataLoading;
+export const getAlbumSort = (store) => store.albumView.albumSort;
+export const getPlaylistSort = (store) => store.albumView.playlistSort;
+export const getPlaylistTrackSort = (store) => store.albumView.playlistTrackSort;
+export const getSavedTrackSort = (store) => store.albumView.savedTrackSort;
+
+export const getContextSortType = (store) => {
+  switch (store.albumView.contextType) {
+    case ContextType.Playlists:
+      return getPlaylistTrackSort(store);
+    case ContextType.Albums:
+      return getAlbumSort(store);
+    case ContextType.Artists:
+      return getAlbumSort(store);
+    case ContextType.Tracks:
+      return getSavedTrackSort(store);
+    case ContextType.RelatedArtists:
+      return getAlbumSort(store);
+    default:
+      console.error('unknown context type in getContextSortType', store.albumView.contextType);
+  }
+};

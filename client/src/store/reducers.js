@@ -17,7 +17,13 @@ import {
   CONTEXT_GRID_MORE,
   CONTEXT_LIST_MORE,
   ALBUM_VIEW_THEME,
-  CONTEXT_GRID_COLUMNS, DATA_LOADING
+  CONTEXT_GRID_COLUMNS,
+  DATA_LOADING,
+  SortTypes,
+  ALBUM_SORT,
+  PLAYLIST_TRACK_SORT,
+  SAVED_TRACK_SORT,
+  PLAYLIST_SORT,
 } from './types';
 
 const initialState = {
@@ -44,6 +50,12 @@ const initialState = {
     localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
   contextGridColumns: localStorage.getItem('contextGridColumns') || 6,
   dataLoading: true,
+  albumSort: localStorage.getItem('albumSort') || SortTypes.ArtistThenAlbumName,
+  playlistSort: localStorage.getItem('playlistSort') || SortTypes.PlaylistName,
+  playlistTrackSort:
+    localStorage.getItem('playlistTrackSort') || SortTypes.PlaylistOrder,
+  savedTrackSort:
+    localStorage.getItem('savedTrackSort') || SortTypes.ArtistThenTrackName,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -133,6 +145,30 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting data loading', action.payload);
       return Object.assign({}, state, {
         dataLoading: action.payload,
+      });
+    case ALBUM_SORT:
+      console.log('setting album sort', action.payload);
+      localStorage.setItem('albumSort', action.payload);
+      return Object.assign({}, state, {
+        albumSort: action.payload,
+      });
+    case PLAYLIST_SORT:
+      console.log('setting playlist sort', action.payload);
+      localStorage.setItem('playlistSort', action.payload);
+      return Object.assign({}, state, {
+        playlistSort: action.payload,
+      });
+    case PLAYLIST_TRACK_SORT:
+      console.log('setting playlist track sort', action.payload);
+      localStorage.setItem('playlistTrackSort', action.payload);
+      return Object.assign({}, state, {
+        playlistTrackSort: action.payload,
+      });
+    case SAVED_TRACK_SORT:
+      console.log('setting saved track sort', action.payload);
+      localStorage.setItem('savedTrackSort', action.payload);
+      return Object.assign({}, state, {
+        savedTrackSort: action.payload,
       });
     default:
       return state;

@@ -11,7 +11,14 @@ import {
   CONTEXT_LIST_DATA,
   CONTEXT_LIST_OFFSET,
   CONTEXT_GRID_MORE,
-  CONTEXT_LIST_MORE, ALBUM_VIEW_THEME, SHOW_CONFIG, CONTEXT_GRID_COLUMNS, DATA_LOADING
+  CONTEXT_LIST_MORE,
+  ALBUM_VIEW_THEME,
+  SHOW_CONFIG,
+  CONTEXT_GRID_COLUMNS,
+  DATA_LOADING,
+  ALBUM_SORT,
+  PLAYLIST_SORT,
+  PLAYLIST_TRACK_SORT, SAVED_TRACK_SORT
 } from './types';
 
 export const setAccessToken = (accessToken) => ({
@@ -92,4 +99,24 @@ export const setContextGridColumns = (columns) => ({
 export const setDataLoading = (isLoading) => ({
   type: DATA_LOADING,
   payload: isLoading,
+});
+
+export const setAlbumSort = (sortOrder) => ({
+  type: ALBUM_SORT,
+  payload: sortOrder,
+});
+
+export const setPlaylistSort = (sortOrder) => ({
+  type: PLAYLIST_SORT,
+  payload: sortOrder,
+});
+
+export const setPlaylistTrackSort = (sortOrder) => ({
+  type: PLAYLIST_TRACK_SORT,
+  payload: sortOrder,
+});
+
+export const setSavedTrackSort = (sortOrder) => ({
+  type: SAVED_TRACK_SORT,
+  payload: sortOrder,
 });

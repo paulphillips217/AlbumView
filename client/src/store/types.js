@@ -15,6 +15,10 @@ export const SPOTIFY_PAGE_LIMIT = 50;
 export const ALBUM_VIEW_THEME = 'ALBUM_VIEW_THEME';
 export const CONTEXT_GRID_COLUMNS = 'CONTEXT_GRID_COLUMNS';
 export const DATA_LOADING = 'DATA_LOADING';
+export const ALBUM_SORT = 'ALBUM_SORT';
+export const PLAYLIST_SORT = 'PLAYLIST_SORT';
+export const PLAYLIST_TRACK_SORT = 'PLAYLIST_TRACK_SORT';
+export const SAVED_TRACK_SORT = 'SAVED_TRACK_SORT';
 
 export const ContextType = {
   Playlists: 'playlists',
@@ -35,3 +39,13 @@ export const AlbumViewTheme = {
   Light: 'light',
   Dark: 'dark',
 };
+
+export const SortTypes = {
+  ArtistThenAlbumName: 'ArtistThenAlbumName',
+  ArtistThenAlbumDate: 'ArtistThenAlbumDate',
+  ArtistThenTrackName: 'ArtistThenTrackName',
+  TrackName: 'TrackName',
+  PlaylistName: 'PlaylistName',
+  PlaylistAuthor: 'PlaylistAuthor',
+  PlaylistOrder: 'PlaylistOrder',
+}
