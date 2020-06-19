@@ -192,7 +192,7 @@ const AlbumViewHeader = ({
             <Dropdown
               inline
               options={listOptions}
-              defaultValue={contextType}
+              value={contextType}
               onChange={handleDropdownChange}
             />
           </Segment>

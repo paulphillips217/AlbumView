@@ -197,7 +197,7 @@ const ModalConfig = ({
             <Dropdown
               selection
               options={themeListOptions}
-              defaultValue={albumViewTheme}
+              value={albumViewTheme}
               onChange={handleThemeChange}
             />
           </div>
@@ -226,7 +226,7 @@ const ModalConfig = ({
             <Dropdown
               selection
               options={albumSortListOptions}
-              defaultValue={albumSort}
+              value={albumSort}
               onChange={handleAlbumSortChange}
             />
           </div>
@@ -236,7 +236,7 @@ const ModalConfig = ({
             <Dropdown
               selection
               options={playlistSortListOptions}
-              defaultValue={playlistSort}
+              value={playlistSort}
               onChange={handlePlaylistSortChange}
             />
           </div>
@@ -246,7 +246,7 @@ const ModalConfig = ({
             <Dropdown
               selection
               options={savedTrackSortListOptions}
-              defaultValue={savedTrackSort}
+              value={savedTrackSort}
               onChange={handleSavedTrackSortChange}
             />
           </div>
@@ -256,7 +256,7 @@ const ModalConfig = ({
             <Dropdown
               selection
               options={playlistTrackSortListOptions}
-              defaultValue={playlistTrackSort}
+              value={playlistTrackSort}
               onChange={handlePlaylistTrackSortChange}
             />
           </div>
