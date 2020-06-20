@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import SplitPane from 'react-split-pane';
 import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
@@ -16,13 +15,16 @@ import {
   getAuthenticationState,
   getContextType,
 } from './store/selectors';
-import ContextList from './components/ContextList';
-import ContextGrid from './components/ContextGrid';
-import AlbumViewHeader from './components/AlbumViewHeader';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
-import RelatedArtistList from './components/RelatedArtistList';
 import { useHistory } from 'react-router-dom';
+import AlbumContext from './components/AlbumContext';
+import TrackContext from './components/TrackContext';
+import PlaylistContext from './components/PlaylistContext';
+import ArtistContext from './components/ArtistContext';
+import RelatedArtistContext from './components/RelatedArtistContext';
+import LocalFiles from './components/LocalFiles';
+import LocalFileContext from './components/LocalFileContext';
 
 const lightTheme = {
   backgroundColor: 'WhiteSmoke',
@@ -34,7 +36,6 @@ const darkTheme = {
   color: 'white',
 };
 
-//class App extends Component {
 const App = ({
   isAuthenticated,
   contextType,
@@ -72,62 +73,43 @@ const App = ({
     </div>
   );
 
-  const ThreePanelDisplay = () => (
-    <SplitPane
-      split="vertical"
-      minSize={50}
-      defaultSize={350}
-      style={{ height: '50%', position: 'relative' }}
-      paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-    >
-      <ContextList httpService={httpService} />
-      <SplitPane
-        split="vertical"
-        minSize={50}
-        defaultSize={350}
-        style={{ position: 'relative' }}
-        paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-      >
-        <RelatedArtistList httpService={httpService} />
-        <ContextGrid httpService={httpService} />
-      </SplitPane>
-    </SplitPane>
+  const contextView = {};
+  contextView[ContextType.Albums] = React.createElement(
+    AlbumContext,
+    {httpService},
+    null
   );
-
-  const TwoPanelDisplay = () => (
-    <SplitPane
-      split="vertical"
-      minSize={50}
-      defaultSize={350}
-      style={{ height: '50%', position: 'relative' }}
-      paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-    >
-      <ContextList httpService={httpService} />
-      <ContextGrid httpService={httpService} />
-    </SplitPane>
+  contextView[ContextType.Tracks] = React.createElement(
+    TrackContext,
+    {httpService},
+    null
   );
-
-  const SinglePanelDisplay = () => <ContextGrid httpService={httpService} />;
+  contextView[ContextType.Playlists] = React.createElement(
+    PlaylistContext,
+    {httpService},
+    null
+  );
+  contextView[ContextType.Artists] = React.createElement(
+    ArtistContext,
+    {httpService},
+    null
+  );
+  contextView[ContextType.RelatedArtists] = React.createElement(
+    RelatedArtistContext,
+    {httpService},
+    null
+  );
+  contextView[ContextType.LocalFiles] = React.createElement(
+    LocalFileContext,
+    {httpService},
+    null
+  );
 
   if (isAuthenticated) {
     console.log('we are authenticated');
     return (
       <ThemeProvider theme={activeTheme}>
-        <div className="box" style={activeTheme}>
-          <div className="row header" style={{ paddingBottom: '5px' }}>
-            <AlbumViewHeader httpService={httpService} />
-          </div>
-          <div className="row content">
-            {(contextType === ContextType.Artists ||
-              contextType === ContextType.Playlists) && <TwoPanelDisplay />}
-            {(contextType === ContextType.Albums ||
-              contextType === ContextType.Tracks) && <SinglePanelDisplay />}
-            {contextType === ContextType.RelatedArtists && (
-              <ThreePanelDisplay />
-            )}
-          </div>
-          <div className="row footer"> </div>
-        </div>
+        {contextView[contextType]}
       </ThemeProvider>
     );
   } else {

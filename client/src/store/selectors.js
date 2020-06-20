@@ -32,16 +32,15 @@ export const getSavedTrackSort = (store) => store.albumView.savedTrackSort;
 
 export const getContextSortType = (store) => {
   switch (store.albumView.contextType) {
-    case ContextType.Playlists:
-      return getPlaylistTrackSort(store);
     case ContextType.Albums:
-      return getAlbumSort(store);
     case ContextType.Artists:
+    case ContextType.RelatedArtists:
+    case ContextType.LocalFiles:
       return getAlbumSort(store);
     case ContextType.Tracks:
       return getSavedTrackSort(store);
-    case ContextType.RelatedArtists:
-      return getAlbumSort(store);
+    case ContextType.Playlists:
+      return getPlaylistTrackSort(store);
     default:
       console.error('unknown context type in getContextSortType', store.albumView.contextType);
   }

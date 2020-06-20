@@ -1,225 +1,25 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { Grid, Header } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
-import {
-  filterByAlbumType,
-  getImage,
-  sortByArtistThenAlbumName,
-} from '../util/utilities';
+import { filterByAlbumType } from '../util/utilities';
 import {
   getContextType,
-  getContextItem,
   getContextGridData,
-  getContextGridOffset,
-  getContextGridType,
-  getContextGridMore,
   getContextGridColumns,
-  getDataLoading,
-  getContextSortType,
 } from '../store/selectors';
-import {
-  ContextType,
-  GridDataType,
-  SortTypes,
-  SPOTIFY_PAGE_LIMIT,
-} from '../store/types';
+import { ContextType } from '../store/types';
 import PropTypes from 'prop-types';
-import {
-  setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
-  setContextGridType,
-  setDataLoading,
-} from '../store/actions';
 import ModalAlbum from './ModalAlbum';
-import { sortGridData } from '../util/sortUtils';
 
 const ContextGrid = ({
   contextType,
-  contextItem,
-  dataLoading,
   contextGridData,
-  contextGridOffset,
-  contextGridMore,
   contextGridColumns,
-  contextSortType,
-  setContextGridData,
-  setContextGridType,
-  setContextGridOffset,
-  setContextGridMore,
-  setDataLoading,
   httpService,
 }) => {
   const theme = useTheme();
-  const [activeIndex, setActiveIndex] = useState(-1);
-
-  useEffect(() => {
-    const getGridData = () => {
-      if (!dataLoading) {
-        return;
-      }
-      switch (contextType) {
-        case ContextType.Albums:
-          httpService
-            .get(`/album-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
-            .then((rawData) => {
-              console.log('saved album data', rawData, contextGridOffset);
-              const data = rawData.items.map((e) => ({
-                trackId: '',
-                trackName: '',
-                albumId: e.album.id,
-                albumName: e.album.name,
-                artist: e.album.artists[0]
-                  ? e.album.artists[0].name
-                  : 'unknown artist',
-                image: getImage(e.album.images),
-                releaseDate: e.album.release_date,
-              }));
-              const newData = contextGridOffset
-                ? contextGridData.concat(data)
-                : data;
-              setContextGridData(sortGridData(newData, contextSortType));
-              setContextGridType(GridDataType.Album);
-              setContextGridMore(!!rawData.next);
-              if (!rawData.next) {
-                setDataLoading(false);
-              }
-            })
-            .catch((error) => console.log(error));
-          break;
-        case ContextType.Tracks:
-          httpService
-            .get(`/track-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
-            .then((rawData) => {
-              console.log('track data', rawData);
-              const data = rawData.items.map((e) => ({
-                trackId: e.track.id,
-                trackName: e.track.name,
-                albumId: e.track.album.id,
-                albumName: e.track.album.name,
-                artist: e.track.album.artists[0]
-                  ? e.track.album.artists[0].name
-                  : 'unknown artist',
-                image: getImage(e.track.album.images),
-                releaseDate: e.track.album.release_date,
-              }));
-              const newData = contextGridOffset
-                ? contextGridData.concat(data)
-                : data;
-              setContextGridData(sortGridData(newData, contextSortType));
-              setContextGridType(GridDataType.Track);
-              setContextGridMore(!!rawData.next);
-              if (!rawData.next) {
-                setDataLoading(false);
-              }
-            })
-            .catch((error) => console.log(error));
-          break;
-        case ContextType.Artists:
-        case ContextType.RelatedArtists:
-          if (contextItem) {
-            httpService
-              .get(
-                `/artist-albums/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
-              )
-              .then((rawData) => {
-                console.log('artist album data', rawData);
-                const data = rawData.items.map((e) => ({
-                  trackId: '',
-                  trackName: '',
-                  albumId: e.id,
-                  albumName: e.name,
-                  artist: e.artists[0].name,
-                  image: getImage(e.images),
-                  releaseDate: e.release_date,
-                  albumGroup: e.album_group,
-                  albumType: e.album_type,
-                }));
-                const newData = contextGridOffset
-                  ? contextGridData.concat(data)
-                  : data;
-                setContextGridData(sortGridData(newData, contextSortType));
-                setContextGridType(GridDataType.Album);
-                setContextGridMore(!!rawData.next);
-                if (!rawData.next) {
-                  setDataLoading(false);
-                }
-              })
-              .catch((error) => console.log(error));
-          } else {
-            setContextGridData([]);
-            setContextGridType(GridDataType.Album);
-            setContextGridMore(false);
-            setDataLoading(false);
-          }
-          break;
-        case ContextType.Playlists:
-          if (contextItem) {
-            httpService
-              .get(
-                `/playlist-tracks/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
-              )
-              .then((rawData) => {
-                const data = rawData.items.map((e) => ({
-                  trackId: e.track.id,
-                  trackName: e.track.name,
-                  albumId: e.track.album.id,
-                  albumName: e.track.album.name,
-                  artist: e.track.album.artists[0]
-                    ? e.track.album.artists[0].name
-                    : 'unknown artist',
-                  image: getImage(e.track.album.images),
-                  releaseDate: e.track.album.release_date,
-                }));
-                const newData = contextGridOffset
-                  ? contextGridData.concat(data)
-                  : data;
-                setContextGridData(sortGridData(newData, contextSortType));
-                setContextGridType(GridDataType.Track);
-                setContextGridMore(!!rawData.next);
-                if (!rawData.next) {
-                  setDataLoading(false);
-                }
-              })
-              .catch((error) => console.log(error));
-          } else {
-            setContextGridData([]);
-            setContextGridType(GridDataType.Track);
-            setContextGridMore(false);
-            setDataLoading(false);
-          }
-          break;
-        default:
-          setContextGridData([]);
-          setContextGridType(GridDataType.Track);
-          setContextGridMore(false);
-          setDataLoading(false);
-          console.log(
-            'unknown context type in ContextGrid.getGridData',
-            contextType
-          );
-      }
-    };
-    getGridData();
-  }, [contextType, contextItem, contextGridOffset]);
-
-  useEffect(() => {
-    // get all the pages in the background
-    if (
-      dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
-    ) {
-      setContextGridOffset(contextGridData.length);
-    }
-  }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
-
-  const handleAccordionClick = (index) => {
-    const newIndex = activeIndex === index ? -1 : index;
-    setActiveIndex(newIndex);
-  };
 
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
@@ -297,38 +97,15 @@ const ContextGrid = ({
 
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
-  contextItem: PropTypes.string.isRequired,
-  dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
-  contextGridOffset: PropTypes.number.isRequired,
-  contextGridMore: PropTypes.bool.isRequired,
   contextGridColumns: PropTypes.number.isRequired,
-  contextSortType: PropTypes.string.isRequired,
   httpService: PropTypes.object.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
-  contextItem: getContextItem(state),
-  dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
   contextGridData: getContextGridData(state),
-  contextGridOffset: getContextGridOffset(state),
-  contextGridMore: getContextGridMore(state),
-  contextSortType: getContextSortType(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ContextGrid);
+export default connect(mapStateToProps)(ContextGrid);

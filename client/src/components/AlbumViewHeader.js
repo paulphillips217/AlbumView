@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Card, Dropdown, Grid, Segment } from 'semantic-ui-react';
@@ -15,19 +15,14 @@ import {
   setRelatedToArtist,
   setDataLoading,
   setContextGridMore,
+  setContextListMore,
 } from '../store/actions';
-import {
-  getContextItem,
-  getContextType,
-  getDataLoading,
-  getRelatedToArtist,
-} from '../store/selectors';
+import { getContextType, getDataLoading } from '../store/selectors';
 import ModalConfig from './ModalConfig';
 
 const AlbumViewHeader = ({
   contextType,
-  contextItem,
-  relatedToArtist,
+  contextData,
   dataLoading,
   setContextItem,
   setDataLoading,
@@ -35,104 +30,12 @@ const AlbumViewHeader = ({
   setRelatedToArtist,
   setContextGridData,
   setContextGridOffset,
+  setContextGridMore,
   setContextListData,
   setContextListOffset,
-  setContextGridMore,
-  httpService,
+  setContextListMore,
 }) => {
   const theme = useTheme();
-  const [contextData, setContextData] = useState({ name: '', description: '' });
-
-  useEffect(() => {
-    const getContextData = () => {
-      switch (contextType) {
-        case ContextType.Albums:
-          setContextData({
-            name: 'Your Saved Albums',
-            description: '',
-          });
-          break;
-        case ContextType.Tracks:
-          setContextData({
-            name: 'Your Saved Tracks',
-            description: '',
-          });
-          break;
-        case ContextType.Artists:
-          if (contextItem) {
-            httpService
-              .get(`/artist-data/${contextItem}`)
-              .then((data) => {
-                setContextData({
-                  name: data.name,
-                  description: '',
-                });
-              })
-              .catch((error) => console.log(error));
-          } else {
-            setContextData({
-              name: 'Your Saved Artists',
-              description: '',
-            });
-          }
-          break;
-        case ContextType.RelatedArtists:
-          if (!relatedToArtist && !contextItem) {
-            setContextData({
-              name: 'Related Artists (choose one)',
-              description: '',
-            });
-          }
-          if (relatedToArtist && !contextItem) {
-            httpService
-              .get(`/artist-data/${relatedToArtist}`)
-              .then((data) => {
-                setContextData({
-                  name: `${data.name} (choose related artist)`,
-                  description: '',
-                });
-              })
-              .catch((error) => console.log(error));
-          }
-          if (contextItem) {
-            httpService
-              .get(`/artist-data/${contextItem}`)
-              .then((data) => {
-                setContextData({
-                  name: data.name,
-                  description: '',
-                });
-              })
-              .catch((error) => console.log(error));
-          }
-          break;
-        case ContextType.Playlists:
-          if (contextItem) {
-            httpService
-              .get(`/playlist-data/${contextItem}`)
-              .then((data) => {
-                setContextData({
-                  name: data.name,
-                  description: data.description,
-                });
-              })
-              .catch((error) => console.log(error));
-          } else {
-            setContextData({
-              name: 'Please Select a Playlist',
-              description: '',
-            });
-          }
-          break;
-        default:
-          console.log(
-            'unknown context type in Header.getContextData',
-            contextType
-          );
-      }
-    };
-    getContextData();
-  }, [contextType, contextItem, relatedToArtist, httpService]);
 
   const listOptions = [
     {
@@ -160,6 +63,11 @@ const AlbumViewHeader = ({
       text: 'Related Artists',
       value: ContextType.RelatedArtists,
     },
+    {
+      key: 'local-file-key',
+      text: 'Local Files',
+      value: ContextType.LocalFiles,
+    },
   ];
 
   const handleDropdownChange = (e, { value }) => {
@@ -171,6 +79,7 @@ const AlbumViewHeader = ({
     setContextItem('');
     setRelatedToArtist('');
     setContextGridMore(true);
+    setContextListMore(true);
     setDataLoading(true);
     console.log('handle dropdown change', value);
   };
@@ -198,7 +107,9 @@ const AlbumViewHeader = ({
           </Segment>
         </Grid.Column>
         <Grid.Column>
-          <Segment basic textAlign="center"></Segment>
+          <Segment basic textAlign="center">
+            {' '}
+          </Segment>
         </Grid.Column>
         <Grid.Column width={7}>
           <Segment basic textAlign="center">
@@ -235,25 +146,22 @@ const AlbumViewHeader = ({
 
 AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
-  contextItem: PropTypes.string.isRequired,
-  relatedToArtist: PropTypes.string.isRequired,
+  contextData: PropTypes.object.isRequired,
   dataLoading: PropTypes.bool.isRequired,
-  httpService: PropTypes.object.isRequired,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setRelatedToArtist: PropTypes.func.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
+  setContextGridMore: PropTypes.func.isRequired,
   setContextListData: PropTypes.func.isRequired,
   setContextListOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
+  setContextListMore: PropTypes.func.isRequired,
   setDataLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
-  contextItem: getContextItem(state),
-  relatedToArtist: getRelatedToArtist(state),
   dataLoading: getDataLoading(state),
 });
 
@@ -263,9 +171,10 @@ const mapDispatchToProps = (dispatch) => ({
   setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
+  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
   setContextListData: (data) => dispatch(setContextListData(data)),
   setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setContextListMore: (isMore) => dispatch(setContextListMore(isMore)),
   setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 

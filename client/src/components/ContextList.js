@@ -1,115 +1,31 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import { List, Image } from 'semantic-ui-react';
-import { getImage } from '../util/utilities';
-import { sortByName, sortGridData } from '../util/sortUtils';
-import {
-  getContextListData,
-  getContextListMore,
-  getContextListOffset,
-  getContextType,
-  getPlaylistSort,
-} from '../store/selectors';
+import { getContextListData, getContextType } from '../store/selectors';
 import {
   setContextGridData,
   setContextGridMore,
   setContextGridOffset,
   setContextItem,
-  setContextListData,
-  setContextListMore,
-  setContextListOffset,
   setDataLoading,
   setRelatedToArtist,
 } from '../store/actions';
-import { ContextType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { ContextType } from '../store/types';
 import PropTypes from 'prop-types';
 import { useTheme } from 'emotion-theming';
 
 const ContextList = ({
   contextType,
   contextListData,
-  contextListOffset,
-  contextListMore,
-  playlistSortType,
   setContextItem,
   setDataLoading,
   setRelatedToArtist,
-  setContextListData,
-  setContextListOffset,
-  setContextListMore,
   setContextGridData,
   setContextGridOffset,
   setContextGridMore,
-  httpService,
 }) => {
   const theme = useTheme();
-
-  useEffect(() => {
-    const getList = () => {
-      console.log('get context list', contextType);
-      switch (contextType) {
-        case ContextType.Albums:
-        case ContextType.Tracks:
-          setContextListData([]);
-          setContextListOffset(0);
-          setContextListMore(false);
-          break;
-        case ContextType.RelatedArtists:
-        case ContextType.Artists:
-          httpService
-            .get(`/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
-            .then((data) => {
-              console.log('artist list data', data);
-              const parsedData = data.map((e) => ({
-                id: e.id,
-                name: e.name,
-                author: '',
-                description: '',
-                image: getImage(e.images),
-              }));
-              setContextListData(
-                contextListData.concat(parsedData).sort(sortByName)
-              );
-              setContextListMore(data && data.artists && !!data.artists.next);
-            })
-            .catch((error) => console.log(error));
-          break;
-        case ContextType.Playlists:
-          httpService
-            .get(`/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
-            .then((data) => {
-              const parsedData = data.items.map((e) => ({
-                id: e.id,
-                name: e.name,
-                author: e.owner.display_name,
-                description: e.description,
-                image: getImage(e.images),
-              }));
-              setContextListData(
-                sortGridData(contextListData.concat(parsedData), playlistSortType)
-              );
-              setContextListMore(!!data.next);
-            })
-            .catch((error) => console.log(error));
-          break;
-        default:
-          console.log(
-            'unknown context type in ContextList.getList',
-            contextType
-          );
-      }
-    };
-    getList();
-  }, [contextType, contextListOffset]);
-
-  useEffect(() => {
-    // get all the pages in the background
-    if (contextListOffset < contextListData.length && contextListMore) {
-      const newPageOffset = contextListData.length;
-      setContextListOffset(newPageOffset);
-    }
-  }, [contextListData, contextListOffset, contextListMore]);
 
   const handleClick = (id) => {
     console.log('handle click id', id);
@@ -169,15 +85,8 @@ const ContextList = ({
 ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextListData: PropTypes.array.isRequired,
-  contextListOffset: PropTypes.number.isRequired,
-  contextListMore: PropTypes.bool.isRequired,
-  playlistSortType: PropTypes.string.isRequired,
-  httpService: PropTypes.object.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setRelatedToArtist: PropTypes.func.isRequired,
-  setContextListData: PropTypes.func.isRequired,
-  setContextListOffset: PropTypes.func.isRequired,
-  setContextListMore: PropTypes.func.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
@@ -187,17 +96,11 @@ ContextList.propTypes = {
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextListData: getContextListData(state),
-  contextListOffset: getContextListOffset(state),
-  contextListMore: getContextListMore(state),
-  playlistSortType: getPlaylistSort(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setContextItem: (id) => dispatch(setContextItem(id)),
   setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
-  setContextListData: (data) => dispatch(setContextListData(data)),
-  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
-  setContextListMore: (offset) => dispatch(setContextListMore(offset)),
   setContextGridData: (data) => dispatch(setContextGridData(data)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),

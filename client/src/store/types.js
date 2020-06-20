@@ -23,10 +23,10 @@ export const SAVED_TRACK_SORT = 'SAVED_TRACK_SORT';
 export const ContextType = {
   Playlists: 'playlists',
   Albums: 'albums',
-  RecentlyPlayed: 'recently-played',
   Artists: 'artists',
   Tracks: 'tracks',
   RelatedArtists: 'related-artists',
+  LocalFiles: 'local-files',
 };
 
 export const GridDataType = {
@@ -48,4 +48,4 @@ export const SortTypes = {
   PlaylistName: 'PlaylistName',
   PlaylistAuthor: 'PlaylistAuthor',
   PlaylistOrder: 'PlaylistOrder',
-}
+};

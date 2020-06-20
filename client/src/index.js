@@ -6,10 +6,11 @@ import './styles/index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
-import TrackHistory from './components/History';
 import { Provider } from 'react-redux';
 import store from './store';
 import httpService from './util/httpUtils';
+import LocalFiles from './components/LocalFiles';
+
 const commService = new httpService(store);
 
 const routing = (
@@ -18,14 +19,10 @@ const routing = (
       <Router>
         <Switch>
           <Route
-            path="/history"
+            path="/files"
             render={(props) => (
-              <TrackHistory {...props} httpService={commService} />
+              <LocalFiles {...props} httpService={commService} />
             )}
-          />
-          <Route
-            path="/home"
-            render={(props) => <App {...props} httpService={commService} />}
           />
           <Route
             render={(props) => <App {...props} httpService={commService} />}
