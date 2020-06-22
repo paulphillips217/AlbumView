@@ -22,6 +22,7 @@ import { ContextType } from '../store/types';
 const ModalAlbum = ({
   albumId,
   image,
+  useMiniImage,
   setContextType,
   setContextItem,
   setDataLoading,
@@ -249,6 +250,7 @@ const ModalAlbum = ({
       trigger={
         <div>
           <Image
+            size={useMiniImage ? 'mini': ''}
             style={{ cursor: 'pointer' }}
             src={image}
             onClick={() => handleModalOpen()}
@@ -297,7 +299,8 @@ const ModalAlbum = ({
 
 ModalAlbum.propTypes = {
   albumId: PropTypes.string.isRequired,
-  image: PropTypes.string,
+  image: PropTypes.string.isRequired,
+  useMiniImage: PropTypes.bool,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setRelatedToArtist: PropTypes.func.isRequired,
@@ -307,6 +310,10 @@ ModalAlbum.propTypes = {
   setContextListOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
+};
+
+ModalAlbum.defaultProps = {
+  useMiniImage: false,
 };
 
 const mapDispatchToProps = (dispatch) => ({

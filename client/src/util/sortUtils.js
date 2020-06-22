@@ -25,6 +25,18 @@ export const stripLeadingArticle = (string) => {
   return string ? string.replace(/^(an?|the)\s/i, '') : '';
 };
 
+export const cleanTitle = (title) => {
+  // remove all articles
+  let cleanedTitle = title.replaceAll('the ', '');
+  cleanedTitle = cleanedTitle.replaceAll('a ', '');
+  cleanedTitle = cleanedTitle.replaceAll('an ', '');
+  // remove special characters
+  cleanedTitle = cleanedTitle.replaceAll(/[\\\/\:\*\?\"\'\<\>\| \.\_]/g, '');
+  // remove anything within parentheses
+  cleanedTitle = cleanedTitle.replace(/ *\([^)]*\) */g, "");
+  return cleanedTitle.toLowerCase();
+}
+
 export const sortByArtistThenAlbumName = (a, b) => {
   const artist1 = stripLeadingArticle(a.artist).toLowerCase();
   const artist2 = stripLeadingArticle(b.artist).toLowerCase();

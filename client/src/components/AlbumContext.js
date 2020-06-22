@@ -112,12 +112,12 @@ AlbumContext.propTypes = {
   contextGridMore: PropTypes.bool.isRequired,
   contextGridColumns: PropTypes.number.isRequired,
   contextSortType: PropTypes.string.isRequired,
-  httpService: PropTypes.object.isRequired,
   setContextGridData: PropTypes.func.isRequired,
   setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
   setDataLoading: PropTypes.func.isRequired,
+  httpService: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({

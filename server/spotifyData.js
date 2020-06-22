@@ -9,6 +9,9 @@ const getSpotifyUrl = (req) => {
     case /\/history/.test(req.path):
       // track play history
       return 'https://api.spotify.com/v1/me/player/recently-played?limit=10';
+    case /\/search/.test(req.path):
+      // track play history
+      return `https://api.spotify.com/v1/search?q=${req.params.query}&type=${req.params.type}`;
     case /\/playlist-tracks*/.test(req.path):
       // list tracks for a playlist
       return `https://api.spotify.com/v1/playlists/${req.params.id}/tracks?offset=${req.params.offset}&limit=${req.params.limit}&market=US`;

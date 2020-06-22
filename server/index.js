@@ -81,6 +81,7 @@ app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
 });
 
 app.get('/history', spotifyData.talkToSpotify);
+app.get('/search/:query/:type', spotifyData.talkToSpotify);
 app.get('/playlist-list/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-tracks/:id/:offset/:limit', spotifyData.talkToSpotify);
 app.get('/playlist-data/:id', spotifyData.talkToSpotify);
