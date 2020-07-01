@@ -8,7 +8,7 @@ import ContextList from './ContextList';
 import ContextGrid from './ContextGrid';
 import AlbumViewHeader from './AlbumViewHeader';
 import PropTypes from 'prop-types';
-import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
 import { sortByName, sortGridData } from '../util/sortUtils';
 import {
@@ -28,7 +28,6 @@ import {
   setContextGridData,
   setContextGridMore,
   setContextGridOffset,
-  setContextGridType,
   setContextListData,
   setContextListMore,
   setContextListOffset,
@@ -47,7 +46,6 @@ const ArtistContext = ({
   contextListOffset,
   contextListMore,
   setContextGridData,
-  setContextGridType,
   setContextGridOffset,
   setContextGridMore,
   setContextListData,
@@ -85,7 +83,6 @@ const ArtistContext = ({
               ? contextGridData.concat(data)
               : data;
             setContextGridData(sortGridData(newData, contextSortType));
-            setContextGridType(GridDataType.Album);
             setContextGridMore(!!rawData.next);
             if (!rawData.next) {
               setDataLoading(false);
@@ -94,7 +91,6 @@ const ArtistContext = ({
           .catch((error) => console.log(error));
       } else {
         setContextGridData([]);
-        setContextGridType(GridDataType.Album);
         setContextGridMore(false);
         setDataLoading(false);
       }
@@ -182,7 +178,10 @@ const ArtistContext = ({
           paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
         >
           <ContextList httpService={httpService} />
-          <ContextGrid httpService={httpService} />
+          <ContextGrid
+            contextGridData={contextGridData}
+            httpService={httpService}
+          />
         </SplitPane>
       </div>
       <div className="row footer"> </div>
@@ -203,7 +202,6 @@ ArtistContext.propTypes = {
   contextListMore: PropTypes.bool.isRequired,
   playlistSortType: PropTypes.string.isRequired,
   setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
@@ -231,7 +229,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
   setContextListData: (data) => dispatch(setContextListData(data)),

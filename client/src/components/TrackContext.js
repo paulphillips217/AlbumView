@@ -6,7 +6,7 @@ import '../styles/flex-height.css';
 import ContextGrid from './ContextGrid';
 import AlbumViewHeader from './AlbumViewHeader';
 import PropTypes from 'prop-types';
-import { GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
 import { sortGridData } from '../util/sortUtils';
 import {
@@ -21,7 +21,6 @@ import {
   setContextGridData,
   setContextGridMore,
   setContextGridOffset,
-  setContextGridType,
   setDataLoading,
 } from '../store/actions';
 import { useTheme } from 'emotion-theming';
@@ -33,7 +32,6 @@ const TrackContext = ({
   contextGridMore,
   contextSortType,
   setContextGridData,
-  setContextGridType,
   setContextGridOffset,
   setContextGridMore,
   setDataLoading,
@@ -65,7 +63,6 @@ const TrackContext = ({
             ? contextGridData.concat(data)
             : data;
           setContextGridData(sortGridData(newData, contextSortType));
-          setContextGridType(GridDataType.Track);
           setContextGridMore(!!rawData.next);
           if (!rawData.next) {
             setDataLoading(false);
@@ -98,7 +95,10 @@ const TrackContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <ContextGrid httpService={httpService} />
+        <ContextGrid
+          contextGridData={contextGridData}
+          httpService={httpService}
+        />
       </div>
       <div className="row footer"> </div>
     </div>
@@ -113,7 +113,6 @@ TrackContext.propTypes = {
   contextGridColumns: PropTypes.number.isRequired,
   contextSortType: PropTypes.string.isRequired,
   setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
   setDataLoading: PropTypes.func.isRequired,
@@ -131,7 +130,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
   setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),

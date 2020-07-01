@@ -1,7 +1,6 @@
 import moment from 'moment';
 import {
   ContextType,
-  GridDataType,
   AlbumViewTheme,
   ACCESS_TOKEN,
   REFRESH_TOKEN,
@@ -10,7 +9,6 @@ import {
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
   CONTEXT_GRID_DATA,
-  CONTEXT_GRID_TYPE,
   CONTEXT_GRID_OFFSET,
   CONTEXT_LIST_DATA,
   CONTEXT_LIST_OFFSET,
@@ -24,6 +22,9 @@ import {
   PLAYLIST_TRACK_SORT,
   SAVED_TRACK_SORT,
   PLAYLIST_SORT,
+  SAVED_ALBUM_DATA,
+  SAVED_ALBUM_OFFSET,
+  SAVED_ALBUM_MORE,
 } from './types';
 
 const initialState = {
@@ -39,8 +40,10 @@ const initialState = {
   contextType: ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
+  savedAlbumData: [],
+  savedAlbumOffset: 0,
+  savedAlbumMore: false,
   contextGridData: [],
-  contextGridType: GridDataType.Album,
   contextGridOffset: 0,
   contextGridMore: false,
   contextListData: [],
@@ -94,15 +97,25 @@ export function albumViewReducer(state = initialState, action) {
       return Object.assign({}, state, {
         relatedToArtist: action.payload,
       });
+    case SAVED_ALBUM_DATA:
+      console.log('setting saved album data', action.payload);
+      return Object.assign({}, state, {
+        savedAlbumData: action.payload,
+      });
+    case SAVED_ALBUM_OFFSET:
+      console.log('setting saved album offset', action.payload);
+      return Object.assign({}, state, {
+        savedAlbumOffset: action.payload,
+      });
+    case SAVED_ALBUM_MORE:
+      console.log('setting saved album more', action.payload);
+      return Object.assign({}, state, {
+        savedAlbumMore: action.payload,
+      });
     case CONTEXT_GRID_DATA:
       console.log('setting context grid data', action.payload);
       return Object.assign({}, state, {
         contextGridData: action.payload,
-      });
-    case CONTEXT_GRID_TYPE:
-      console.log('setting context grid type', action.payload);
-      return Object.assign({}, state, {
-        contextGridType: action.payload,
       });
     case CONTEXT_GRID_OFFSET:
       console.log('setting context grid offset', action.payload);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -7,35 +7,33 @@ import '../styles/flex-height.css';
 import ContextGrid from './ContextGrid';
 import AlbumViewHeader from './AlbumViewHeader';
 import PropTypes from 'prop-types';
-import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
 import { sortGridData } from '../util/sortUtils';
 import {
   getContextGridColumns,
-  getContextGridData,
-  getContextGridMore,
-  getContextGridOffset,
+  getSavedAlbumData,
+  getSavedAlbumMore,
+  getSavedAlbumOffset,
   getContextSortType,
   getDataLoading,
 } from '../store/selectors';
 import {
-  setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
-  setContextGridType,
+  setSavedAlbumData,
+  setSavedAlbumMore,
+  setSavedAlbumOffset,
   setDataLoading,
 } from '../store/actions';
 
 const AlbumContext = ({
   dataLoading,
-  contextGridData,
-  contextGridOffset,
-  contextGridMore,
+  savedAlbumData,
+  savedAlbumOffset,
+  savedAlbumMore,
   contextSortType,
-  setContextGridData,
-  setContextGridType,
-  setContextGridOffset,
-  setContextGridMore,
+  setSavedAlbumData,
+  setSavedAlbumOffset,
+  setSavedAlbumMore,
   setDataLoading,
   httpService,
 }) => {
@@ -47,9 +45,9 @@ const AlbumContext = ({
         return;
       }
       httpService
-        .get(`/album-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/album-list/${savedAlbumOffset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((rawData) => {
-          console.log('saved album data', rawData, contextGridOffset);
+          console.log('saved album data', rawData, savedAlbumOffset);
           const data = rawData.items.map((e) => ({
             trackId: '',
             trackName: '',
@@ -61,12 +59,9 @@ const AlbumContext = ({
             image: getImage(e.album.images),
             releaseDate: e.album.release_date,
           }));
-          const newData = contextGridOffset
-            ? contextGridData.concat(data)
-            : data;
-          setContextGridData(sortGridData(newData, contextSortType));
-          setContextGridType(GridDataType.Album);
-          setContextGridMore(!!rawData.next);
+          const newData = savedAlbumOffset ? savedAlbumData.concat(data) : data;
+          setSavedAlbumData(sortGridData(newData, contextSortType));
+          setSavedAlbumMore(!!rawData.next);
           if (!rawData.next) {
             setDataLoading(false);
           }
@@ -74,18 +69,18 @@ const AlbumContext = ({
         .catch((error) => console.log(error));
     };
     getGridData();
-  }, [contextGridOffset]);
+  }, [savedAlbumOffset]);
 
   useEffect(() => {
     // get all the pages in the background
     if (
       dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
+      savedAlbumOffset < savedAlbumData.length &&
+      savedAlbumMore
     ) {
-      setContextGridOffset(contextGridData.length);
+      setSavedAlbumOffset(savedAlbumData.length);
     }
-  }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
+  }, [dataLoading, savedAlbumData, savedAlbumOffset, savedAlbumMore]);
 
   const contextData = {
     name: 'Your Saved Albums',
@@ -98,7 +93,10 @@ const AlbumContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <ContextGrid httpService={httpService} />
+        <ContextGrid
+          contextGridData={savedAlbumData}
+          httpService={httpService}
+        />
       </div>
       <div className="row footer"> </div>
     </div>
@@ -107,15 +105,14 @@ const AlbumContext = ({
 
 AlbumContext.propTypes = {
   dataLoading: PropTypes.bool.isRequired,
-  contextGridData: PropTypes.array.isRequired,
-  contextGridOffset: PropTypes.number.isRequired,
-  contextGridMore: PropTypes.bool.isRequired,
+  savedAlbumData: PropTypes.array.isRequired,
+  savedAlbumOffset: PropTypes.number.isRequired,
+  savedAlbumMore: PropTypes.bool.isRequired,
   contextGridColumns: PropTypes.number.isRequired,
   contextSortType: PropTypes.string.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
+  setSavedAlbumData: PropTypes.func.isRequired,
+  setSavedAlbumOffset: PropTypes.func.isRequired,
+  setSavedAlbumMore: PropTypes.func.isRequired,
   setDataLoading: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
@@ -123,17 +120,16 @@ AlbumContext.propTypes = {
 const mapStateToProps = (state) => ({
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
-  contextGridData: getContextGridData(state),
-  contextGridOffset: getContextGridOffset(state),
-  contextGridMore: getContextGridMore(state),
+  savedAlbumData: getSavedAlbumData(state),
+  savedAlbumOffset: getSavedAlbumOffset(state),
+  savedAlbumMore: getSavedAlbumMore(state),
   contextSortType: getContextSortType(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
+  setSavedAlbumData: (data) => dispatch(setSavedAlbumData(data)),
+  setSavedAlbumOffset: (offset) => dispatch(setSavedAlbumOffset(offset)),
+  setSavedAlbumMore: (isMore) => dispatch(setSavedAlbumMore(isMore)),
   setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 

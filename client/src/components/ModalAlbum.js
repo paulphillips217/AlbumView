@@ -282,7 +282,7 @@ const ModalAlbum = ({
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
           <Header
-            style={{ ...theme, 'padding-bottom': '10px', cursor: 'pointer' }}
+            style={{ ...theme, 'paddingBottom': '10px', cursor: 'pointer' }}
             onClick={() => handleArtistClick()}
           >
             {albumData.artists && albumData.artists[0].name}

@@ -10,7 +10,7 @@ import AlbumViewHeader from './AlbumViewHeader';
 import PropTypes from 'prop-types';
 import RelatedArtistList from './RelatedArtistList';
 import { useTheme } from 'emotion-theming';
-import { ContextType, GridDataType, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
 import { sortByName, sortGridData } from '../util/sortUtils';
 import {
@@ -24,13 +24,13 @@ import {
   getContextListOffset,
   getContextSortType,
   getDataLoading,
-  getPlaylistSort, getRelatedToArtist
+  getPlaylistSort,
+  getRelatedToArtist,
 } from '../store/selectors';
 import {
   setContextGridData,
   setContextGridMore,
   setContextGridOffset,
-  setContextGridType,
   setContextListData,
   setContextListMore,
   setContextListOffset,
@@ -50,7 +50,6 @@ const RelatedArtistContext = ({
   contextListOffset,
   contextListMore,
   setContextGridData,
-  setContextGridType,
   setContextGridOffset,
   setContextGridMore,
   setContextListData,
@@ -88,7 +87,6 @@ const RelatedArtistContext = ({
               ? contextGridData.concat(data)
               : data;
             setContextGridData(sortGridData(newData, contextSortType));
-            setContextGridType(GridDataType.Album);
             setContextGridMore(!!rawData.next);
             if (!rawData.next) {
               setDataLoading(false);
@@ -97,7 +95,6 @@ const RelatedArtistContext = ({
           .catch((error) => console.log(error));
       } else {
         setContextGridData([]);
-        setContextGridType(GridDataType.Album);
         setContextGridMore(false);
         setDataLoading(false);
       }
@@ -205,7 +202,10 @@ const RelatedArtistContext = ({
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
             <RelatedArtistList httpService={httpService} />
-            <ContextGrid httpService={httpService} />
+            <ContextGrid
+              contextGridData={contextGridData}
+              httpService={httpService}
+            />
           </SplitPane>
         </SplitPane>
       </div>
@@ -228,7 +228,6 @@ RelatedArtistContext.propTypes = {
   contextListMore: PropTypes.bool.isRequired,
   playlistSortType: PropTypes.string.isRequired,
   setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
   setContextGridOffset: PropTypes.func.isRequired,
   setContextGridMore: PropTypes.func.isRequired,
   setRelatedToArtist: PropTypes.func.isRequired,
@@ -256,7 +255,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
   setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
   setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
   setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),

@@ -1,94 +1,26 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Button, Grid, Header } from 'semantic-ui-react';
 import '../styles/App.css';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
-import {
-  getContextGridColumns,
-  getContextGridData,
-  getContextGridMore,
-  getContextGridOffset,
-  getDataLoading,
-} from '../store/selectors';
-import {
-  setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
-  setContextGridType,
-  setDataLoading,
-} from '../store/actions';
+import { getSavedAlbumData } from '../store/selectors';
 import { connect } from 'react-redux';
 import { getImage } from '../util/utilities';
-import { GridDataType, SortTypes, SPOTIFY_PAGE_LIMIT } from '../store/types';
+import { SortTypes } from '../store/types';
 import { cleanTitle, sortGridData } from '../util/sortUtils';
 import ModalAlbum from './ModalAlbum';
+import ModalLocalAlbum from './ModalLocalAlbum';
 
-const LocalFiles = ({
-  dataLoading,
-  contextGridData,
-  contextGridOffset,
-  contextGridMore,
-  setContextGridData,
-  setContextGridType,
-  setContextGridOffset,
-  setContextGridMore,
-  setDataLoading,
-  httpService,
-}) => {
+const LocalFiles = ({ savedAlbumData, httpService }) => {
   const theme = useTheme();
-  const [fileData, setFileData] = useState({});
+  const [fileData, setFileData] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [albumGridData, setAlbumGridData] = useState([]);
   const [searchResultData, setSearchResultData] = useState([]);
-
-  useEffect(() => {
-    const getGridData = () => {
-      if (!dataLoading) {
-        return;
-      }
-      httpService
-        .get(`/album-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
-        .then((rawData) => {
-          console.log('saved album data', rawData, contextGridOffset);
-          const data = rawData.items.map((e) => ({
-            albumId: e.album.id,
-            albumName: e.album.name,
-            artist: e.album.artists[0]
-              ? e.album.artists[0].name
-              : 'unknown artist',
-            image: getImage(e.album.images),
-            releaseDate: e.album.release_date,
-          }));
-          const newData = contextGridOffset
-            ? contextGridData.concat(data)
-            : data;
-          setContextGridData(newData);
-          setContextGridType(GridDataType.Album);
-          setContextGridMore(!!rawData.next);
-          if (!rawData.next) {
-            blendAlbumLists(albums, newData);
-            setDataLoading(false);
-          }
-        })
-        .catch((error) => console.log(error));
-    };
-    getGridData();
-  }, [contextGridOffset]);
-
-  useEffect(() => {
-    // get all the pages in the background
-    if (
-      dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
-    ) {
-      setContextGridOffset(contextGridData.length);
-    }
-  }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
-
-  //  useEffect(() => console.log('updating search results'), [searchResultData]);
+  const [hideMatches, setHideMatches] = useState(false);
 
   const onFileChange = (e) => {
+    console.log('file data', e.target.files);
     setFileData(e.target.files);
   };
 
@@ -97,33 +29,35 @@ const LocalFiles = ({
     if (fileData && fileData.length > 0) {
       Object.keys(fileData).forEach((key, index) => {
         const item = fileData[key];
+        if (!item.type.includes('audio')) {
+          return;
+        }
         const splitPath = item.webkitRelativePath.split('/');
         const artist =
           splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
         const albumName =
           splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
-        if (
-          artist &&
-          albumName &&
-          item.type.includes('audio') &&
-          !theAlbumArray.some(
-            (a) =>
-              a.artist &&
-              a.artist === artist &&
-              a.albumName &&
-              a.albumName === albumName
-          )
-        ) {
+        const fileIndex = theAlbumArray.findIndex(
+          (a) =>
+            a.artist &&
+            a.artist === artist &&
+            a.albumName &&
+            a.albumName === albumName
+        );
+        if (fileIndex >= 0) {
+          theAlbumArray[fileIndex].tracks.push(key);
+        } else {
           theAlbumArray.push({
             artist: artist,
             albumName: albumName,
-            index,
+            index: index + 1,
+            tracks: [key],
           });
         }
       });
       console.log('read local albums: ', theAlbumArray);
       setAlbums(theAlbumArray);
-      blendAlbumLists(theAlbumArray, contextGridData);
+      blendAlbumLists(theAlbumArray, savedAlbumData);
     } else {
       console.log('file import data is empty');
     }
@@ -139,11 +73,13 @@ const LocalFiles = ({
       );
       if (matchIndex >= 0) {
         blendedList[matchIndex].index = item.index;
+        blendedList[matchIndex].tracks = item.tracks;
       } else {
         blendedList.push({
           artist: item.artist,
           albumName: item.albumName,
           index: item.index,
+          tracks: item.tracks,
         });
       }
     });
@@ -222,7 +158,19 @@ const LocalFiles = ({
       key={index}
       style={{ ...theme, color: gridItemColor(item) }}
     >
-      <Grid.Column>{item.index ? item.artist : ''}</Grid.Column>
+      <Grid.Column>
+        {item.index ? (
+          <ModalLocalAlbum
+            httpService={httpService}
+            artistName={item.artist}
+            albumName={item.albumName}
+            tracks={item.tracks}
+            fileData={fileData}
+          />
+        ) : (
+          ''
+        )}
+      </Grid.Column>
       <Grid.Column>{item.index ? item.albumName : ''}</Grid.Column>
       <Grid.Column>
         {item.albumId ? item.artist : gridItemSearchButton(item)}
@@ -235,12 +183,7 @@ const LocalFiles = ({
 
   return (
     <div style={{ ...theme, paddingLeft: '20px' }}>
-      {dataLoading && (
-        <Header as="h3" style={{ ...theme, paddingTop: '50px' }}>
-          Please wait ...
-        </Header>
-      )}
-      {!dataLoading && !albums.length && (
+      {!fileData.length && !albums.length && (
         <Fragment>
           <Header as="h3" style={{ ...theme, paddingTop: '50px' }}>
             Select the directory that contains your album collection
@@ -258,6 +201,11 @@ const LocalFiles = ({
       {fileData && fileData.length > 0 && !albums.length && (
         <Button onClick={handleRead}>Read Files</Button>
       )}
+      {albums.length > 0 && (
+        <Button onClick={() => setHideMatches(!hideMatches)}>
+          {hideMatches ? 'Show Matches' : 'Hide Matches'}
+        </Button>
+      )}
       <Grid celled centered style={{ width: '80%' }}>
         <Grid.Row columns={2} style={theme}>
           <Grid.Column>
@@ -267,42 +215,25 @@ const LocalFiles = ({
             <strong>Spotify Album Library</strong>
           </Grid.Column>
         </Grid.Row>
-        {sortGridData(
-          albumGridData,
-          SortTypes.ArtistThenAlbumName
-        ).map((item, index) => GridItem(item, index))}
+        {sortGridData(albumGridData, SortTypes.ArtistThenAlbumName).map(
+          (item, index) => {
+            if (!(hideMatches && item.index && item.albumId)) {
+              return GridItem(item, index);
+            }
+          }
+        )}
       </Grid>
     </div>
   );
 };
 
 LocalFiles.propTypes = {
-  contextGridData: PropTypes.array.isRequired,
-  contextGridOffset: PropTypes.number.isRequired,
-  contextGridMore: PropTypes.bool.isRequired,
-  dataLoading: PropTypes.bool.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridType: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
+  savedAlbumData: PropTypes.array.isRequired,
   httpService: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  contextGridColumns: getContextGridColumns(state),
-  contextGridData: getContextGridData(state),
-  contextGridOffset: getContextGridOffset(state),
-  contextGridMore: getContextGridMore(state),
-  dataLoading: getDataLoading(state),
+  savedAlbumData: getSavedAlbumData(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridType: (type) => dispatch(setContextGridType(type)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(LocalFiles);
+export default connect(mapStateToProps)(LocalFiles);

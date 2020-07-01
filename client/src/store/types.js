@@ -4,8 +4,10 @@ export const TOKEN_EXPIRATION = 'TOKEN_EXPIRATION';
 export const CONTEXT_TYPE = 'CONTEXT_TYPE';
 export const CONTEXT_ITEM = 'CONTEXT_ITEM';
 export const RELATED_TO_ARTIST = 'RELATED_TO_ARTIST';
+export const SAVED_ALBUM_DATA = 'SAVED_ALBUM_DATA';
+export const SAVED_ALBUM_OFFSET = 'SAVED_ALBUM_OFFSET';
+export const SAVED_ALBUM_MORE = 'SAVED_ALBUM_MORE';
 export const CONTEXT_GRID_DATA = 'CONTEXT_GRID_DATA';
-export const CONTEXT_GRID_TYPE = 'CONTEXT_GRID_TYPE';
 export const CONTEXT_GRID_OFFSET = 'CONTEXT_GRID_OFFSET';
 export const CONTEXT_GRID_MORE = 'CONTEXT_GRID_MORE';
 export const CONTEXT_LIST_DATA = 'CONTEXT_LIST_DATA';
@@ -27,12 +29,6 @@ export const ContextType = {
   Tracks: 'tracks',
   RelatedArtists: 'related-artists',
   LocalFiles: 'local-files',
-};
-
-export const GridDataType = {
-  Artist: 'artist',
-  Album: 'album',
-  Track: 'track',
 };
 
 export const AlbumViewTheme = {

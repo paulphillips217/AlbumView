@@ -27,14 +27,13 @@ export const stripLeadingArticle = (string) => {
 
 export const cleanTitle = (title) => {
   // remove all articles
-  let cleanedTitle = title.replaceAll('the ', '');
+  let cleanedTitle = title.toLowerCase().replaceAll('the ', '');
   cleanedTitle = cleanedTitle.replaceAll('a ', '');
   cleanedTitle = cleanedTitle.replaceAll('an ', '');
   // remove special characters
   cleanedTitle = cleanedTitle.replaceAll(/[\\\/\:\*\?\"\'\<\>\| \.\_]/g, '');
   // remove anything within parentheses
-  cleanedTitle = cleanedTitle.replace(/ *\([^)]*\) */g, "");
-  return cleanedTitle.toLowerCase();
+  return cleanedTitle.replace(/ *\([^)]*\) */g, "");
 }
 
 export const sortByArtistThenAlbumName = (a, b) => {

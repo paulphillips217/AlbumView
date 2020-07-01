@@ -6,7 +6,6 @@ import { useTheme } from 'emotion-theming';
 import { filterByAlbumType } from '../util/utilities';
 import {
   getContextType,
-  getContextGridData,
   getContextGridColumns,
 } from '../store/selectors';
 import { ContextType } from '../store/types';
@@ -105,7 +104,6 @@ ContextGrid.propTypes = {
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   contextGridColumns: getContextGridColumns(state),
-  contextGridData: getContextGridData(state),
 });
 
 export default connect(mapStateToProps)(ContextGrid);

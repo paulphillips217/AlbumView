@@ -12,10 +12,11 @@ export const getTokenExpiration = (store) =>
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;
 export const getRelatedToArtist = (store) => store.albumView.relatedToArtist;
+export const getSavedAlbumData = (store) => store.albumView.savedAlbumData;
+export const getSavedAlbumOffset = (store) => store.albumView.savedAlbumOffset;
+export const getSavedAlbumMore = (store) => store.albumView.savedAlbumMore;
 export const getContextGridData = (store) => store.albumView.contextGridData;
-export const getContextGridType = (store) => store.albumView.contextGridType;
-export const getContextGridOffset = (store) =>
-  store.albumView.contextGridOffset;
+export const getContextGridOffset = (store) => store.albumView.contextGridOffset;
 export const getContextGridMore = (store) => store.albumView.contextGridMore;
 export const getContextListData = (store) => store.albumView.contextListData;
 export const getContextListOffset = (store) =>
