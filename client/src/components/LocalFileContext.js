@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -12,6 +12,18 @@ import LocalFiles from './LocalFiles';
 
 const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
   const theme = useTheme();
+
+  useEffect(() => {
+    const getLastFmData = () => {
+      httpService
+        .get(`/last-album`)
+        .then((rawData) => {
+          console.log('Last.fm data', rawData);
+        })
+        .catch((error) => console.log(error));
+    };
+    getLastFmData();
+  }, []);
 
   setDataLoading(false);
 

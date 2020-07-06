@@ -13,6 +13,7 @@ const cors = require('cors');
 const authorizeSpotify = require('./authorizeSpotify');
 const spotifyTokens = require('./accessToken');
 const spotifyData = require('./spotifyData');
+const lastFmData = require('./lastFmData');
 
 const app = express();
 app.use(cors());
@@ -79,6 +80,8 @@ app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
     console.error(err);
   }
 });
+
+app.get('/last-album', lastFmData.talkToLastFm);
 
 app.get('/history', spotifyData.talkToSpotify);
 app.get('/search/:query/:type', spotifyData.talkToSpotify);
