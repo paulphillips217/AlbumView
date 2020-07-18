@@ -37,7 +37,7 @@ const initialState = {
   tokenExpiration: moment(localStorage.getItem('tokenExpiration')).isValid()
     ? moment(localStorage.getItem('tokenExpiration')).format()
     : moment().format(),
-  contextType: ContextType.Albums,
+  contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
   savedAlbumData: [],
@@ -85,6 +85,7 @@ export function albumViewReducer(state = initialState, action) {
       });
     case CONTEXT_TYPE:
       console.log('setting context type', action.payload);
+      localStorage.setItem('contextType', action.payload);
       return Object.assign({}, state, {
         contextType: action.payload,
       });
