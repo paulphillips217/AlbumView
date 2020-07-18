@@ -1,7 +1,7 @@
 import {
-  ACCESS_TOKEN,
-  REFRESH_TOKEN,
-  TOKEN_EXPIRATION,
+  SPOTIFY_ACCESS_TOKEN,
+  SPOTIFY_REFRESH_TOKEN,
+  SPOTIFY_TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
@@ -24,18 +24,18 @@ import {
   ONE_DRIVE_LOGGED_IN,
 } from './types';
 
-export const setAccessToken = (accessToken) => ({
-  type: ACCESS_TOKEN,
+export const setSpotifyAccessToken = (accessToken) => ({
+  type: SPOTIFY_ACCESS_TOKEN,
   payload: accessToken,
 });
 
-export const setRefreshToken = (refreshToken) => ({
-  type: REFRESH_TOKEN,
+export const setSpotifyRefreshToken = (refreshToken) => ({
+  type: SPOTIFY_REFRESH_TOKEN,
   payload: refreshToken,
 });
 
-export const setTokenExpiration = (tokenExpiration) => ({
-  type: TOKEN_EXPIRATION,
+export const setSpotifyTokenExpiration = (tokenExpiration) => ({
+  type: SPOTIFY_TOKEN_EXPIRATION,
   payload: tokenExpiration,
 });
 

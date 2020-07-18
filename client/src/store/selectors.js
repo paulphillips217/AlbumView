@@ -1,13 +1,13 @@
 import { ContextType } from './types';
 
-export const getAuthenticationState = (store) => store.albumView.authenticated;
-export const getAccessToken = (store) =>
-  store.albumView.accessToken || localStorage.getItem('accessToken') || '';
-export const getRefreshToken = (store) =>
-  store.albumView.refreshToken || localStorage.getItem('refreshToken') || '';
-export const getTokenExpiration = (store) =>
-  store.albumView.tokenExpiration ||
-  localStorage.getItem('tokenExpiration') ||
+export const getSpotifyAuthenticationState = (store) => store.albumView.isSpotifyAuthenticated;
+export const getSpotifyAccessToken = (store) =>
+  store.albumView.spotifyAccessToken || localStorage.getItem('spotifyAccessToken') || '';
+export const getSpotifyRefreshToken = (store) =>
+  store.albumView.spotifyRefreshToken || localStorage.getItem('spotifyRefreshToken') || '';
+export const getSpotifyTokenExpiration = (store) =>
+  store.albumView.spotifyTokenExpiration ||
+  localStorage.getItem('spotifyTokenExpiration') ||
   '';
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;

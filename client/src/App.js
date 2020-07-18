@@ -9,7 +9,7 @@ import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
-import { setAccessToken, setOneDriveLoggedIn, setRefreshToken } from './store/actions';
+import { setSpotifyAccessToken, setOneDriveLoggedIn, setSpotifyRefreshToken } from './store/actions';
 import { getAlbumViewTheme, getContextType } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
@@ -35,21 +35,21 @@ const darkTheme = {
 const App = ({
   contextType,
   albumViewTheme,
-  setAccessToken,
-  setRefreshToken,
+  setSpotifyAccessToken,
+  setSpotifyRefreshToken,
   setOneDriveLoggedIn,
   httpService,
 }) => {
   const history = useHistory();
   const urlParams = new URLSearchParams(window.location.search);
 
-  if (urlParams.has('refresh_token')) {
-    setRefreshToken(urlParams.get('refresh_token'));
-    console.log(`refresh token: ${urlParams.get('refresh_token')}`);
+  if (urlParams.has('spotify_refresh_token')) {
+    setSpotifyRefreshToken(urlParams.get('spotify_refresh_token'));
+    console.log(`spotify_refresh_token: ${urlParams.get('spotify_refresh_token')}`);
   }
-  if (urlParams.has('access_token')) {
-    setAccessToken(urlParams.get('access_token'));
-    console.log(`access token: ${urlParams.get('access_token')}`);
+  if (urlParams.has('spotify_access_token')) {
+    setSpotifyAccessToken(urlParams.get('spotify_access_token'));
+    console.log(`spotify_access_token: ${urlParams.get('spotify_access_token')}`);
     history.push('/');
   }
   if (urlParams.has('oneDriveLogin')) {
@@ -108,8 +108,8 @@ const App = ({
 App.propTypes = {
   contextType: PropTypes.string.isRequired,
   albumViewTheme: PropTypes.string.isRequired,
-  setAccessToken: PropTypes.func.isRequired,
-  setRefreshToken: PropTypes.func.isRequired,
+  setSpotifyAccessToken: PropTypes.func.isRequired,
+  setSpotifyRefreshToken: PropTypes.func.isRequired,
   setOneDriveLoggedIn: PropTypes.func.isRequired,
 };
 
@@ -119,8 +119,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
-  setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
+  setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
+  setSpotifyRefreshToken: (refreshToken) => dispatch(setSpotifyRefreshToken(refreshToken)),
   setOneDriveLoggedIn: (isLoggedIn) => dispatch(setOneDriveLoggedIn(isLoggedIn)),
 });
 

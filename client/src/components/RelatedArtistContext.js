@@ -26,6 +26,7 @@ import {
   getDataLoading,
   getPlaylistSort,
   getRelatedToArtist,
+  getSpotifyAuthenticationState,
 } from '../store/selectors';
 import {
   setContextGridData,
@@ -37,8 +38,10 @@ import {
   setDataLoading,
   setRelatedToArtist,
 } from '../store/actions';
+import SpotifyLogin from './SpotifyLogin';
 
 const RelatedArtistContext = ({
+  isSpotifyAuthenticated,
   contextItem,
   relatedToArtist,
   dataLoading,
@@ -62,7 +65,7 @@ const RelatedArtistContext = ({
 
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading) {
+      if (!dataLoading || !isSpotifyAuthenticated) {
         return;
       }
       if (contextItem) {
@@ -186,28 +189,31 @@ const RelatedArtistContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <SplitPane
-          split="vertical"
-          minSize={50}
-          defaultSize={350}
-          style={{ height: '50%', position: 'relative' }}
-          paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-        >
-          <ContextList httpService={httpService} />
+        {!isSpotifyAuthenticated && <SpotifyLogin />}
+        {isSpotifyAuthenticated && (
           <SplitPane
             split="vertical"
             minSize={50}
             defaultSize={350}
-            style={{ position: 'relative' }}
+            style={{ height: '50%', position: 'relative' }}
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
-            <RelatedArtistList httpService={httpService} />
-            <ContextGrid
-              contextGridData={contextGridData}
-              httpService={httpService}
-            />
+            <ContextList httpService={httpService} />
+            <SplitPane
+              split="vertical"
+              minSize={50}
+              defaultSize={350}
+              style={{ position: 'relative' }}
+              paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+            >
+              <RelatedArtistList httpService={httpService} />
+              <ContextGrid
+                contextGridData={contextGridData}
+                httpService={httpService}
+              />
+            </SplitPane>
           </SplitPane>
-        </SplitPane>
+        )}
       </div>
       <div className="row footer"> </div>
     </div>
@@ -215,6 +221,7 @@ const RelatedArtistContext = ({
 };
 
 RelatedArtistContext.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   contextItem: PropTypes.string.isRequired,
   relatedToArtist: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
@@ -239,6 +246,7 @@ RelatedArtistContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   contextItem: getContextItem(state),
   relatedToArtist: getRelatedToArtist(state),
   dataLoading: getDataLoading(state),

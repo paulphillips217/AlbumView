@@ -1,13 +1,13 @@
 import axios from 'axios';
 import {
-  getAccessToken,
-  getRefreshToken,
-  getTokenExpiration,
+  getSpotifyAccessToken,
+  getSpotifyRefreshToken,
+  getSpotifyTokenExpiration,
 } from '../store/selectors';
 import {
-  setAccessToken,
-  setRefreshToken,
-  setTokenExpiration,
+  setSpotifyAccessToken,
+  setSpotifyRefreshToken,
+  setSpotifyTokenExpiration,
 } from '../store/actions';
 
 class httpService {
@@ -21,16 +21,16 @@ class httpService {
       console.debug('httpRequest got response', response);
       console.log('axios response headers: ', response.headers);
       try {
-        const oldAccessToken = getAccessToken(this.store.getState());
-        const newAccessToken = response.headers['x-spotify-access-token'];
-        if (oldAccessToken !== newAccessToken) {
+        const oldSpotifyAccessToken = getSpotifyAccessToken(this.store.getState());
+        const newSpotifyAccessToken = response.headers['x-spotify-access-token'];
+        if (oldSpotifyAccessToken !== newSpotifyAccessToken) {
           console.log('capturing headers from response');
-          this.store.dispatch(setAccessToken(newAccessToken));
-          const refreshToken = response.headers['x-spotify-refresh-token'];
-          this.store.dispatch(setRefreshToken(refreshToken));
-          const tokenExpiration =
+          this.store.dispatch(setSpotifyAccessToken(newSpotifyAccessToken));
+          const spotifyRefreshToken = response.headers['x-spotify-refresh-token'];
+          this.store.dispatch(setSpotifyRefreshToken(spotifyRefreshToken));
+          const spotifyTokenExpiration =
             response.headers['x-spotify-token-expiration'];
-          this.store.dispatch(setTokenExpiration(tokenExpiration));
+          this.store.dispatch(setSpotifyTokenExpiration(spotifyTokenExpiration));
         }
       } catch (err) {
         console.error(err);
@@ -59,9 +59,9 @@ class httpService {
     };
 
     options.headers = {
-      'x-spotify-access-token': getAccessToken(this.store.getState()),
-      'x-spotify-refresh-token': getRefreshToken(this.store.getState()),
-      'x-spotify-token-expiration': getTokenExpiration(this.store.getState()),
+      'x-spotify-access-token': getSpotifyAccessToken(this.store.getState()),
+      'x-spotify-refresh-token': getSpotifyRefreshToken(this.store.getState()),
+      'x-spotify-token-expiration': getSpotifyTokenExpiration(this.store.getState()),
     };
 
     console.log('httpService making request', options);

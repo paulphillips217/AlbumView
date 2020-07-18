@@ -24,6 +24,7 @@ import {
   getContextSortType,
   getDataLoading,
   getPlaylistSort,
+  getSpotifyAuthenticationState,
 } from '../store/selectors';
 import {
   setContextGridData,
@@ -34,8 +35,10 @@ import {
   setContextListOffset,
   setDataLoading,
 } from '../store/actions';
+import SpotifyLogin from './SpotifyLogin';
 
 const PlaylistContext = ({
+  isSpotifyAuthenticated,
   contextItem,
   dataLoading,
   contextGridData,
@@ -58,7 +61,7 @@ const PlaylistContext = ({
   const theme = useTheme();
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading) {
+      if (!dataLoading || !isSpotifyAuthenticated) {
         return;
       }
       if (contextItem) {
@@ -168,19 +171,22 @@ const PlaylistContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <SplitPane
-          split="vertical"
-          minSize={50}
-          defaultSize={350}
-          style={{ height: '50%', position: 'relative' }}
-          paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-        >
-          <ContextList httpService={httpService} />
-          <ContextGrid
-            contextGridData={contextGridData}
-            httpService={httpService}
-          />
-        </SplitPane>
+        {!isSpotifyAuthenticated && <SpotifyLogin />}
+        {isSpotifyAuthenticated && (
+          <SplitPane
+            split="vertical"
+            minSize={50}
+            defaultSize={350}
+            style={{ height: '50%', position: 'relative' }}
+            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+          >
+            <ContextList httpService={httpService} />
+            <ContextGrid
+              contextGridData={contextGridData}
+              httpService={httpService}
+            />
+          </SplitPane>
+        )}
       </div>
       <div className="row footer"> </div>
     </div>
@@ -188,6 +194,7 @@ const PlaylistContext = ({
 };
 
 PlaylistContext.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   contextItem: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
@@ -212,6 +219,7 @@ PlaylistContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   contextItem: getContextItem(state),
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),

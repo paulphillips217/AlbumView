@@ -2,9 +2,9 @@ import moment from 'moment';
 import {
   ContextType,
   AlbumViewTheme,
-  ACCESS_TOKEN,
-  REFRESH_TOKEN,
-  TOKEN_EXPIRATION,
+  SPOTIFY_ACCESS_TOKEN,
+  SPOTIFY_REFRESH_TOKEN,
+  SPOTIFY_TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
@@ -28,14 +28,14 @@ import {
 } from './types';
 
 const initialState = {
-  authenticated:
+  isSpotifyAuthenticated:
     localStorage.getItem('accessToken') &&
     localStorage.getItem('accessToken').length > 0 &&
     localStorage.getItem('accessToken') !== 'undefined',
-  accessToken: localStorage.getItem('accessToken') || '',
-  refreshToken: localStorage.getItem('refreshToken') || '',
-  tokenExpiration: moment(localStorage.getItem('tokenExpiration')).isValid()
-    ? moment(localStorage.getItem('tokenExpiration')).format()
+  spotifyAccessToken: localStorage.getItem('spotifyAccessToken') || '',
+  spotifyRefreshToken: localStorage.getItem('spotifyRefreshToken') || '',
+  spotifyTokenExpiration: moment(localStorage.getItem('spotifyTokenExpiration')).isValid()
+    ? moment(localStorage.getItem('spotifyTokenExpiration')).format()
     : moment().format(),
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
@@ -64,24 +64,24 @@ const initialState = {
 
 export function albumViewReducer(state = initialState, action) {
   switch (action.type) {
-    case ACCESS_TOKEN:
-      console.log('setting access token', action.payload);
-      localStorage.setItem('accessToken', action.payload);
+    case SPOTIFY_ACCESS_TOKEN:
+      console.log('setting spotify access token', action.payload);
+      localStorage.setItem('spotifyAccessToken', action.payload);
       return Object.assign({}, state, {
-        accessToken: action.payload,
-        authenticated: !!action.payload,
+        spotifyAccessToken: action.payload,
+        isSpotifyAuthenticated: !!action.payload,
       });
-    case REFRESH_TOKEN:
-      console.log('setting refresh token', action.payload);
-      localStorage.setItem('refreshToken', action.payload);
+    case SPOTIFY_REFRESH_TOKEN:
+      console.log('setting spotify refresh token', action.payload);
+      localStorage.setItem('spotifyRefreshToken', action.payload);
       return Object.assign({}, state, {
-        refreshToken: action.payload,
+        spotifyRefreshToken: action.payload,
       });
-    case TOKEN_EXPIRATION:
-      console.log('setting token expiration', action.payload);
-      localStorage.setItem('tokenExpiration', action.payload);
+    case SPOTIFY_TOKEN_EXPIRATION:
+      console.log('setting spotify token expiration', action.payload);
+      localStorage.setItem('spotifyTokenExpiration', action.payload);
       return Object.assign({}, state, {
-        tokenExpiration: action.payload,
+        spotifyTokenExpiration: action.payload,
       });
     case CONTEXT_TYPE:
       console.log('setting context type', action.payload);

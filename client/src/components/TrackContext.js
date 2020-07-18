@@ -16,6 +16,7 @@ import {
   getContextGridOffset,
   getContextSortType,
   getDataLoading,
+  getSpotifyAuthenticationState,
 } from '../store/selectors';
 import {
   setContextGridData,
@@ -24,8 +25,10 @@ import {
   setDataLoading,
 } from '../store/actions';
 import { useTheme } from 'emotion-theming';
+import SpotifyLogin from './SpotifyLogin';
 
 const TrackContext = ({
+  isSpotifyAuthenticated,
   dataLoading,
   contextGridData,
   contextGridOffset,
@@ -41,7 +44,7 @@ const TrackContext = ({
 
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading) {
+      if (!dataLoading || !isSpotifyAuthenticated) {
         return;
       }
       httpService
@@ -95,10 +98,13 @@ const TrackContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <ContextGrid
-          contextGridData={contextGridData}
-          httpService={httpService}
-        />
+        {!isSpotifyAuthenticated && <SpotifyLogin />}
+        {isSpotifyAuthenticated && (
+          <ContextGrid
+            contextGridData={contextGridData}
+            httpService={httpService}
+          />
+        )}
       </div>
       <div className="row footer"> </div>
     </div>
@@ -106,6 +112,7 @@ const TrackContext = ({
 };
 
 TrackContext.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
   contextGridOffset: PropTypes.number.isRequired,
@@ -120,6 +127,7 @@ TrackContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
   contextGridData: getContextGridData(state),

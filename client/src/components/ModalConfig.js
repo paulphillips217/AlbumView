@@ -10,7 +10,7 @@ import {
   getSavedTrackSort,
 } from '../store/selectors';
 import {
-  setAccessToken,
+  setSpotifyAccessToken,
   setAlbumSort,
   setAlbumViewTheme,
   setContextGridColumns,
@@ -22,10 +22,10 @@ import {
   setContextType,
   setPlaylistSort,
   setPlaylistTrackSort,
-  setRefreshToken,
+  setSpotifyRefreshToken,
   setRelatedToArtist,
   setSavedTrackSort,
-  setTokenExpiration,
+  setSpotifyTokenExpiration,
 } from '../store/actions';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -39,9 +39,9 @@ const ModalConfig = ({
   playlistSort,
   savedTrackSort,
   playlistTrackSort,
-  setAccessToken,
-  setRefreshToken,
-  setTokenExpiration,
+  setSpotifyAccessToken,
+  setSpotifyRefreshToken,
+  setSpotifyTokenExpiration,
   setAlbumViewTheme,
   setContextGridColumns,
   setContextItem,
@@ -174,9 +174,9 @@ const ModalConfig = ({
   };
 
   const handleLogOut = () => {
-    setRefreshToken('');
-    setAccessToken('');
-    setTokenExpiration('');
+    setSpotifyRefreshToken('');
+    setSpotifyAccessToken('');
+    setSpotifyTokenExpiration('');
     setContextItem('');
     setContextType('');
     setRelatedToArtist('');
@@ -290,10 +290,10 @@ ModalConfig.propTypes = {
   playlistSort: PropTypes.string.isRequired,
   savedTrackSort: PropTypes.string.isRequired,
   playlistTrackSort: PropTypes.string.isRequired,
-  setAccessToken: PropTypes.func.isRequired,
+  setSpotifyAccessToken: PropTypes.func.isRequired,
   setContextGridColumns: PropTypes.func.isRequired,
-  setRefreshToken: PropTypes.func.isRequired,
-  setTokenExpiration: PropTypes.func.isRequired,
+  setSpotifyRefreshToken: PropTypes.func.isRequired,
+  setSpotifyTokenExpiration: PropTypes.func.isRequired,
   setContextType: PropTypes.func.isRequired,
   setContextItem: PropTypes.func.isRequired,
   setAlbumViewTheme: PropTypes.func.isRequired,
@@ -318,10 +318,10 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
+  setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
   setContextGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
-  setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
-  setTokenExpiration: (expiration) => dispatch(setTokenExpiration(expiration)),
+  setSpotifyRefreshToken: (refreshToken) => dispatch(setSpotifyRefreshToken(refreshToken)),
+  setSpotifyTokenExpiration: (expiration) => dispatch(setSpotifyTokenExpiration(expiration)),
   setAlbumViewTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
   setContextType: (type) => dispatch(setContextType(type)),
   setContextItem: (id) => dispatch(setContextItem(id)),

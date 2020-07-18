@@ -184,10 +184,10 @@ app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
     //console.log('access token: ' + req.credentials.access_token);
     //console.log('refresh token: ' + req.credentials.refresh_token);
     console.log('token expiration: ' + req.credentials.token_expiration);
-    //spotifyTokens.storeAccessTokenInDatabase(pool, req.credentials);
+    //spotifyTokens.storeSpotifyAccessTokenInDatabase(pool, req.credentials);
     const clientUrl = process.env.CLIENT_URL;
     res.redirect(
-      `${clientUrl}/?access_token=${req.credentials.access_token}&refresh_token=${req.credentials.refresh_token}&token_expiration=${req.credentials.token_expiration}`
+      `${clientUrl}/?spotify_access_token=${req.credentials.access_token}&spotify_refresh_token=${req.credentials.refresh_token}&spotify_token_expiration=${req.credentials.token_expiration}`
     );
   } catch (err) {
     console.error(err);

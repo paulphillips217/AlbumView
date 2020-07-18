@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import SplitPane from 'react-split-pane';
 import '../styles/App.css';
@@ -23,6 +23,7 @@ import {
   getContextSortType,
   getDataLoading,
   getPlaylistSort,
+  getSpotifyAuthenticationState,
 } from '../store/selectors';
 import {
   setContextGridData,
@@ -34,8 +35,10 @@ import {
   setDataLoading,
 } from '../store/actions';
 import { useTheme } from 'emotion-theming';
+import SpotifyLogin from './SpotifyLogin';
 
 const ArtistContext = ({
+  isSpotifyAuthenticated,
   contextItem,
   dataLoading,
   contextGridData,
@@ -58,7 +61,7 @@ const ArtistContext = ({
 
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading) {
+      if (!dataLoading || !isSpotifyAuthenticated) {
         return;
       }
       if (contextItem) {
@@ -170,19 +173,22 @@ const ArtistContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <SplitPane
-          split="vertical"
-          minSize={50}
-          defaultSize={350}
-          style={{ height: '50%', position: 'relative' }}
-          paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
-        >
-          <ContextList httpService={httpService} />
-          <ContextGrid
-            contextGridData={contextGridData}
-            httpService={httpService}
-          />
-        </SplitPane>
+        {!isSpotifyAuthenticated && <SpotifyLogin />}
+        {isSpotifyAuthenticated && (
+          <SplitPane
+            split="vertical"
+            minSize={50}
+            defaultSize={350}
+            style={{ height: '50%', position: 'relative' }}
+            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+          >
+            <ContextList httpService={httpService} />
+            <ContextGrid
+              contextGridData={contextGridData}
+              httpService={httpService}
+            />
+          </SplitPane>
+        )}
       </div>
       <div className="row footer"> </div>
     </div>
@@ -190,6 +196,7 @@ const ArtistContext = ({
 };
 
 ArtistContext.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   contextItem: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.array.isRequired,
@@ -214,6 +221,7 @@ ArtistContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   contextItem: getContextItem(state),
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),

@@ -17,7 +17,7 @@ import {
   getSavedAlbumOffset,
   getContextSortType,
   getDataLoading,
-  getAuthenticationState,
+  getSpotifyAuthenticationState,
 } from '../store/selectors';
 import {
   setSavedAlbumData,
@@ -28,7 +28,7 @@ import {
 import SpotifyLogin from './SpotifyLogin';
 
 const AlbumContext = ({
-  isAuthenticated,
+  isSpotifyAuthenticated,
   dataLoading,
   savedAlbumData,
   savedAlbumOffset,
@@ -44,7 +44,7 @@ const AlbumContext = ({
 
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading) {
+      if (!dataLoading || !isSpotifyAuthenticated) {
         return;
       }
       httpService
@@ -96,13 +96,13 @@ const AlbumContext = ({
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        {isAuthenticated && (
+        {isSpotifyAuthenticated && (
           <ContextGrid
             contextGridData={savedAlbumData}
             httpService={httpService}
           />
         )}
-        {!isAuthenticated && <SpotifyLogin />}
+        {!isSpotifyAuthenticated && <SpotifyLogin />}
       </div>
       <div className="row footer"> </div>
     </div>
@@ -110,7 +110,7 @@ const AlbumContext = ({
 };
 
 AlbumContext.propTypes = {
-  isAuthenticated: PropTypes.bool.isRequired,
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.array.isRequired,
   savedAlbumOffset: PropTypes.number.isRequired,
@@ -125,7 +125,7 @@ AlbumContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isAuthenticated: getAuthenticationState(state),
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   dataLoading: getDataLoading(state),
   contextGridColumns: getContextGridColumns(state),
   savedAlbumData: getSavedAlbumData(state),
