@@ -77,6 +77,7 @@ td:last-child {
   letter-spacing: 2px;
   line-height: 12px;
   margin-bottom: 0;
+  margin-top: 100px;
   min-width: 160px;
   overflow-wrap: break-word;
   padding: 11px 32px 9px;
@@ -95,4 +96,52 @@ td:last-child {
 
 .config-div {
   padding-bottom: 20px;
+}
+
+.one-drive-button {
+  background-attachment: scroll;
+  background-clip: border-box;
+  background-color: rgb(0, 120, 212);
+  background-image: none;
+  background-origin: padding-box;
+  border-bottom-color: rgb(211, 211, 211);
+  border-bottom-style: solid;
+  border-bottom-width: 1.6px;
+  border-image-width: 1;
+  border-left-color: rgb(211, 211, 211);
+  border-left-style: solid;
+  border-left-width: 1.6px;
+  border-right-color: rgb(211, 211, 211);
+  border-right-style: solid;
+  border-right-width: 1.6px;
+  border-top-color: rgb(211, 211, 211);
+  border-top-style: solid;
+  border-top-width: 1.6px;
+  box-shadow: rgba(0, 0, 0, 0.035) 0px 4px 8px 0px;
+  box-sizing: border-box;
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  display: inline-block;
+  font-family: Segoe UI, SegoeUI, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 15px;
+  margin-right: 0px;
+  margin-top: 100px;
+  max-width: 374px;
+  min-width: 230px;
+  outline: rgb(255, 255, 255) none 0px;
+  overflow: hidden;
+  padding: 12px;
+  position: relative;
+  text-align: center;
+  text-decoration: rgb(255, 255, 255);
+  text-decoration-line: none;
+  text-decoration-style: solid;
+  transition-delay: 0s;
+  transition-duration: 0.2s;
+  transition-property: all;
+  transition-timing-function: ease-in-out;
+  vertical-align: bottom;
+  white-space: normal;
 }

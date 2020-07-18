@@ -68,6 +68,11 @@ const AlbumViewHeader = ({
       text: 'Local Files',
       value: ContextType.LocalFiles,
     },
+    {
+      key: 'one-drive-file-key',
+      text: 'OneDrive Files',
+      value: ContextType.OneDriveFiles,
+    },
   ];
 
   const handleDropdownChange = (e, { value }) => {

@@ -30,6 +30,7 @@ export const getAlbumSort = (store) => store.albumView.albumSort;
 export const getPlaylistSort = (store) => store.albumView.playlistSort;
 export const getPlaylistTrackSort = (store) => store.albumView.playlistTrackSort;
 export const getSavedTrackSort = (store) => store.albumView.savedTrackSort;
+export const getOneDriveLoggedIn = (store) => store.albumView.oneDriveLoggedIn;
 
 export const getContextSortType = (store) => {
   switch (store.albumView.contextType) {

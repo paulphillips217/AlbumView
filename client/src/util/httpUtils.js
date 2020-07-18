@@ -19,7 +19,7 @@ class httpService {
   httpRequest = (options) => {
     const onSuccess = (response) => {
       console.debug('httpRequest got response', response);
-      //console.log('axios response headers: ', response.headers);
+      console.log('axios response headers: ', response.headers);
       try {
         const oldAccessToken = getAccessToken(this.store.getState());
         const newAccessToken = response.headers['x-spotify-access-token'];

@@ -9,12 +9,8 @@ import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
-import { setAccessToken, setRefreshToken } from './store/actions';
-import {
-  getAlbumViewTheme,
-  getAuthenticationState,
-  getContextType,
-} from './store/selectors';
+import { setAccessToken, setOneDriveLoggedIn, setRefreshToken } from './store/actions';
+import { getAlbumViewTheme, getContextType } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
@@ -23,8 +19,8 @@ import TrackContext from './components/TrackContext';
 import PlaylistContext from './components/PlaylistContext';
 import ArtistContext from './components/ArtistContext';
 import RelatedArtistContext from './components/RelatedArtistContext';
-import LocalFiles from './components/LocalFiles';
 import LocalFileContext from './components/LocalFileContext';
+import OneDriveFileContext from './components/OneDriveContext';
 
 const lightTheme = {
   backgroundColor: 'WhiteSmoke',
@@ -37,11 +33,11 @@ const darkTheme = {
 };
 
 const App = ({
-  isAuthenticated,
   contextType,
   albumViewTheme,
   setAccessToken,
   setRefreshToken,
+  setOneDriveLoggedIn,
   httpService,
 }) => {
   const history = useHistory();
@@ -56,78 +52,68 @@ const App = ({
     console.log(`access token: ${urlParams.get('access_token')}`);
     history.push('/');
   }
+  if (urlParams.has('oneDriveLogin')) {
+    setOneDriveLoggedIn(urlParams.get('oneDriveLogin'));
+    console.log(`oneDriveLogin is set`);
+    history.push('/');
+  }
 
   const activeTheme =
     albumViewTheme === AlbumViewTheme.Light ? lightTheme : darkTheme;
 
-  const loginComponent = (
-    <div className="App">
-      <h1>Album View</h1>
-      <p>View your Spotify music collection</p>
-      <a
-        className={'spotify-button'}
-        href={`${process.env.REACT_APP_SERVER_ROOT}/login`}
-      >
-        Connect to Spotify
-      </a>
-    </div>
-  );
-
   const contextView = {};
   contextView[ContextType.Albums] = React.createElement(
     AlbumContext,
-    {httpService},
+    { httpService },
     null
   );
   contextView[ContextType.Tracks] = React.createElement(
     TrackContext,
-    {httpService},
+    { httpService },
     null
   );
   contextView[ContextType.Playlists] = React.createElement(
     PlaylistContext,
-    {httpService},
+    { httpService },
     null
   );
   contextView[ContextType.Artists] = React.createElement(
     ArtistContext,
-    {httpService},
+    { httpService },
     null
   );
   contextView[ContextType.RelatedArtists] = React.createElement(
     RelatedArtistContext,
-    {httpService},
+    { httpService },
     null
   );
   contextView[ContextType.LocalFiles] = React.createElement(
     LocalFileContext,
-    {httpService},
+    { httpService },
+    null
+  );
+  contextView[ContextType.OneDriveFiles] = React.createElement(
+    OneDriveFileContext,
+    { httpService },
     null
   );
 
-  if (isAuthenticated) {
-    console.log('we are authenticated');
-    return (
-      <ThemeProvider theme={activeTheme}>
-        {contextView[contextType]}
-      </ThemeProvider>
-    );
-  } else {
-    console.log('we are NOT authenticated');
-    return loginComponent;
-  }
+  return (
+    <ThemeProvider theme={activeTheme}>
+      {contextView[contextType]}
+    </ThemeProvider>
+  );
 };
 
 App.propTypes = {
-  isAuthenticated: PropTypes.bool.isRequired,
   contextType: PropTypes.string.isRequired,
   albumViewTheme: PropTypes.string.isRequired,
   setAccessToken: PropTypes.func.isRequired,
   setRefreshToken: PropTypes.func.isRequired,
+  setOneDriveLoggedIn: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
-  isAuthenticated: getAuthenticationState(state),
   contextType: getContextType(state),
   albumViewTheme: getAlbumViewTheme(state),
 });
@@ -135,6 +121,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   setAccessToken: (accessToken) => dispatch(setAccessToken(accessToken)),
   setRefreshToken: (refreshToken) => dispatch(setRefreshToken(refreshToken)),
+  setOneDriveLoggedIn: (isLoggedIn) => dispatch(setOneDriveLoggedIn(isLoggedIn)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

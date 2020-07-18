@@ -1,0 +1,160 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users('paulphillips217%40gmail.com')/drive/root/children",
+  "@odata.count": 5,
+  "value": [
+    {
+      "createdDateTime": "2018-07-31T18:54:22.613Z",
+      "cTag": "adDo3QTNEMTA5NDU2RUY2M0VBITEwNC42MzY2ODY2MDA2MjYxMzAwMDA",
+      "eTag": "aN0EzRDEwOTQ1NkVGNjNFQSExMDQuMA",
+      "id": "7A3D109456EF63EA!104",
+      "lastModifiedDateTime": "2018-07-31T18:54:22.613Z",
+      "name": "Attachments",
+      "size": 0,
+      "webUrl": "https://1drv.ms/f/s!AOpj71aUED16aA",
+      "reactions": { "commentCount": 0 },
+      "createdBy": {
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "lastModifiedBy": {
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "parentReference": {
+        "driveId": "7a3d109456ef63ea",
+        "driveType": "personal",
+        "id": "7A3D109456EF63EA!101",
+        "path": "/drive/root:"
+      },
+      "fileSystemInfo": {
+        "createdDateTime": "2018-07-31T18:54:22.613Z",
+        "lastModifiedDateTime": "2018-07-31T18:54:22.613Z"
+      },
+      "folder": {
+        "childCount": 0,
+        "view": {
+          "viewType": "thumbnails",
+          "sortBy": "name",
+          "sortOrder": "ascending"
+        }
+      },
+      "specialFolder": { "name": "attachments" }
+    },
+    {
+      "createdDateTime": "2018-07-31T18:54:21.47Z",
+      "cTag": "adDo3QTNEMTA5NDU2RUY2M0VBITEwMy42MzcwNjMyNTE1NjQzMzAwMDA",
+      "eTag": "aN0EzRDEwOTQ1NkVGNjNFQSExMDMuMA",
+      "id": "7A3D109456EF63EA!103",
+      "lastModifiedDateTime": "2019-10-10T17:25:56.433Z",
+      "name": "Documents",
+      "size": 493046,
+      "webUrl": "https://1drv.ms/f/s!AOpj71aUED16Zw",
+      "reactions": { "commentCount": 0 },
+      "createdBy": {
+        "application": { "displayName": "Office.com", "id": "4804ec1e" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "lastModifiedBy": {
+        "application": { "displayName": "Office.com", "id": "4804ec1e" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "parentReference": {
+        "driveId": "7a3d109456ef63ea",
+        "driveType": "personal",
+        "id": "7A3D109456EF63EA!101",
+        "path": "/drive/root:"
+      },
+      "fileSystemInfo": {
+        "createdDateTime": "2018-07-31T18:54:21.47Z",
+        "lastModifiedDateTime": "2018-07-31T18:54:21.47Z"
+      },
+      "folder": {
+        "childCount": 1,
+        "view": {
+          "viewType": "thumbnails",
+          "sortBy": "name",
+          "sortOrder": "ascending"
+        }
+      },
+      "specialFolder": { "name": "documents" }
+    },
+    {
+      "createdDateTime": "2020-07-06T17:19:31.377Z",
+      "cTag": "adDo3QTNEMTA5NDU2RUY2M0VBITUxNC42MzcyOTY1Mjg1MDM2MzAwMDA",
+      "eTag": "aN0EzRDEwOTQ1NkVGNjNFQSE1MTQuMA",
+      "id": "7A3D109456EF63EA!514",
+      "lastModifiedDateTime": "2020-07-06T17:20:50.363Z",
+      "name": "Music",
+      "size": 45116919,
+      "webUrl": "https://1drv.ms/f/s!AOpj71aUED16hAI",
+      "reactions": { "commentCount": 0 },
+      "createdBy": {
+        "application": { "displayName": "OneDrive website", "id": "44048800" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "lastModifiedBy": {
+        "application": { "displayName": "OneDrive website", "id": "44048800" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "parentReference": {
+        "driveId": "7a3d109456ef63ea",
+        "driveType": "personal",
+        "id": "7A3D109456EF63EA!101",
+        "path": "/drive/root:"
+      },
+      "fileSystemInfo": {
+        "createdDateTime": "2020-07-06T17:19:31.376Z",
+        "lastModifiedDateTime": "2020-07-06T17:19:31.376Z"
+      },
+      "folder": {
+        "childCount": 1,
+        "view": {
+          "viewType": "thumbnails",
+          "sortBy": "name",
+          "sortOrder": "ascending"
+        }
+      }
+    },
+    {
+      "createdDateTime": "2018-07-31T18:54:20.457Z",
+      "cTag": "adDo3QTNEMTA5NDU2RUY2M0VBITEwMi42MzY2ODY2MDA2MDQ1NzAwMDA",
+      "eTag": "aN0EzRDEwOTQ1NkVGNjNFQSExMDIuMA",
+      "id": "7A3D109456EF63EA!102",
+      "lastModifiedDateTime": "2018-07-31T18:54:20.457Z",
+      "name": "Pictures",
+      "size": 0,
+      "webUrl": "https://1drv.ms/f/s!AOpj71aUED16Zg",
+      "reactions": { "commentCount": 0 },
+      "createdBy": {
+        "application": { "displayName": "Office.com", "id": "4804ec1e" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "lastModifiedBy": {
+        "application": { "displayName": "Office.com", "id": "4804ec1e" },
+        "user": { "displayName": "Paul Phillips", "id": "7a3d109456ef63ea" }
+      },
+      "parentReference": {
+        "driveId": "7a3d109456ef63ea",
+        "driveType": "personal",
+        "id": "7A3D109456EF63EA!101",
+        "path": "/drive/root:"
+      },
+      "fileSystemInfo": {
+        "createdDateTime": "2018-07-31T18:54:20.456Z",
+        "lastModifiedDateTime": "2018-07-31T18:54:20.456Z"
+      },
+      "folder": {
+        "childCount": 0,
+        "view": {
+          "viewType": "thumbnails",
+          "sortBy": "takenOrCreatedDateTime",
+          "sortOrder": "ascending"
+        }
+      },
+      "specialFolder": { "name": "photos" }
+    }
+  ]
+}
+
+{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users('paulphillips217%40gmail.com')/drive/items('root')/children",
+  "@odata.count":6,
+  "value":[{"createdDateTime":"2018-07-31T18:54:22.613Z","cTag":"adDo3QTNEMTA5NDU2RUY2M0VBITEwNC42MzY2ODY2MDA2MjYxMzAwMDA","eTag":"aN0EzRDEwOTQ1NkVGNjNFQSExMDQuMA","id":"7A3D109456EF63EA!104","lastModifiedDateTime":"2018-07-31T18:54:22.613Z","name":"Attachments","size":0,"webUrl":"https://1drv.ms/f/s!AOpj71aUED16aA","reactions":{"commentCount":0},"createdBy":{"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"lastModifiedBy":{"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"parentReference":{"driveId":"7a3d109456ef63ea","driveType":"personal","id":"7A3D109456EF63EA!101","path":"/drive/root:"},"fileSystemInfo":{"createdDateTime":"2018-07-31T18:54:22.613Z","lastModifiedDateTime":"2018-07-31T18:54:22.613Z"},"folder":{"childCount":0,"view":{"viewType":"thumbnails","sortBy":"name","sortOrder":"ascending"}},"specialFolder":{"name":"attachments"}},{"createdDateTime":"2018-07-31T18:54:21.47Z","cTag":"adDo3QTNEMTA5NDU2RUY2M0VBITEwMy42MzcwNjMyNTE1NjQzMzAwMDA","eTag":"aN0EzRDEwOTQ1NkVGNjNFQSExMDMuMA","id":"7A3D109456EF63EA!103","lastModifiedDateTime":"2019-10-10T17:25:56.433Z","name":"Documents","size":493046,"webUrl":"https://1drv.ms/f/s!AOpj71aUED16Zw","reactions":{"commentCount":0},"createdBy":{"application":{"displayName":"Office.com","id":"4804ec1e"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"lastModifiedBy":{"application":{"displayName":"Office.com","id":"4804ec1e"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"parentReference":{"driveId":"7a3d109456ef63ea","driveType":"personal","id":"7A3D109456EF63EA!101","path":"/drive/root:"},"fileSystemInfo":{"createdDateTime":"2018-07-31T18:54:21.47Z","lastModifiedDateTime":"2018-07-31T18:54:21.47Z"},"folder":{"childCount":1,"view":{"viewType":"thumbnails","sortBy":"name","sortOrder":"ascending"}},"specialFolder":{"name":"documents"}},{"createdDateTime":"2020-07-06T17:19:31.377Z","cTag":"adDo3QTNEMTA5NDU2RUY2M0VBITUxNC42MzcyOTY1Mjg1MDM2MzAwMDA","eTag":"aN0EzRDEwOTQ1NkVGNjNFQSE1MTQuMA","id":"7A3D109456EF63EA!514","lastModifiedDateTime":"2020-07-06T17:20:50.363Z","name":"Music","size":45116919,"webUrl":"https://1drv.ms/f/s!AOpj71aUED16hAI","reactions":{"commentCount":0},"createdBy":{"application":{"displayName":"OneDrive website","id":"44048800"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"lastModifiedBy":{"application":{"displayName":"OneDrive website","id":"44048800"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"parentReference":{"driveId":"7a3d109456ef63ea","driveType":"personal","id":"7A3D109456EF63EA!101","path":"/drive/root:"},"fileSystemInfo":{"createdDateTime":"2020-07-06T17:19:31.376Z","lastModifiedDateTime":"2020-07-06T17:19:31.376Z"},"folder":{"childCount":1,"view":{"viewType":"thumbnails","sortBy":"name","sortOrder":"ascending"}}},{"createdDateTime":"2018-07-31T18:54:20.457Z","cTag":"adDo3QTNEMTA5NDU2RUY2M0VBITEwMi42MzY2ODY2MDA2MDQ1NzAwMDA","eTag":"aN0EzRDEwOTQ1NkVGNjNFQSExMDIuMA","id":"7A3D109456EF63EA!102","lastModifiedDateTime":"2018-07-31T18:54:20.457Z","name":"Pictures","size":0,"webUrl":"https://1drv.ms/f/s!AOpj71aUED16Zg","reactions":{"commentCount":0},"createdBy":{"application":{"displayName":"Office.com","id":"4804ec1e"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"lastModifiedBy":{"application":{"displayName":"Office.com","id":"4804ec1e"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"parentReference":{"driveId":"7a3d109456ef63ea","driveType":"personal","id":"7A3D109456EF63EA!101","path":"/drive/root:"},"fileSystemInfo":{"createdDateTime":"2018-07-31T18:54:20.456Z","lastModifiedDateTime":"2018-07-31T18:54:20.456Z"},"folder":{"childCount":0,"view":{"viewType":"thumbnails","sortBy":"takenOrCreatedDateTime","sortOrder":"ascending"}},"specialFolder":{"name":"photos"}},{"@microsoft.graph.downloadUrl":"https://public.bn.files.1drv.com/y4mlazPLFEQBzG2KKGjqHveJnxvY0YpASDoW92oquZ-zL8nkwyURXCZOXhZj0_1U2ltD_rXkTry84RmOFDc-y-lmCvKGFOJJ_LigxLtzARUdadU6f2dAh5rZFhNIBTVLAEi7jGJNhDh7EHCQ7MVN8jVcYZ6VoXKViz7JFM36WmJYt1aFEVfD3hMz4EWNFLrr8q1mqdHlOedNYUKgYu84uVEf3MPYLblqKGFI483T6PaaZFcOqVpPw5ZnYce-3OQFHsK","createdDateTime":"2020-07-08T23:40:51.26Z","cTag":"aYzo3QTNEMTA5NDU2RUY2M0VBITUyNi4yNTc","eTag":"aN0EzRDEwOTQ1NkVGNjNFQSE1MjYuMQ","id":"7A3D109456EF63EA!526","lastModifiedDateTime":"2020-07-08T23:40:54.25Z","name":"My Plain Text File.txt","size":3,"webUrl":"https://1drv.ms/t/s!AOpj71aUED16hA4","reactions":{"commentCount":0},"createdBy":{"application":{"displayName":"OneDrive","id":"481710a4"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"lastModifiedBy":{"application":{"displayName":"OneDrive","id":"481710a4"},"user":{"displayName":"Paul Phillips","id":"7a3d109456ef63ea"}},"parentReference":{"driveId":"7a3d109456ef63ea","driveType":"personal","id":"7A3D109456EF63EA!101","path":"/drive/root:"},"file":{"mimeType":"text/plain","hashes":{"quickXorHash":"79jFLwAAAAAAAAAAAwAAAAAAAAA=","sha1Hash":"57218C316B6921E2CD61027A2387EDC31A2D9471","sha256Hash":"F1945CD6C19E56B3C1C78943EF5EC18116907A4CA1EFC40A57D48AB1DB7ADFC5"}},"fileSystemInfo":{"createdDateTime":"2020-07-08T23:40:51.26Z","lastModifiedDateTime":"2020-07-08T23:40:51.26Z"}}]}
+

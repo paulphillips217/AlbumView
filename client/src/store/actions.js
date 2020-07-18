@@ -21,6 +21,7 @@ import {
   SAVED_ALBUM_DATA,
   SAVED_ALBUM_OFFSET,
   SAVED_ALBUM_MORE,
+  ONE_DRIVE_LOGGED_IN,
 } from './types';
 
 export const setAccessToken = (accessToken) => ({
@@ -131,4 +132,9 @@ export const setPlaylistTrackSort = (sortOrder) => ({
 export const setSavedTrackSort = (sortOrder) => ({
   type: SAVED_TRACK_SORT,
   payload: sortOrder,
+});
+
+export const setOneDriveLoggedIn = (isLoggedIn) => ({
+  type: ONE_DRIVE_LOGGED_IN,
+  payload: isLoggedIn,
 });

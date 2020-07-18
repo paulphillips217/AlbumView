@@ -24,7 +24,7 @@ import {
   PLAYLIST_SORT,
   SAVED_ALBUM_DATA,
   SAVED_ALBUM_OFFSET,
-  SAVED_ALBUM_MORE,
+  SAVED_ALBUM_MORE, ONE_DRIVE_LOGGED_IN
 } from './types';
 
 const initialState = {
@@ -59,6 +59,7 @@ const initialState = {
     localStorage.getItem('playlistTrackSort') || SortTypes.PlaylistOrder,
   savedTrackSort:
     localStorage.getItem('savedTrackSort') || SortTypes.ArtistThenTrackName,
+  oneDriveLoggedIn: false
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -182,6 +183,11 @@ export function albumViewReducer(state = initialState, action) {
       localStorage.setItem('savedTrackSort', action.payload);
       return Object.assign({}, state, {
         savedTrackSort: action.payload,
+      });
+    case ONE_DRIVE_LOGGED_IN:
+      console.log('setting oneDrive logged in', action.payload);
+      return Object.assign({}, state, {
+        oneDriveLoggedIn: action.payload,
       });
     default:
       return state;

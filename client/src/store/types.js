@@ -21,6 +21,7 @@ export const ALBUM_SORT = 'ALBUM_SORT';
 export const PLAYLIST_SORT = 'PLAYLIST_SORT';
 export const PLAYLIST_TRACK_SORT = 'PLAYLIST_TRACK_SORT';
 export const SAVED_TRACK_SORT = 'SAVED_TRACK_SORT';
+export const ONE_DRIVE_LOGGED_IN = 'ONE_DRIVE_LOGGED_IN';
 
 export const ContextType = {
   Playlists: 'playlists',
@@ -29,6 +30,7 @@ export const ContextType = {
   Tracks: 'tracks',
   RelatedArtists: 'related-artists',
   LocalFiles: 'local-files',
+  OneDriveFiles: 'one-drive-files'
 };
 
 export const AlbumViewTheme = {
