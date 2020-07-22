@@ -45,7 +45,7 @@ const ModalAlbum = ({
     const getHeartSettings = () => {
       if (modalOpen && albumId) {
         httpService
-          .get(`/albums/contains/${albumId}`)
+          .get(`/spotify/albums/contains/${albumId}`)
           .then((data) => {
             setAlbumHeart(data[0]);
           })
@@ -56,7 +56,7 @@ const ModalAlbum = ({
           .reduce((result, item) => result.concat([item.id]), [])
           .join();
         httpService
-          .get(`/tracks/contains/${trackIds}`)
+          .get(`/spotify/tracks/contains/${trackIds}`)
           .then((data) => {
             setTrackHearts(data);
           })
@@ -107,7 +107,7 @@ const ModalAlbum = ({
   const handleModalOpen = () => {
     if (albumId) {
       httpService
-        .get(`/album-data/${albumId}`)
+        .get(`/spotify/album-data/${albumId}`)
         .then((data) => {
           setAlbumData(data);
         })
@@ -121,14 +121,14 @@ const ModalAlbum = ({
     if (id) {
       if (remove) {
         httpService
-          .delete(`/delete-tracks/${id}`)
+          .delete(`/spotify/delete-tracks/${id}`)
           .then((data) => {
             console.log('handleTrackHeartClick delete response');
           })
           .catch((error) => console.error(error));
       } else {
         httpService
-          .put(`/save-tracks/${id}`)
+          .put(`/spotify/save-tracks/${id}`)
           .then((data) => {
             console.log('handleTrackHeartClick save response');
           })
@@ -145,14 +145,14 @@ const ModalAlbum = ({
   const handleAlbumHeartClick = (remove) => {
     if (remove) {
       httpService
-        .delete(`/delete-albums/${albumId}`)
+        .delete(`/spotify/delete-albums/${albumId}`)
         .then((data) => {
           console.log('handleAlbumHeartClick delete response');
         })
         .catch((error) => console.error(error));
     } else {
       httpService
-        .put(`/save-albums/${albumId}`)
+        .put(`/spotify/save-albums/${albumId}`)
         .then((data) => {
           console.log('handleAlbumHeartClick save response');
         })
@@ -164,17 +164,17 @@ const ModalAlbum = ({
   const handlePlayAlbum = async () => {
     try {
       setPlayerInactive(false);
-      let status = await httpService.get(`/player-status`);
+      let status = await httpService.get(`/spotify/player-status`);
       if (status.emptyResponse) {
         setPlayerInactive(true);
         return;
       }
-      await httpService.put(`/player-shuffle/false`);
-      await httpService.put(`/player-pause`);
+      await httpService.put(`/spotify/player-shuffle/false`);
+      await httpService.put(`/spotify/player-pause`);
 
       for (let index = 0; index < albumData.tracks.items.length; index++) {
         await httpService.post(
-          `/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
+          `/spotify/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
         );
       }
     } catch (error) {
@@ -185,16 +185,16 @@ const ModalAlbum = ({
   const handleTrackPlayClick = async (index) => {
     try {
       setPlayerInactive(false);
-      let status = await httpService.get(`/player-status`);
+      let status = await httpService.get(`/spotify/player-status`);
       if (status.emptyResponse) {
         setPlayerInactive(true);
         return;
       }
-      await httpService.put(`/player-shuffle/false`);
-      await httpService.put(`/player-pause`);
+      await httpService.put(`/spotify/player-shuffle/false`);
+      await httpService.put(`/spotify/player-pause`);
 
       await httpService.post(
-        `/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
+        `/spotify/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
       );
     } catch (error) {
       console.error(error);

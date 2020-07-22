@@ -8,11 +8,12 @@ import AlbumViewHeader from './AlbumViewHeader';
 import PropTypes from 'prop-types';
 import { getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
-import LocalFiles from './LocalFiles';
+import FileAnalysis from './FileAnalysis';
+import LocalFolderPicker from './LocalFolderPicker';
 
 const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
   const theme = useTheme();
-/*
+  /*
 // this was me connecting to last.fm to get album data -- testing
   useEffect(() => {
     const getLastFmData = () => {
@@ -28,6 +29,40 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
 */
   setDataLoading(false);
 
+  const readAlbumArray = (fileData) => {
+    const theAlbumArray = [];
+    Object.keys(fileData).forEach((key, index) => {
+      const item = fileData[key];
+      if (!item.type.includes('audio')) {
+        return;
+      }
+      const splitPath = item.webkitRelativePath.split('/');
+      const artist =
+        splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
+      const albumName =
+        splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
+      const fileIndex = theAlbumArray.findIndex(
+        (a) =>
+          a.artist &&
+          a.artist === artist &&
+          a.albumName &&
+          a.albumName === albumName
+      );
+      if (fileIndex >= 0) {
+        theAlbumArray[fileIndex].tracks.push(key);
+      } else {
+        theAlbumArray.push({
+          artist: artist,
+          albumName: albumName,
+          index: index + 1,
+          tracks: [key],
+        });
+      }
+    });
+    console.log('read local albums: ', theAlbumArray);
+    return theAlbumArray;
+  };
+
   const contextData = {
     name: 'Local File Analysis',
     description: '',
@@ -39,7 +74,12 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
         <AlbumViewHeader contextData={contextData} httpService={httpService} />
       </div>
       <div className="row content">
-        <LocalFiles savedAlbumData={savedAlbumData} httpService={httpService} />
+        <FileAnalysis
+          savedAlbumData={savedAlbumData}
+          folderPicker={LocalFolderPicker}
+          readAlbumArray={readAlbumArray}
+          httpService={httpService}
+        />
       </div>
       <div className="row footer"> </div>
     </div>

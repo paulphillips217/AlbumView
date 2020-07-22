@@ -48,7 +48,7 @@ const AlbumContext = ({
         return;
       }
       httpService
-        .get(`/album-list/${savedAlbumOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/spotify/album-list/${savedAlbumOffset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((rawData) => {
           console.log('saved album data', rawData, savedAlbumOffset);
           const data = rawData.items.map((e) => ({

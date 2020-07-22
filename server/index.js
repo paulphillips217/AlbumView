@@ -12,11 +12,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const session = require('express-session');
 
-const authorizeSpotify = require('./authorizeSpotify');
-const spotifyTokens = require('./accessToken');
-const spotifyData = require('./spotifyData');
 const lastFmData = require('./lastFmData');
 const oneDriveTokens = require('./tokens');
+
+const spotifyRoutes = require('./routes/spotify');
 
 const app = express();
 app.use(cors());
@@ -33,11 +32,13 @@ const pool = new Pool({
 });
 
 // Priority serve any static files.
+/*
 if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/public')));
 } else {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
+*/
 
 /* OneDrive stuff starts here */
 
@@ -176,48 +177,9 @@ app.get('/db-test', async (req, res) => {
   }
 });
 
-app.get('/login', authorizeSpotify);
-
-app.get('/callback', spotifyTokens.getSpotifyAccessToken, (req, res, next) => {
-  //console.log('callback - credentials: ' + JSON.stringify(req.credentials));
-  try {
-    //console.log('access token: ' + req.credentials.access_token);
-    //console.log('refresh token: ' + req.credentials.refresh_token);
-    console.log('token expiration: ' + req.credentials.token_expiration);
-    //spotifyTokens.storeSpotifyAccessTokenInDatabase(pool, req.credentials);
-    const clientUrl = process.env.CLIENT_URL;
-    res.redirect(
-      `${clientUrl}/?spotify_access_token=${req.credentials.access_token}&spotify_refresh_token=${req.credentials.refresh_token}&spotify_token_expiration=${req.credentials.token_expiration}`
-    );
-  } catch (err) {
-    console.error(err);
-  }
-});
+app.use('/spotify', spotifyRoutes);
 
 app.get('/last-album', lastFmData.talkToLastFm);
-app.get('/history', spotifyData.talkToSpotify);
-app.get('/search/:query/:type', spotifyData.talkToSpotify);
-app.get('/playlist-list/:offset/:limit', spotifyData.talkToSpotify);
-app.get('/playlist-tracks/:id/:offset/:limit', spotifyData.talkToSpotify);
-app.get('/playlist-data/:id', spotifyData.talkToSpotify);
-app.get('/album-data/:id', spotifyData.talkToSpotify);
-app.get('/album-list/:offset/:limit', spotifyData.talkToSpotify);
-app.get('/albums/contains/:ids', spotifyData.talkToSpotify);
-app.get('/track-list/:offset/:limit', spotifyData.talkToSpotify);
-app.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
-app.get('/artist-data/:id', spotifyData.talkToSpotify);
-app.get('/artist-list/:offset/:limit', spotifyData.aggregateSpotifyArtistData);
-app.get('/artist-albums/:id/:offset/:limit', spotifyData.talkToSpotify);
-app.get('/related-artists/:id', spotifyData.talkToSpotify);
-app.get('/player-status', spotifyData.talkToSpotify);
-app.put('/player-pause', spotifyData.talkToSpotify);
-app.put('/player-shuffle/:state', spotifyData.talkToSpotify);
-app.put('/save-tracks/:ids', spotifyData.talkToSpotify);
-app.put('/save-albums/:ids', spotifyData.talkToSpotify);
-app.delete('/delete-tracks/:ids', spotifyData.talkToSpotify);
-app.delete('/delete-albums/:ids', spotifyData.talkToSpotify);
-app.post('/queue-track/:uri', spotifyData.talkToSpotify);
-app.post('/player-next', spotifyData.talkToSpotify);
 
 // All remaining requests return the React app, so it can handle routing.
 app.get('*', function (request, response) {

@@ -67,7 +67,7 @@ const PlaylistContext = ({
       if (contextItem) {
         httpService
           .get(
-            `/playlist-tracks/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
+            `/spotify/playlist-tracks/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
           )
           .then((rawData) => {
             const data = rawData.items.map((e) => ({
@@ -114,7 +114,7 @@ const PlaylistContext = ({
   useEffect(() => {
     const getList = () => {
       httpService
-        .get(`/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/spotify/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((data) => {
           const parsedData = data.items.map((e) => ({
             id: e.id,
@@ -147,7 +147,7 @@ const PlaylistContext = ({
     const getContextData = () => {
       if (contextItem) {
         httpService
-          .get(`/playlist-data/${contextItem}`)
+          .get(`/spotify/playlist-data/${contextItem}`)
           .then((data) => {
             setContextData({
               name: data.name,

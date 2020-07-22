@@ -71,7 +71,7 @@ const RelatedArtistContext = ({
       if (contextItem) {
         httpService
           .get(
-            `/artist-albums/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
+            `/spotify/artist-albums/${contextItem}/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`
           )
           .then((rawData) => {
             console.log('artist album data', rawData);
@@ -119,7 +119,7 @@ const RelatedArtistContext = ({
   useEffect(() => {
     const getList = () => {
       httpService
-        .get(`/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/spotify/artist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((data) => {
           console.log('artist list data', data);
           const parsedData = data.map((e) => ({
@@ -159,7 +159,7 @@ const RelatedArtistContext = ({
       }
       if (relatedToArtist && !contextItem) {
         httpService
-          .get(`/artist-data/${relatedToArtist}`)
+          .get(`/spotify/artist-data/${relatedToArtist}`)
           .then((data) => {
             setContextData({
               name: `${data.name} (choose related artist)`,
@@ -170,7 +170,7 @@ const RelatedArtistContext = ({
       }
       if (contextItem) {
         httpService
-          .get(`/artist-data/${contextItem}`)
+          .get(`/spotify/artist-data/${contextItem}`)
           .then((data) => {
             setContextData({
               name: data.name,

@@ -5,7 +5,7 @@ const SpotifyLogin = () => (
   <div className="App">
     <a
       className={'spotify-button'}
-      href={`${process.env.REACT_APP_SERVER_ROOT}/login`}
+      href={`${process.env.REACT_APP_SERVER_ROOT}/spotify/login`}
     >
       Connect to Spotify
     </a>

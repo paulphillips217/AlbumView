@@ -31,7 +31,7 @@ const RelatedArtistList = ({
       console.log('get related artist list', relatedToArtist);
       if (relatedToArtist) {
         httpService
-          .get(`/related-artists/${relatedToArtist}`)
+          .get(`/spotify/related-artists/${relatedToArtist}`)
           .then((data) => {
             console.log('related artist list data', data);
             const parsedData = data.artists.map((e) => ({

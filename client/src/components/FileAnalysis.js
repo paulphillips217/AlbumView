@@ -1,5 +1,5 @@
-import React, { Fragment, useState } from 'react';
-import { Button, Grid, Header } from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Button, Grid } from 'semantic-ui-react';
 import '../styles/App.css';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
@@ -10,8 +10,15 @@ import { SortTypes } from '../store/types';
 import { cleanTitle, sortGridData } from '../util/sortUtils';
 import ModalAlbum from './ModalAlbum';
 import ModalLocalAlbum from './ModalLocalAlbum';
+import LocalFolderPicker from './LocalFolderPicker';
+import OneDriveFileContext from './OneDriveContext';
 
-const LocalFiles = ({ savedAlbumData, httpService }) => {
+const FileAnalysis = ({
+  savedAlbumData,
+  folderPicker,
+  readAlbumArray,
+  httpService,
+}) => {
   const theme = useTheme();
   const [fileData, setFileData] = useState([]);
   const [albums, setAlbums] = useState([]);
@@ -19,43 +26,9 @@ const LocalFiles = ({ savedAlbumData, httpService }) => {
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
 
-  const onFileChange = (e) => {
-    console.log('file data', e.target.files);
-    setFileData(e.target.files);
-  };
-
   const handleRead = () => {
-    const theAlbumArray = [];
     if (fileData && fileData.length > 0) {
-      Object.keys(fileData).forEach((key, index) => {
-        const item = fileData[key];
-        if (!item.type.includes('audio')) {
-          return;
-        }
-        const splitPath = item.webkitRelativePath.split('/');
-        const artist =
-          splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
-        const albumName =
-          splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
-        const fileIndex = theAlbumArray.findIndex(
-          (a) =>
-            a.artist &&
-            a.artist === artist &&
-            a.albumName &&
-            a.albumName === albumName
-        );
-        if (fileIndex >= 0) {
-          theAlbumArray[fileIndex].tracks.push(key);
-        } else {
-          theAlbumArray.push({
-            artist: artist,
-            albumName: albumName,
-            index: index + 1,
-            tracks: [key],
-          });
-        }
-      });
-      console.log('read local albums: ', theAlbumArray);
+      const theAlbumArray = readAlbumArray(fileData);
       setAlbums(theAlbumArray);
       blendAlbumLists(theAlbumArray, savedAlbumData);
     } else {
@@ -65,24 +38,26 @@ const LocalFiles = ({ savedAlbumData, httpService }) => {
 
   const blendAlbumLists = (localAlbumList, spotifyAlbumList) => {
     const blendedList = spotifyAlbumList.slice();
-    localAlbumList.forEach((item) => {
-      const matchIndex = blendedList.findIndex(
-        (a) =>
-          cleanTitle(a.artist) === cleanTitle(item.artist) &&
-          cleanTitle(a.albumName) === cleanTitle(item.albumName)
-      );
-      if (matchIndex >= 0) {
-        blendedList[matchIndex].index = item.index;
-        blendedList[matchIndex].tracks = item.tracks;
-      } else {
-        blendedList.push({
-          artist: item.artist,
-          albumName: item.albumName,
-          index: item.index,
-          tracks: item.tracks,
-        });
-      }
-    });
+    if (localAlbumList && localAlbumList.length > 0) {
+      localAlbumList.forEach((item) => {
+        const matchIndex = blendedList.findIndex(
+          (a) =>
+            cleanTitle(a.artist) === cleanTitle(item.artist) &&
+            cleanTitle(a.albumName) === cleanTitle(item.albumName)
+        );
+        if (matchIndex >= 0) {
+          blendedList[matchIndex].index = item.index;
+          blendedList[matchIndex].tracks = item.tracks;
+        } else {
+          blendedList.push({
+            artist: item.artist,
+            albumName: item.albumName,
+            index: item.index,
+            tracks: item.tracks,
+          });
+        }
+      });
+    }
     console.log('blended album list: ', blendedList);
     setAlbumGridData(blendedList);
   };
@@ -93,7 +68,7 @@ const LocalFiles = ({ savedAlbumData, httpService }) => {
       item.artist
     )}`;
     httpService
-      .get(`/search/${query}/album`)
+      .get(`/spotify/search/${query}/album`)
       .then((rawData) => {
         console.log('local file search rawData', rawData);
         let data = [];
@@ -183,21 +158,9 @@ const LocalFiles = ({ savedAlbumData, httpService }) => {
 
   return (
     <div style={{ ...theme, paddingLeft: '20px' }}>
-      {!fileData.length && !albums.length && (
-        <Fragment>
-          <Header as="h3" style={{ ...theme, paddingTop: '50px' }}>
-            Select the directory that contains your album collection
-          </Header>
-          <input
-            type="file"
-            webkitdirectory=""
-            mozdirectory=""
-            directory=""
-            style={{ ...theme, minHeight: '70px' }}
-            onChange={onFileChange}
-          />
-        </Fragment>
-      )}
+      {!fileData.length &&
+        !albums.length &&
+        React.createElement(folderPicker, { setFileData, httpService }, null)}
       {fileData && fileData.length > 0 && !albums.length && (
         <Button onClick={handleRead}>Read Files</Button>
       )}
@@ -227,8 +190,9 @@ const LocalFiles = ({ savedAlbumData, httpService }) => {
   );
 };
 
-LocalFiles.propTypes = {
+FileAnalysis.propTypes = {
   savedAlbumData: PropTypes.array.isRequired,
+  readAlbumArray: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
 
@@ -236,4 +200,4 @@ const mapStateToProps = (state) => ({
   savedAlbumData: getSavedAlbumData(state),
 });
 
-export default connect(mapStateToProps)(LocalFiles);
+export default connect(mapStateToProps)(FileAnalysis);

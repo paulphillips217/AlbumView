@@ -9,7 +9,8 @@ import PropTypes from 'prop-types';
 import { getOneDriveLoggedIn, getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
 import OneDriveLogin from './OneDriveLogin';
-import OneDriveFiles from './OneDriveFiles';
+import OneDriveFolderPicker from './OneDriveFolderPicker';
+import FileAnalysis from './FileAnalysis';
 
 const OneDriveFileContext = ({
   isOneDriveLoggedIn,
@@ -39,6 +40,26 @@ const OneDriveFileContext = ({
     description: '',
   };
 
+  const readAlbumArray = (fileData) => {
+    /*
+    const id = fileData;
+    httpService
+      .get(`/one-drive/${id}/children`)
+      .then((folderList) => {
+        const updatedList = [...folders];
+        folderList.forEach((folder) => {
+          if (!updatedList.some((f) => f.id === folder.id)) {
+            folder.parentId = id;
+            updatedList.push(folder);
+          }
+        });
+        setFolders(updatedList);
+        console.log('handleClickFolder', folderList);
+      })
+      .catch((error) => console.log(error));
+*/
+  };
+
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
@@ -46,8 +67,10 @@ const OneDriveFileContext = ({
       </div>
       <div className="row content">
         {isOneDriveLoggedIn && (
-          <OneDriveFiles
+          <FileAnalysis
             savedAlbumData={savedAlbumData}
+            folderPicker={OneDriveFolderPicker}
+            readAlbumArray={readAlbumArray}
             httpService={httpService}
           />
         )}

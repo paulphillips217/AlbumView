@@ -9,7 +9,7 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
 import httpService from './util/httpUtils';
-import LocalFiles from './components/LocalFiles';
+import FileAnalysis from './components/FileAnalysis';
 
 const commService = new httpService(store);
 
@@ -21,7 +21,7 @@ const routing = (
           <Route
             path="/files"
             render={(props) => (
-              <LocalFiles {...props} httpService={commService} />
+              <FileAnalysis {...props} httpService={commService} />
             )}
           />
           <Route

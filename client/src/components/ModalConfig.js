@@ -178,7 +178,6 @@ const ModalConfig = ({
     setSpotifyAccessToken('');
     setSpotifyTokenExpiration('');
     setContextItem('');
-    setContextType('');
     setRelatedToArtist('');
     setContextGridData([]);
     setContextGridOffset(0);

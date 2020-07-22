@@ -48,7 +48,7 @@ const TrackContext = ({
         return;
       }
       httpService
-        .get(`/track-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/spotify/track-list/${contextGridOffset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((rawData) => {
           console.log('track data', rawData);
           const data = rawData.items.map((e) => ({
