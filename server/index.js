@@ -31,13 +31,12 @@ const pool = new Pool({
 });
 
 // Priority serve any static files.
-/*
+
 if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/public')));
 } else {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
-*/
 
 /* OneDrive stuff starts here */
 
