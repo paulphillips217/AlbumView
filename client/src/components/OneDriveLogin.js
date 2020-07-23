@@ -5,7 +5,7 @@ const OneDriveLogin = () => (
   <div className="App">
     <a
       className={'one-drive-button'}
-      href={`${process.env.REACT_APP_SERVER_ROOT}/auth/signin`}
+      href={`${process.env.REACT_APP_SERVER_ROOT}/one-drive/signin`}
     >
       Connect to OneDrive
     </a>

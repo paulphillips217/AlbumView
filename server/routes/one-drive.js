@@ -4,6 +4,8 @@
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
+const oneDriveTokens = require('../tokens');
+const graph = require('../graph');
 
 /* GET auth callback. */
 router.get('/signin', function (req, res, next) {
@@ -45,6 +47,26 @@ router.get('/signout', function (req, res) {
     req.logout();
     res.redirect('/');
   });
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    console.log('one drive getter, id is: ', req.params.id);
+    const accessToken = oneDriveTokens.getOneDriveAccessToken(req);
+    const drives = await graph.getDrives(accessToken, req.params.id);
+
+    if (drives) {
+      //console.log('drives: ', JSON.stringify(drives));
+      res.json(drives.value);
+    }
+    else {
+      console.log('drives is empty');
+      res.json({ emptyResponse: true });
+    }
+  } catch (err) {
+    console.error(err);
+    res.json({ error: err });
+  }
 });
 
 module.exports = router;

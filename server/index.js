@@ -13,7 +13,6 @@ const cors = require('cors');
 const session = require('cookie-session');
 
 const lastFmData = require('./lastFmData');
-const oneDriveTokens = require('./tokens');
 
 const spotifyRoutes = require('./routes/spotify');
 
@@ -44,7 +43,7 @@ if (isDev) {
 
 const passport = require('passport');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
-const authRouter = require('./routes/auth');
+const oneDriveRoutes = require('./routes/one-drive');
 
 // Session middleware
 // NOTE: Uses default in-memory session store, which is not
@@ -88,8 +87,6 @@ const oauth2 = require('simple-oauth2').create({
   }
 });
 
-const graph = require('./graph');
-
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
 async function signInComplete(iss, sub, profile, accessToken, refreshToken, params, done) {
@@ -126,27 +123,7 @@ passport.use(new OIDCStrategy(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/auth', authRouter);
-
-app.get('/one-drive/:id', async (req, res) => {
-  try {
-    console.log('one drive getter, id is: ', req.params.id);
-    const accessToken = oneDriveTokens.getOneDriveAccessToken(req);
-    const drives = await graph.getDrives(accessToken, req.params.id);
-
-    if (drives) {
-      //console.log('drives: ', JSON.stringify(drives));
-      res.json(drives.value);
-    }
-    else {
-      console.log('drives is empty');
-      res.json({ emptyResponse: true });
-    }
-  } catch (err) {
-    console.error(err);
-  res.json({ error: err });
-  }
-});
+app.use('/one-drive', oneDriveRoutes);
 
 /* this is the end of the OneDrive stuff */
 
