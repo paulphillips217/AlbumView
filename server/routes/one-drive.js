@@ -21,10 +21,10 @@ router.get('/signin', function (req, res, next) {
 router.post(
   '/callback',
   passport.authenticate('azuread-openidconnect', {
-    failureRedirect: '/',
+    failureRedirect: '/?failure=true',
   }),
   (req, res) => {
-    //console.log('callback request user: ', req.user.oauthToken);
+    console.log('callback request user: ', req.user.oauthToken);
     res.redirect('/?oneDriveLogin=true');
   }
 );

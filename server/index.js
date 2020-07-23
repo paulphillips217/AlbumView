@@ -64,12 +64,14 @@ var users = {};
 // Passport calls serializeUser and deserializeUser to
 // manage users
 passport.serializeUser(function(user, done) {
+  console.log('serializeUser ', user);
   // Use the OID property of the user as a key
   users[user.profile.oid] = user;
   done (null, user.profile.oid);
 });
 
 passport.deserializeUser(function(id, done) {
+  console.log('deserializeUser ', id);
   done(null, users[id]);
 });
 
@@ -89,6 +91,8 @@ const oauth2 = require('simple-oauth2').create({
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
 async function signInComplete(iss, sub, profile, accessToken, refreshToken, params, done) {
+  console.log('signInComplete profile.oid', profile.oid)
+
   if (!profile.oid) {
     return done(new Error("No OID found in user profile."));
   }
