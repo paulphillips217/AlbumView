@@ -9,6 +9,7 @@ const graph = require('../graph');
 
 /* GET auth callback. */
 router.get('/signin', function (req, res, next) {
+  console.log('one-drive sign in', req);
   passport.authenticate('azuread-openidconnect', {
     response: res,
     prompt: 'login',
