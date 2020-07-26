@@ -17,7 +17,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
     console.log('handleClickFolder', id);
     setMusicFolder(id);
     httpService
-      .get(`/one-drive/folders/${id}`)
+      .get(`/one-drive/children/${id}`)
       .then((folderList) => {
         const updatedList = [...folders];
         folderList.forEach((folder) => {

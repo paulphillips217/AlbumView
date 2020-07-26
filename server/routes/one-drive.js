@@ -50,18 +50,18 @@ router.get('/signout', function (req, res) {
   });
 });
 
-router.get('/folders/:id', async (req, res) => {
+router.get('/children/:id', async (req, res) => {
   try {
     console.log('one drive get folders, id is: ', req.params.id);
     const accessToken = oneDriveTokens.getOneDriveAccessToken(req);
-    const folders = await graph.getFolders(accessToken, req.params.id);
+    const children = await graph.getChildren(accessToken, req.params.id);
 
-    if (folders) {
-      //console.log('folders: ', JSON.stringify(folders));
-      res.json(folders.value);
+    if (children) {
+      //console.log('children: ', JSON.stringify(children));
+      res.json(children.value);
     }
     else {
-      console.log('folders is empty');
+      console.log('children is empty');
       res.json({ emptyResponse: true });
     }
   } catch (err) {

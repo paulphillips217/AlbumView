@@ -12,15 +12,15 @@ module.exports = {
     return user;
   },
 
-  getFolders: async function (accessToken, id) {
+  getChildren: async function (accessToken, id) {
     const client = getAuthenticatedClient(accessToken);
     if (!id) {
       id = 'root';
     }
-    console.log('getFolders id: ', id);
+    console.log('getChildren id: ', id);
 
-    const folders = await client.api(`/me/drive/items/${id}/children`).get();
-    return folders;
+    const children = await client.api(`/me/drive/items/${id}/children`).get();
+    return children;
   },
 
   getFile: async function (accessToken, id) {

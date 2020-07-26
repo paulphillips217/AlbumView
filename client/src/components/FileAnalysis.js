@@ -69,9 +69,9 @@ const FileAnalysis = ({
 
   const handleSearch = (item) => {
     console.log('handle search: ', item);
-    const query = `album:${encodeURI(item.albumName)}+artist:${encodeURI(
-      item.artist
-    )}`;
+    const query = `album:${encodeURIComponent(
+      item.albumName
+    )}+artist:${encodeURIComponent(item.artist)}`;
     httpService
       .get(`/spotify/search/${query}/album`)
       .then((rawData) => {
@@ -96,9 +96,9 @@ const FileAnalysis = ({
   };
 
   const setUpTracks = (index) => {
-    const album = albums.find(a => index === a.index);
+    const album = albums.find((a) => index === a.index);
     return createTracks(album, fileData);
-  }
+  };
 
   const gridItemSearchButton = (item) => {
     if (isSpotifyAuthenticated) {

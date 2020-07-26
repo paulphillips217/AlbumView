@@ -8,7 +8,9 @@ const axios = require('axios');
 
 const talkToLastFm = async (req, res) => {
   const apiKey = process.env.LAST_FM_API_KEY;
-  const url = `http://ws.audioscrobbler.com/2.0?method=album.getinfo&api_key=${apiKey}&artist=Cher&album=Believe&format=json`;
+  const artist = encodeURIComponent(req.params.artist);
+  const album = encodeURIComponent(req.params.album);
+  const url = `http://ws.audioscrobbler.com/2.0?method=album.getinfo&api_key=${apiKey}&artist=${artist}&album=${album}&format=json`;
 
   axios({
     url: url,
@@ -21,7 +23,7 @@ const talkToLastFm = async (req, res) => {
     .then((response) => {
       console.log('axios got response for ', url);
       if (response && response.data) {
-        console.log('last.fm response', response.data);
+        //console.log('last.fm response', response.data);
         res.json(response.data);
       } else {
         console.log('axios got empty response');

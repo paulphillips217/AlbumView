@@ -1,9 +1,10 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Header, Modal } from 'semantic-ui-react';
+import { Header, Image, Modal } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
+import { getImage } from '../util/utilities';
 
 // audio player from https://www.npmjs.com/package/react-h5-audio-player
 
@@ -19,18 +20,36 @@ const ModalFileAlbum = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [albumTrackList, setAlbumTrackList] = useState([]);
   const [currentTrack, setCurrentTrack] = useState(0);
+  const [albumImageUrl, setAlbumImageUrl] = useState('');
+
+  const getAlbumArt = () => {
+    const artist = encodeURIComponent(artistName);
+    const album = encodeURIComponent(albumName);
+    httpService
+      .get(`/last-fm/last-album/${artist}/${album}`)
+      .then((rawData) => {
+        console.log('Last.fm data', rawData);
+        if (rawData && rawData.album) {
+          const image = rawData.album.image.find(
+            (i) => 'extralarge' === i.size
+          );
+          setAlbumImageUrl(image['#text']);
+          console.log('getAlbumArt url: ', image['#text']);
+        }
+      })
+      .catch((error) => console.log(error));
+  };
 
   const handleModalOpen = async () => {
     console.log('handleModalOpen', albumIndex);
     const tracks = await setUpTracks(albumIndex);
     console.log('handleModalOpen tracks', tracks);
     setAlbumTrackList(tracks);
-    //setAlbumTrackList(tracks.map((t) => URL.createObjectURL(fileData[t])));
+    getAlbumArt();
     setModalOpen(true);
   };
 
   const handleModalClose = () => {
-    //albumTrackList.map((t) => URL.revokeObjectURL(t));
     tearDownTracks(albumTrackList);
     setModalOpen(false);
   };
@@ -51,7 +70,6 @@ const ModalFileAlbum = ({
     setCurrentTrack(index);
   };
 
-  // currently the header is white-on-white
   return (
     <Modal
       trigger={
@@ -64,6 +82,7 @@ const ModalFileAlbum = ({
     >
       <Modal.Header style={theme}> {albumName}</Modal.Header>
       <Modal.Content image style={theme}>
+        <Image wrapped src={albumImageUrl} />
         <Modal.Description style={{ width: '80%' }}>
           <Fragment>
             <Header
@@ -113,10 +132,8 @@ const ModalFileAlbum = ({
 };
 
 ModalFileAlbum.propTypes = {
-  albumIndex: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number
-  ]).isRequired,
+  albumIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   artistName: PropTypes.string.isRequired,
   albumName: PropTypes.string.isRequired,
   setUpTracks: PropTypes.func.isRequired,

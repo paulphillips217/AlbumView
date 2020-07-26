@@ -11,6 +11,7 @@ import { setDataLoading } from '../store/actions';
 import OneDriveLogin from './OneDriveLogin';
 import OneDriveFolderPicker from './OneDriveFolderPicker';
 import FileAnalysis from './FileAnalysis';
+import { trimTrackFileName } from '../util/utilities';
 
 const OneDriveFileContext = ({
   isOneDriveLoggedIn,
@@ -19,20 +20,7 @@ const OneDriveFileContext = ({
   httpService,
 }) => {
   const theme = useTheme();
-  /*
-  // this was me connecting to last.fm to get album data -- testing
-    useEffect(() => {
-      const getLastFmData = () => {
-        httpService
-          .get(`/last-album`)
-          .then((rawData) => {
-            console.log('Last.fm data', rawData);
-          })
-          .catch((error) => console.log(error));
-      };
-      getLastFmData();
-    }, []);
-  */
+
   setDataLoading(false);
 
   const contextData = {
@@ -42,20 +30,18 @@ const OneDriveFileContext = ({
 
   const readAlbumArray = async (musicRootFolderId) => {
     console.log('OneDrive readAlbumArray', musicRootFolderId);
-
-    // theAlbumArray is an array of album objects that include params: artist, albumName, index, tracks[]
     const theAlbumArray = [];
 
     try {
       const artistList = await httpService.get(
-        `/one-drive/folders/${musicRootFolderId}`
+        `/one-drive/children/${musicRootFolderId}`
       );
       console.log('artist list: ', artistList);
 
       for (let artist of artistList) {
         if (artist.folder) {
           const albumList = await httpService.get(
-            `/one-drive/folders/${artist.id}`
+            `/one-drive/children/${artist.id}`
           );
           console.log('album list: ', albumList);
           albumList.forEach((album) =>
@@ -78,13 +64,14 @@ const OneDriveFileContext = ({
 
   const createTracks = async (album) => {
     const trackList = await httpService.get(
-      `/one-drive/folders/${album.index}`
+      `/one-drive/children/${album.index}`
     );
     console.log('createTracks', trackList);
     return trackList
       .filter((t) => t.file.mimeType.includes('audio'))
       .map((t) => ({
-        name: t.audio && t.audio.title ? t.audio.title : t.name,
+        name:
+          t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
         url: t['@microsoft.graph.downloadUrl'],
       }));
   };

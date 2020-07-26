@@ -10,23 +10,11 @@ import { getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
 import FileAnalysis from './FileAnalysis';
 import LocalFolderPicker from './LocalFolderPicker';
+import { trimTrackFileName } from '../util/utilities';
 
 const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
   const theme = useTheme();
-  /*
-// this was me connecting to last.fm to get album data -- testing
-  useEffect(() => {
-    const getLastFmData = () => {
-      httpService
-        .get(`/last-album`)
-        .then((rawData) => {
-          console.log('Last.fm data', rawData);
-        })
-        .catch((error) => console.log(error));
-    };
-    getLastFmData();
-  }, []);
-*/
+
   setDataLoading(false);
 
   const readAlbumArray = (fileData) => {
@@ -65,13 +53,16 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
 
   const createTracks = (album, fileData) => {
     console.log('createTracks');
-    return album.tracks.map(t => ({name: fileData[t].name, url: URL.createObjectURL(fileData[t])}));
-  }
+    return album.tracks.map((t) => ({
+      name: trimTrackFileName(fileData[t].name),
+      url: URL.createObjectURL(fileData[t]),
+    }));
+  };
 
   const tearDownTracks = (albumTrackList) => {
     console.log('tearDownTracks');
     albumTrackList.map((t) => URL.revokeObjectURL(t.url));
-  }
+  };
 
   const contextData = {
     name: 'Local File Analysis',

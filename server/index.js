@@ -12,8 +12,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const session = require('cookie-session');
 
-const lastFmData = require('./lastFmData');
 const spotifyRoutes = require('./routes/spotify');
+const lastFmRoutes = require('./routes/last-fm');
 
 const app = express();
 app.use(cors());
@@ -124,6 +124,7 @@ app.use(passport.session());
 
 app.use('/spotify', spotifyRoutes);
 app.use('/one-drive', oneDriveRoutes);
+app.use('/last-fm', lastFmRoutes);
 
 // test endpoint to see if the server is running
 app.get('/ping', (req, res) => {
@@ -151,8 +152,6 @@ app.get('/db-test', async (req, res) => {
     res.send('Error ' + err);
   }
 });
-
-app.get('/last-album', lastFmData.talkToLastFm);
 
 // All remaining requests return the React app, so it can handle routing.
 app.get('*', function (request, response) {
