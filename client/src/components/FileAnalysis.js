@@ -3,20 +3,24 @@ import { Button, Grid } from 'semantic-ui-react';
 import '../styles/App.css';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
-import { getSavedAlbumData } from '../store/selectors';
+import {
+  getSavedAlbumData,
+  getSpotifyAuthenticationState,
+} from '../store/selectors';
 import { connect } from 'react-redux';
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
 import { cleanTitle, sortGridData } from '../util/sortUtils';
 import ModalAlbum from './ModalAlbum';
-import ModalLocalAlbum from './ModalLocalAlbum';
-import LocalFolderPicker from './LocalFolderPicker';
-import OneDriveFileContext from './OneDriveContext';
+import ModalFileAlbum from './ModalFileAlbum';
 
 const FileAnalysis = ({
+  isSpotifyAuthenticated,
   savedAlbumData,
   folderPicker,
   readAlbumArray,
+  createTracks,
+  tearDownTracks,
   httpService,
 }) => {
   const theme = useTheme();
@@ -26,9 +30,10 @@ const FileAnalysis = ({
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
 
-  const handleRead = () => {
+  const handleRead = async () => {
     if (fileData && fileData.length > 0) {
-      const theAlbumArray = readAlbumArray(fileData);
+      const theAlbumArray = await readAlbumArray(fileData);
+      console.log('handleRead got theAlbumArray', theAlbumArray);
       setAlbums(theAlbumArray);
       blendAlbumLists(theAlbumArray, savedAlbumData);
     } else {
@@ -90,9 +95,16 @@ const FileAnalysis = ({
       .catch((error) => console.log(error));
   };
 
-  const gridItemSearchButton = (item) => (
-    <Button onClick={() => handleSearch(item)}>Search</Button>
-  );
+  const setUpTracks = (index) => {
+    const album = albums.find(a => index === a.index);
+    return createTracks(album, fileData);
+  }
+
+  const gridItemSearchButton = (item) => {
+    if (isSpotifyAuthenticated) {
+      return <Button onClick={() => handleSearch(item)}>Search</Button>;
+    }
+  };
 
   const gridItemSearchResults = (item) => {
     return searchResultData
@@ -135,15 +147,16 @@ const FileAnalysis = ({
     >
       <Grid.Column>
         {item.index ? (
-          <ModalLocalAlbum
-            httpService={httpService}
+          <ModalFileAlbum
+            albumIndex={item.index}
             artistName={item.artist}
             albumName={item.albumName}
-            tracks={item.tracks}
-            fileData={fileData}
+            setUpTracks={setUpTracks}
+            tearDownTracks={tearDownTracks}
+            httpService={httpService}
           />
         ) : (
-          ''
+          <span>{item.artist}</span>
         )}
       </Grid.Column>
       <Grid.Column>{item.index ? item.albumName : ''}</Grid.Column>
@@ -169,34 +182,36 @@ const FileAnalysis = ({
           {hideMatches ? 'Show Matches' : 'Hide Matches'}
         </Button>
       )}
-      <Grid celled centered style={{ width: '80%' }}>
-        <Grid.Row columns={2} style={theme}>
-          <Grid.Column>
-            <strong>Local Album Library</strong>
-          </Grid.Column>
-          <Grid.Column centered>
-            <strong>Spotify Album Library</strong>
-          </Grid.Column>
-        </Grid.Row>
-        {sortGridData(albumGridData, SortTypes.ArtistThenAlbumName).map(
-          (item, index) => {
-            if (!(hideMatches && item.index && item.albumId)) {
-              return GridItem(item, index);
-            }
-          }
-        )}
-      </Grid>
+      {albumGridData.length > 0 && (
+        <Grid celled centered style={{ width: '80%' }}>
+          <Grid.Row columns={2} style={theme}>
+            <Grid.Column>
+              <strong>Local Album Library</strong>
+            </Grid.Column>
+            <Grid.Column>
+              <strong>Spotify Album Library</strong>
+            </Grid.Column>
+          </Grid.Row>
+          {sortGridData(albumGridData, SortTypes.ArtistThenAlbumName)
+            .filter((item) => !(hideMatches && item.index && item.albumId))
+            .map((item, index) => GridItem(item, index))}
+        </Grid>
+      )}
     </div>
   );
 };
 
 FileAnalysis.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.array.isRequired,
   readAlbumArray: PropTypes.func.isRequired,
+  setUpTracks: PropTypes.func.isRequired,
+  tearDownTracks: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   savedAlbumData: getSavedAlbumData(state),
 });
 

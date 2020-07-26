@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -40,24 +40,57 @@ const OneDriveFileContext = ({
     description: '',
   };
 
-  const readAlbumArray = (fileData) => {
-    /*
-    const id = fileData;
-    httpService
-      .get(`/one-drive/${id}/children`)
-      .then((folderList) => {
-        const updatedList = [...folders];
-        folderList.forEach((folder) => {
-          if (!updatedList.some((f) => f.id === folder.id)) {
-            folder.parentId = id;
-            updatedList.push(folder);
-          }
-        });
-        setFolders(updatedList);
-        console.log('handleClickFolder', folderList);
-      })
-      .catch((error) => console.log(error));
-*/
+  const readAlbumArray = async (musicRootFolderId) => {
+    console.log('OneDrive readAlbumArray', musicRootFolderId);
+
+    // theAlbumArray is an array of album objects that include params: artist, albumName, index, tracks[]
+    const theAlbumArray = [];
+
+    try {
+      const artistList = await httpService.get(
+        `/one-drive/folders/${musicRootFolderId}`
+      );
+      console.log('artist list: ', artistList);
+
+      for (let artist of artistList) {
+        if (artist.folder) {
+          const albumList = await httpService.get(
+            `/one-drive/folders/${artist.id}`
+          );
+          console.log('album list: ', albumList);
+          albumList.forEach((album) =>
+            theAlbumArray.push({
+              index: album.id,
+              artist: artist.name,
+              albumName: album.name,
+              tracks: [],
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log('OneDrive readAlbumArray - theAlbumArray: ', theAlbumArray);
+    return theAlbumArray;
+  };
+
+  const createTracks = async (album) => {
+    const trackList = await httpService.get(
+      `/one-drive/folders/${album.index}`
+    );
+    console.log('createTracks', trackList);
+    return trackList
+      .filter((t) => t.file.mimeType.includes('audio'))
+      .map((t) => ({
+        name: t.audio && t.audio.title ? t.audio.title : t.name,
+        url: t['@microsoft.graph.downloadUrl'],
+      }));
+  };
+
+  const tearDownTracks = () => {
+    console.log('tearDownTracks');
   };
 
   return (
@@ -71,6 +104,8 @@ const OneDriveFileContext = ({
             savedAlbumData={savedAlbumData}
             folderPicker={OneDriveFolderPicker}
             readAlbumArray={readAlbumArray}
+            createTracks={createTracks}
+            tearDownTracks={tearDownTracks}
             httpService={httpService}
           />
         )}
@@ -83,7 +118,7 @@ const OneDriveFileContext = ({
 
 OneDriveFileContext.propTypes = {
   isOneDriveLoggedIn: PropTypes.bool.isRequired,
-  savedAlbumData: PropTypes.object.isRequired,
+  savedAlbumData: PropTypes.array.isRequired,
   setDataLoading: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };

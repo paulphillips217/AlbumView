@@ -50,18 +50,38 @@ router.get('/signout', function (req, res) {
   });
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/folders/:id', async (req, res) => {
   try {
-    console.log('one drive getter, id is: ', req.params.id);
+    console.log('one drive get folders, id is: ', req.params.id);
     const accessToken = oneDriveTokens.getOneDriveAccessToken(req);
-    const drives = await graph.getDrives(accessToken, req.params.id);
+    const folders = await graph.getFolders(accessToken, req.params.id);
 
-    if (drives) {
-      //console.log('drives: ', JSON.stringify(drives));
-      res.json(drives.value);
+    if (folders) {
+      //console.log('folders: ', JSON.stringify(folders));
+      res.json(folders.value);
     }
     else {
-      console.log('drives is empty');
+      console.log('folders is empty');
+      res.json({ emptyResponse: true });
+    }
+  } catch (err) {
+    console.error(err);
+    res.json({ error: err });
+  }
+});
+
+router.get('/file/:id', async (req, res) => {
+  try {
+    console.log('one drive get file, id is: ', req.params.id);
+    const accessToken = oneDriveTokens.getOneDriveAccessToken(req);
+    const file = await graph.getFile(accessToken, req.params.id);
+
+    if (file) {
+      //console.log('file: ', JSON.stringify(file));
+      res.json(file.value);
+    }
+    else {
+      console.log('file is empty');
       res.json({ emptyResponse: true });
     }
   } catch (err) {

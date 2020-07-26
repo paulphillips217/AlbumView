@@ -5,13 +5,14 @@ import { useTheme } from 'emotion-theming';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 
-// audio player at https://www.npmjs.com/package/react-h5-audio-player
+// audio player from https://www.npmjs.com/package/react-h5-audio-player
 
-const ModalLocalAlbum = ({
+const ModalFileAlbum = ({
+  albumIndex,
   artistName,
   albumName,
-  fileData,
-  tracks,
+  setUpTracks,
+  tearDownTracks,
   httpService,
 }) => {
   const theme = useTheme();
@@ -19,23 +20,28 @@ const ModalLocalAlbum = ({
   const [albumTrackList, setAlbumTrackList] = useState([]);
   const [currentTrack, setCurrentTrack] = useState(0);
 
-  const handleModalOpen = () => {
-    setAlbumTrackList(tracks.map((t) => URL.createObjectURL(fileData[t])));
+  const handleModalOpen = async () => {
+    console.log('handleModalOpen', albumIndex);
+    const tracks = await setUpTracks(albumIndex);
+    console.log('handleModalOpen tracks', tracks);
+    setAlbumTrackList(tracks);
+    //setAlbumTrackList(tracks.map((t) => URL.createObjectURL(fileData[t])));
     setModalOpen(true);
   };
 
   const handleModalClose = () => {
-    albumTrackList.map((t) => URL.revokeObjectURL(t));
+    //albumTrackList.map((t) => URL.revokeObjectURL(t));
+    tearDownTracks(albumTrackList);
     setModalOpen(false);
   };
 
   const handleClickPrevious = () => {
-    setCurrentTrack(currentTrack === 0 ? 0 : currentTrack - 1);
+    setCurrentTrack(currentTrack <= 0 ? 0 : currentTrack - 1);
   };
 
   const handleClickNext = () => {
     setCurrentTrack(
-      currentTrack === albumTrackList.length - 1
+      currentTrack >= albumTrackList.length - 1
         ? albumTrackList.length - 1
         : currentTrack + 1
     );
@@ -49,7 +55,7 @@ const ModalLocalAlbum = ({
   return (
     <Modal
       trigger={
-        <div style={{ cursor: 'pointer' }} onClick={() => handleModalOpen()}>
+        <div style={{ cursor: 'pointer' }} onClick={handleModalOpen}>
           {artistName}
         </div>
       }
@@ -66,23 +72,32 @@ const ModalLocalAlbum = ({
               {artistName}
             </Header>
             <ol>
-              {tracks.map((item, index) => (
-                <li
-                  key={index}
-                  style={{
-                    color: currentTrack === index ? 'green' : theme.color,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => handleClickListItem(index)}
-                >
-                  {fileData[item].name}
-                </li>
-              ))}
+              {albumTrackList.length > 0 &&
+                albumTrackList.map((item, index) => (
+                  <li
+                    key={index}
+                    style={{
+                      color: currentTrack === index ? 'green' : theme.color,
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => handleClickListItem(index)}
+                  >
+                    {item.name}
+                  </li>
+                ))}
             </ol>
             <AudioPlayer
               autoPlay
-              header={fileData[tracks[currentTrack]].name}
-              src={albumTrackList[currentTrack]}
+              header={
+                albumTrackList.length > 0
+                  ? albumTrackList[currentTrack].name
+                  : ''
+              }
+              src={
+                albumTrackList.length > 0
+                  ? albumTrackList[currentTrack].url
+                  : ''
+              }
               onClickPrevious={handleClickPrevious}
               onClickNext={handleClickNext}
               onEnded={handleClickNext}
@@ -97,11 +112,16 @@ const ModalLocalAlbum = ({
   );
 };
 
-ModalLocalAlbum.propTypes = {
+ModalFileAlbum.propTypes = {
+  albumIndex: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number
+  ]).isRequired,
   artistName: PropTypes.string.isRequired,
   albumName: PropTypes.string.isRequired,
-  fileData: PropTypes.object.isRequired,
+  setUpTracks: PropTypes.func.isRequired,
+  tearDownTracks: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
 
-export default ModalLocalAlbum;
+export default ModalFileAlbum;

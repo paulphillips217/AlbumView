@@ -12,15 +12,26 @@ module.exports = {
     return user;
   },
 
-  getDrives: async function (accessToken, id) {
+  getFolders: async function (accessToken, id) {
     const client = getAuthenticatedClient(accessToken);
     if (!id) {
       id = 'root';
     }
-    console.log('getDrives id: ', id);
+    console.log('getFolders id: ', id);
 
-    const drives = await client.api(`/me/drive/items/${id}/children`).get();
-    return drives;
+    const folders = await client.api(`/me/drive/items/${id}/children`).get();
+    return folders;
+  },
+
+  getFile: async function (accessToken, id) {
+    const client = getAuthenticatedClient(accessToken);
+    if (!id) {
+      id = 'root';
+    }
+    console.log('getFile id: ', id);
+
+    const file = await client.api(`/me/drive/items/${id}`).get();
+    return file;
   },
 };
 

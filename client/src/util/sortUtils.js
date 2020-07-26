@@ -31,7 +31,7 @@ export const cleanTitle = (title) => {
   cleanedTitle = cleanedTitle.replaceAll('a ', '');
   cleanedTitle = cleanedTitle.replaceAll('an ', '');
   // remove special characters
-  cleanedTitle = cleanedTitle.replaceAll(/[\\\/\:\*\?\"\'\<\>\| \.\_]/g, '');
+  cleanedTitle = cleanedTitle.replaceAll(/[\\/:*?"'<>| ._]/g, '');
   // remove anything within parentheses
   return cleanedTitle.replace(/ *\([^)]*\) */g, "");
 }

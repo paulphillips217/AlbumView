@@ -13,7 +13,6 @@ const cors = require('cors');
 const session = require('cookie-session');
 
 const lastFmData = require('./lastFmData');
-
 const spotifyRoutes = require('./routes/spotify');
 
 const app = express();
@@ -38,15 +37,13 @@ if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
 
-/* OneDrive stuff starts here */
+/* OneDrive setup starts here */
 
 const passport = require('passport');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const oneDriveRoutes = require('./routes/one-drive');
 
 // Session middleware
-// NOTE: Uses default in-memory session store, which is not
-// suitable for production
 app.use(session({
   secret: 'my_secret_value_is_secret',
   resave: false,
@@ -56,13 +53,10 @@ app.use(session({
 
 // Configure passport
 
-// In-memory storage of logged-in users
-// For demo purposes only, production apps should store
-// this in a reliable storage
+// In-memory storage of logged-in users (TODO: move to database)
 var users = {};
 
-// Passport calls serializeUser and deserializeUser to
-// manage users
+// Passport calls serializeUser and deserializeUser to manage users
 passport.serializeUser(function(user, done) {
   console.log('serializeUser ', user);
   // Use the OID property of the user as a key
@@ -72,7 +66,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   console.log('deserializeUser ', id);
-  done(null, users[id]);
+  done(null, users[id] ? users[id] : null);
 });
 
 // Configure simple-oauth2
@@ -126,9 +120,10 @@ passport.use(new OIDCStrategy(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/one-drive', oneDriveRoutes);
+/* this is the end of the OneDrive setup */
 
-/* this is the end of the OneDrive stuff */
+app.use('/spotify', spotifyRoutes);
+app.use('/one-drive', oneDriveRoutes);
 
 // test endpoint to see if the server is running
 app.get('/ping', (req, res) => {
@@ -156,8 +151,6 @@ app.get('/db-test', async (req, res) => {
     res.send('Error ' + err);
   }
 });
-
-app.use('/spotify', spotifyRoutes);
 
 app.get('/last-album', lastFmData.talkToLastFm);
 

@@ -63,6 +63,16 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
     return theAlbumArray;
   };
 
+  const createTracks = (album, fileData) => {
+    console.log('createTracks');
+    return album.tracks.map(t => ({name: fileData[t].name, url: URL.createObjectURL(fileData[t])}));
+  }
+
+  const tearDownTracks = (albumTrackList) => {
+    console.log('tearDownTracks');
+    albumTrackList.map((t) => URL.revokeObjectURL(t.url));
+  }
+
   const contextData = {
     name: 'Local File Analysis',
     description: '',
@@ -78,6 +88,8 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
           savedAlbumData={savedAlbumData}
           folderPicker={LocalFolderPicker}
           readAlbumArray={readAlbumArray}
+          createTracks={createTracks}
+          tearDownTracks={tearDownTracks}
           httpService={httpService}
         />
       </div>
@@ -87,7 +99,7 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
 };
 
 LocalFileContext.propTypes = {
-  savedAlbumData: PropTypes.object.isRequired,
+  savedAlbumData: PropTypes.array.isRequired,
   setDataLoading: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };

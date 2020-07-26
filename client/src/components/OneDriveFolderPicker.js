@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
 import { Button, Header, List } from 'semantic-ui-react';
@@ -6,7 +6,7 @@ import { Button, Header, List } from 'semantic-ui-react';
 const OneDriveFolderPicker = ({ setFileData, httpService }) => {
   const theme = useTheme();
   const [folders, setFolders] = useState([]);
-  const [musicFolder, setMusicFolder] = useState('');
+  const [musicFolder, setMusicFolder] = useState('root');
 
   const handleClickDone = () => {
     console.log('handleClickDone', musicFolder);
@@ -17,7 +17,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
     console.log('handleClickFolder', id);
     setMusicFolder(id);
     httpService
-      .get(`/one-drive/${id}`)
+      .get(`/one-drive/folders/${id}`)
       .then((folderList) => {
         const updatedList = [...folders];
         folderList.forEach((folder) => {
@@ -32,6 +32,8 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
       .catch((error) => console.log(error));
   };
 
+  useEffect(() => handleClickFolder('root'), []);
+
   const FolderSubList = ({ rootId }) => (
     <List.List>
       {folders &&
@@ -41,7 +43,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
           .map((folder) => (
             <List.Item key={folder.id}>
               <List.Icon
-                name={folder.file ? "file" : "folder"}
+                name={folder.file ? 'file' : 'folder'}
                 style={{
                   cursor: 'pointer',
                   color: folder.id === musicFolder ? 'red' : theme.color,
@@ -61,12 +63,8 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
     <div style={{ ...theme, paddingLeft: '80px', paddingTop: '80px' }}>
       <Header as="h3" style={{ ...theme }}>
         Select the directory that contains your album collection
-        <Button
-          floated={'right'}
-          style={{ marginRight: '80px' }}
-          onClick={handleClickDone}
-        >
-          Done
+        <Button style={{ marginLeft: '80px' }} onClick={handleClickDone}>
+          Pick the red one
         </Button>
       </Header>
       <List>
