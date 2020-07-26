@@ -1,9 +1,3 @@
-/*
-Application name 	Album View (localhost)
-API key 	641be98f03016958b1c1e0373ffb8e0c
-Shared secret 	25faac307b6582a44da0093d23bcc9f8
-Registered to 	MetronMan
- */
 const axios = require('axios');
 
 const talkToLastFm = async (req, res) => {
