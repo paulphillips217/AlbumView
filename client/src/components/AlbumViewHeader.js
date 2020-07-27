@@ -98,6 +98,10 @@ const AlbumViewHeader = ({
     return { __html: text };
   };
 
+  const loadingButtonText = contextData.totalCount
+    ? `Loading ${contextData.loadingCount} of ${contextData.totalCount}`
+    : 'Loading';
+
   return (
     <Card fluid style={theme}>
       <Grid columns="equal">
@@ -132,9 +136,7 @@ const AlbumViewHeader = ({
           <Segment basic textAlign="center">
             {dataLoading && (
               <Button onClick={handleCancelLoading}>
-                Loading
-                <br />
-                (click to cancel)
+                {loadingButtonText}<br />(click to cancel)
               </Button>
             )}
           </Segment>

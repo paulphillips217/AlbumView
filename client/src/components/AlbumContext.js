@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -41,6 +41,12 @@ const AlbumContext = ({
   httpService,
 }) => {
   const theme = useTheme();
+  const [contextData, setContextData] = useState({
+    name: 'Your Saved Albums',
+    description: '',
+    totalCount: 0,
+    loadingCount: 0,
+  });
 
   useEffect(() => {
     const getGridData = () => {
@@ -52,8 +58,6 @@ const AlbumContext = ({
         .then((rawData) => {
           console.log('saved album data', rawData, savedAlbumOffset);
           const data = rawData.items.map((e) => ({
-            trackId: '',
-            trackName: '',
             albumId: e.album.id,
             albumName: e.album.name,
             artist: e.album.artists[0]
@@ -68,6 +72,7 @@ const AlbumContext = ({
           if (!rawData.next) {
             setDataLoading(false);
           }
+          setContextData({...contextData, totalCount: rawData.total, loadingCount: savedAlbumOffset});
         })
         .catch((error) => console.log(error));
     };
@@ -84,11 +89,6 @@ const AlbumContext = ({
       setSavedAlbumOffset(savedAlbumData.length);
     }
   }, [dataLoading, savedAlbumData, savedAlbumOffset, savedAlbumMore]);
-
-  const contextData = {
-    name: 'Your Saved Albums',
-    description: '',
-  };
 
   return (
     <div className="box" style={theme}>

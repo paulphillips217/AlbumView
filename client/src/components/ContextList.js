@@ -34,6 +34,7 @@ const ContextList = ({
     setContextGridMore(true);
     if (contextType === ContextType.RelatedArtists) {
       setRelatedToArtist(id);
+      setContextItem('');
     } else {
       setContextItem(id);
       setDataLoading(true);

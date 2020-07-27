@@ -58,6 +58,14 @@ const ArtistContext = ({
   httpService,
 }) => {
   const theme = useTheme();
+  const [contextData, setContextData] = useState({
+    name: '',
+    description: '',
+  });
+  const [contextDataCounts, setContextDataCounts] = useState({
+    totalCount: 0,
+    loadingCount: 0,
+  });
 
   useEffect(() => {
     const getGridData = () => {
@@ -72,8 +80,6 @@ const ArtistContext = ({
           .then((rawData) => {
             console.log('artist album data', rawData);
             const data = rawData.items.map((e) => ({
-              trackId: '',
-              trackName: '',
               albumId: e.id,
               albumName: e.name,
               artist: e.artists[0].name,
@@ -90,6 +96,10 @@ const ArtistContext = ({
             if (!rawData.next) {
               setDataLoading(false);
             }
+            setContextDataCounts({
+              totalCount: rawData.total,
+              loadingCount: contextGridOffset,
+            });
           })
           .catch((error) => console.log(error));
       } else {
@@ -143,25 +153,17 @@ const ArtistContext = ({
     }
   }, [contextListData, contextListOffset, contextListMore]);
 
-  const [contextData, setContextData] = useState({ name: '', description: '' });
-
   useEffect(() => {
     const getContextData = () => {
       if (contextItem) {
         httpService
           .get(`/spotify/artist-data/${contextItem}`)
           .then((data) => {
-            setContextData({
-              name: data.name,
-              description: '',
-            });
+            setContextData({ ...contextData, name: data.name });
           })
           .catch((error) => console.log(error));
       } else {
-        setContextData({
-          name: 'Your Saved Artists',
-          description: '',
-        });
+        setContextData({ ...contextData, name: 'Your Saved Artists' });
       }
     };
     getContextData();
@@ -170,7 +172,7 @@ const ArtistContext = ({
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
-        <AlbumViewHeader contextData={contextData} httpService={httpService} />
+        <AlbumViewHeader contextData={{...contextData, ...contextDataCounts}} httpService={httpService} />
       </div>
       <div className="row content">
         {!isSpotifyAuthenticated && <SpotifyLogin />}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import '../styles/App.css';
 import '../styles/splitPane.css';
@@ -41,6 +41,10 @@ const TrackContext = ({
   httpService,
 }) => {
   const theme = useTheme();
+  const [contextData, setContextData] = useState({
+    name: 'Your Saved Tracks',
+    description: '',
+  });
 
   useEffect(() => {
     const getGridData = () => {
@@ -52,7 +56,6 @@ const TrackContext = ({
         .then((rawData) => {
           console.log('track data', rawData);
           const data = rawData.items.map((e) => ({
-            trackId: e.track.id,
             trackName: e.track.name,
             albumId: e.track.album.id,
             albumName: e.track.album.name,
@@ -70,6 +73,11 @@ const TrackContext = ({
           if (!rawData.next) {
             setDataLoading(false);
           }
+          setContextData({
+            ...contextData,
+            totalCount: rawData.total,
+            loadingCount: contextGridOffset,
+          });
         })
         .catch((error) => console.log(error));
     };
@@ -86,11 +94,6 @@ const TrackContext = ({
       setContextGridOffset(contextGridData.length);
     }
   }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
-
-  const contextData = {
-    name: 'Your Saved Tracks',
-    description: '',
-  };
 
   return (
     <div className="box" style={theme}>

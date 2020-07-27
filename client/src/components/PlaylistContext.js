@@ -59,6 +59,12 @@ const PlaylistContext = ({
   httpService,
 }) => {
   const theme = useTheme();
+  const [contextData, setContextData] = useState({ name: '', description: '' });
+  const [contextDataCounts, setContextDataCounts] = useState({
+    totalCount: 0,
+    loadingCount: 0,
+  });
+
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
@@ -71,7 +77,6 @@ const PlaylistContext = ({
           )
           .then((rawData) => {
             const data = rawData.items.map((e) => ({
-              trackId: e.track.id,
               trackName: e.track.name,
               albumId: e.track.album.id,
               albumName: e.track.album.name,
@@ -89,6 +94,10 @@ const PlaylistContext = ({
             if (!rawData.next) {
               setDataLoading(false);
             }
+            setContextDataCounts({
+              totalCount: rawData.total,
+              loadingCount: contextGridOffset,
+            });
           })
           .catch((error) => console.log(error));
       } else {
@@ -114,7 +123,9 @@ const PlaylistContext = ({
   useEffect(() => {
     const getList = () => {
       httpService
-        .get(`/spotify/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(
+          `/spotify/playlist-list/${contextListOffset}/${SPOTIFY_PAGE_LIMIT}`
+        )
         .then((data) => {
           const parsedData = data.items.map((e) => ({
             id: e.id,
@@ -141,8 +152,6 @@ const PlaylistContext = ({
     }
   }, [contextListData, contextListOffset, contextListMore]);
 
-  const [contextData, setContextData] = useState({ name: '', description: '' });
-
   useEffect(() => {
     const getContextData = () => {
       if (contextItem) {
@@ -150,6 +159,7 @@ const PlaylistContext = ({
           .get(`/spotify/playlist-data/${contextItem}`)
           .then((data) => {
             setContextData({
+              ...contextData,
               name: data.name,
               description: data.description,
             });
@@ -157,6 +167,7 @@ const PlaylistContext = ({
           .catch((error) => console.log(error));
       } else {
         setContextData({
+          ...contextData,
           name: 'Please Select a Playlist',
           description: '',
         });
@@ -168,7 +179,7 @@ const PlaylistContext = ({
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
-        <AlbumViewHeader contextData={contextData} httpService={httpService} />
+        <AlbumViewHeader contextData={{...contextData, ...contextDataCounts}} httpService={httpService} />
       </div>
       <div className="row content">
         {!isSpotifyAuthenticated && <SpotifyLogin />}
