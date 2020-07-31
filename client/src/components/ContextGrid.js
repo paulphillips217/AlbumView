@@ -4,10 +4,7 @@ import '../styles/App.css';
 import { Grid, Header } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import { filterByAlbumType } from '../util/utilities';
-import {
-  getContextType,
-  getContextGridColumns,
-} from '../store/selectors';
+import { getContextType, getContextGridColumns } from '../store/selectors';
 import { ContextType } from '../store/types';
 import PropTypes from 'prop-types';
 import ModalAlbum from './ModalAlbum';
@@ -23,11 +20,7 @@ const ContextGrid = ({
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
       <div style={theme}>
-        <ModalAlbum
-          albumId={item.albumId}
-          image={item.image}
-          httpService={httpService}
-        />
+        <ModalAlbum albumId={item.albumId} image={item.image} httpService={httpService} />
         <div style={theme}>
           {!!item.artist && <div>{item.artist}</div>}
           {item.trackName || item.albumName}
@@ -46,11 +39,7 @@ const ContextGrid = ({
     if (contextGridData.some((item) => filterByAlbumType(item, category))) {
       return (
         <Fragment>
-          <Header
-            as="h2"
-            floated="left"
-            style={{ ...theme, paddingTop: '50px' }}
-          >
+          <Header as="h2" floated="left" style={{ ...theme, paddingTop: '50px' }}>
             {title}
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
@@ -75,8 +64,7 @@ const ContextGrid = ({
   );
 
   const useArtistAlbumGrid =
-    contextType === ContextType.Artists ||
-    contextType === ContextType.RelatedArtists;
+    contextType === ContextType.Artists || contextType === ContextType.RelatedArtists;
 
   return (
     <div className="grid-container">

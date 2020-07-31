@@ -91,9 +91,7 @@ const RelatedArtistList = ({
 
   return (
     <div className="left-align-list">
-      {relatedArtistListData && relatedArtistListData.length > 0 ? (
-        <ListTable />
-      ) : null}
+      {relatedArtistListData && relatedArtistListData.length > 0 ? <ListTable /> : null}
     </div>
   );
 };

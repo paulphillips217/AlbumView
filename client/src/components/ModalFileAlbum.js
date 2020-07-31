@@ -30,9 +30,7 @@ const ModalFileAlbum = ({
       .then((rawData) => {
         console.log('Last.fm data', rawData);
         if (rawData && rawData.album) {
-          const image = rawData.album.image.find(
-            (i) => 'extralarge' === i.size
-          );
+          const image = rawData.album.image.find((i) => 'extralarge' === i.size);
           setAlbumImageUrl(image['#text']);
           console.log('getAlbumArt url: ', image['#text']);
         }
@@ -85,9 +83,7 @@ const ModalFileAlbum = ({
         <Image wrapped src={albumImageUrl} />
         <Modal.Description style={{ width: '80%' }}>
           <Fragment>
-            <Header
-              style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}
-            >
+            <Header style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}>
               {artistName}
             </Header>
             <ol>
@@ -107,16 +103,8 @@ const ModalFileAlbum = ({
             </ol>
             <AudioPlayer
               autoPlay
-              header={
-                albumTrackList.length > 0
-                  ? albumTrackList[currentTrack].name
-                  : ''
-              }
-              src={
-                albumTrackList.length > 0
-                  ? albumTrackList[currentTrack].url
-                  : ''
-              }
+              header={albumTrackList.length > 0 ? albumTrackList[currentTrack].name : ''}
+              src={albumTrackList.length > 0 ? albumTrackList[currentTrack].url : ''}
               onClickPrevious={handleClickPrevious}
               onClickNext={handleClickNext}
               onEnded={handleClickNext}
@@ -132,8 +120,7 @@ const ModalFileAlbum = ({
 };
 
 ModalFileAlbum.propTypes = {
-  albumIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
+  albumIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   artistName: PropTypes.string.isRequired,
   albumName: PropTypes.string.isRequired,
   setUpTracks: PropTypes.func.isRequired,

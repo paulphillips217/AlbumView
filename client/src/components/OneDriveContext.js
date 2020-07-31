@@ -40,9 +40,7 @@ const OneDriveFileContext = ({
 
       for (let artist of artistList) {
         if (artist.folder) {
-          const albumList = await httpService.get(
-            `/one-drive/children/${artist.id}`
-          );
+          const albumList = await httpService.get(`/one-drive/children/${artist.id}`);
           console.log('album list: ', albumList);
           albumList.forEach((album) =>
             theAlbumArray.push({
@@ -63,15 +61,12 @@ const OneDriveFileContext = ({
   };
 
   const createTracks = async (album) => {
-    const trackList = await httpService.get(
-      `/one-drive/children/${album.index}`
-    );
+    const trackList = await httpService.get(`/one-drive/children/${album.index}`);
     console.log('createTracks', trackList);
     return trackList
       .filter((t) => t.file.mimeType.includes('audio'))
       .map((t) => ({
-        name:
-          t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
+        name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
         url: t['@microsoft.graph.downloadUrl'],
       }));
   };
@@ -88,7 +83,7 @@ const OneDriveFileContext = ({
       <div className="row content">
         {isOneDriveLoggedIn && (
           <FileAnalysis
-            savedAlbumData={savedAlbumData}
+            savedAlbumData={savedAlbumData.data}
             folderPicker={OneDriveFolderPicker}
             readAlbumArray={readAlbumArray}
             createTracks={createTracks}
@@ -105,7 +100,7 @@ const OneDriveFileContext = ({
 
 OneDriveFileContext.propTypes = {
   isOneDriveLoggedIn: PropTypes.bool.isRequired,
-  savedAlbumData: PropTypes.array.isRequired,
+  savedAlbumData: PropTypes.object.isRequired,
   setDataLoading: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };
@@ -119,7 +114,4 @@ const mapDispatchToProps = (dispatch) => ({
   setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(OneDriveFileContext);
+export default connect(mapStateToProps, mapDispatchToProps)(OneDriveFileContext);

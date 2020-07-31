@@ -134,11 +134,7 @@ const ModalAlbum = ({
           })
           .catch((error) => console.error(error));
       }
-      setTrackHearts((h) => [
-        ...h.slice(0, index),
-        !remove,
-        ...h.slice(index + 1),
-      ]);
+      setTrackHearts((h) => [...h.slice(0, index), !remove, ...h.slice(index + 1)]);
     }
   };
 
@@ -250,7 +246,7 @@ const ModalAlbum = ({
       trigger={
         <div>
           <Image
-            size={useMiniImage ? 'mini': ''}
+            size={useMiniImage ? 'mini' : ''}
             style={{ cursor: 'pointer' }}
             src={image}
             onClick={() => handleModalOpen()}
@@ -274,23 +270,19 @@ const ModalAlbum = ({
           color="green"
           onClick={() => handlePlayAlbum()}
         />
-        {playerInactive && (
-          <span style={{ float: 'right' }}>Player is inactive</span>
-        )}
+        {playerInactive && <span style={{ float: 'right' }}>Player is inactive</span>}
       </Modal.Header>
       <Modal.Content image style={theme}>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
         <Modal.Description style={{ width: '80%' }}>
           <Header
-            style={{ ...theme, 'paddingBottom': '10px', cursor: 'pointer' }}
+            style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}
             onClick={() => handleArtistClick()}
           >
             {albumData.artists && albumData.artists[0].name}
           </Header>
           {discTracks &&
-            discTracks.map((item, index) =>
-              DiscBlock(index, getTrackIndexOffset(index))
-            )}
+            discTracks.map((item, index) => DiscBlock(index, getTrackIndexOffset(index)))}
         </Modal.Description>
       </Modal.Content>
     </Modal>

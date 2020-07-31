@@ -9,7 +9,11 @@ import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
-import { setSpotifyAccessToken, setOneDriveLoggedIn, setSpotifyRefreshToken } from './store/actions';
+import {
+  setSpotifyAccessToken,
+  setOneDriveLoggedIn,
+  setSpotifyRefreshToken,
+} from './store/actions';
 import { getAlbumViewTheme, getContextType } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
@@ -58,8 +62,7 @@ const App = ({
     history.push('/');
   }
 
-  const activeTheme =
-    albumViewTheme === AlbumViewTheme.Light ? lightTheme : darkTheme;
+  const activeTheme = albumViewTheme === AlbumViewTheme.Light ? lightTheme : darkTheme;
 
   const contextView = {};
   contextView[ContextType.Albums] = React.createElement(
@@ -98,11 +101,7 @@ const App = ({
     null
   );
 
-  return (
-    <ThemeProvider theme={activeTheme}>
-      {contextView[contextType]}
-    </ThemeProvider>
-  );
+  return <ThemeProvider theme={activeTheme}>{contextView[contextType]}</ThemeProvider>;
 };
 
 App.propTypes = {
@@ -120,7 +119,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
-  setSpotifyRefreshToken: (refreshToken) => dispatch(setSpotifyRefreshToken(refreshToken)),
+  setSpotifyRefreshToken: (refreshToken) =>
+    dispatch(setSpotifyRefreshToken(refreshToken)),
   setOneDriveLoggedIn: (isLoggedIn) => dispatch(setOneDriveLoggedIn(isLoggedIn)),
 });
 

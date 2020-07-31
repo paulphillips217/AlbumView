@@ -89,9 +89,7 @@ const RelatedArtistContext = ({
               albumGroup: e.album_group,
               albumType: e.album_type,
             }));
-            const newData = contextGridOffset
-              ? contextGridData.concat(data)
-              : data;
+            const newData = contextGridOffset ? contextGridData.concat(data) : data;
             setContextGridData(sortGridData(newData, contextSortType));
             setContextGridMore(!!rawData.next);
             if (!rawData.next) {
@@ -114,11 +112,7 @@ const RelatedArtistContext = ({
 
   useEffect(() => {
     // get all the pages in the background
-    if (
-      dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
-    ) {
+    if (dataLoading && contextGridOffset < contextGridData.length && contextGridMore) {
       setContextGridOffset(contextGridData.length);
     }
   }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
@@ -136,9 +130,7 @@ const RelatedArtistContext = ({
             description: '',
             image: getImage(e.images),
           }));
-          setContextListData(
-            contextListData.concat(parsedData).sort(sortByName)
-          );
+          setContextListData(contextListData.concat(parsedData).sort(sortByName));
           setContextListMore(data && data.artists && !!data.artists.next);
         })
         .catch((error) => console.log(error));
@@ -188,7 +180,10 @@ const RelatedArtistContext = ({
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
-        <AlbumViewHeader contextData={{...contextData, ...contextDataCounts}} httpService={httpService} />
+        <AlbumViewHeader
+          contextData={{ ...contextData, ...contextDataCounts }}
+          httpService={httpService}
+        />
       </div>
       <div className="row content">
         {!isSpotifyAuthenticated && <SpotifyLogin />}
@@ -209,10 +204,7 @@ const RelatedArtistContext = ({
               paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
             >
               <RelatedArtistList httpService={httpService} />
-              <ContextGrid
-                contextGridData={contextGridData}
-                httpService={httpService}
-              />
+              <ContextGrid contextGridData={contextGridData} httpService={httpService} />
             </SplitPane>
           </SplitPane>
         )}
@@ -274,7 +266,4 @@ const mapDispatchToProps = (dispatch) => ({
   setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RelatedArtistContext);
+export default connect(mapStateToProps, mapDispatchToProps)(RelatedArtistContext);

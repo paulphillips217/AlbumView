@@ -12,4 +12,4 @@ const SpotifyLogin = () => (
   </div>
 );
 
-export default SpotifyLogin
+export default SpotifyLogin;

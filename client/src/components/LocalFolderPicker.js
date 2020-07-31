@@ -3,7 +3,7 @@ import { Header } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
 
-const LocalFolderPicker = ({setFileData}) => {
+const LocalFolderPicker = ({ setFileData }) => {
   const theme = useTheme();
 
   const onFileChange = (e) => {
@@ -25,8 +25,8 @@ const LocalFolderPicker = ({setFileData}) => {
         onChange={onFileChange}
       />
     </Fragment>
-  )
-}
+  );
+};
 
 LocalFolderPicker.propTypes = {
   setFileData: PropTypes.func.isRequired,

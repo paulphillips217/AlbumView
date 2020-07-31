@@ -10,33 +10,32 @@ import {
   setSpotifyTokenExpiration,
 } from '../store/actions';
 
-class httpService {
+class HttpService {
   constructor(store) {
     this.store = store;
-    //console.log('httpService constructor store: ', store);
+    // console.log('HttpService constructor store: ', store);
   }
 
-  httpRequest = (options) => {
+  httpRequest(options) {
     const onSuccess = (response) => {
-      console.debug('httpRequest got response', response);
-      console.log('axios response headers: ', response.headers);
+      // console.debug('httpRequest got response', response);
+      // console.log('axios response headers: ', response.headers);
       try {
         const oldSpotifyAccessToken = getSpotifyAccessToken(this.store.getState());
         const newSpotifyAccessToken = response.headers['x-spotify-access-token'];
         if (oldSpotifyAccessToken !== newSpotifyAccessToken) {
-          console.log('capturing headers from response');
+          // console.log('capturing headers from response');
           this.store.dispatch(setSpotifyAccessToken(newSpotifyAccessToken));
           const spotifyRefreshToken = response.headers['x-spotify-refresh-token'];
           this.store.dispatch(setSpotifyRefreshToken(spotifyRefreshToken));
-          const spotifyTokenExpiration =
-            response.headers['x-spotify-token-expiration'];
+          const spotifyTokenExpiration = response.headers['x-spotify-token-expiration'];
           this.store.dispatch(setSpotifyTokenExpiration(spotifyTokenExpiration));
         }
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
 
-      console.debug('Request Successful!');
+      // console.debug('Request Successful!');
       return response.data;
     };
 
@@ -58,44 +57,45 @@ class httpService {
       return Promise.reject(error.response || error.message);
     };
 
-    options.headers = {
+    const requestOptions = options;
+    requestOptions.headers = {
       'x-spotify-access-token': getSpotifyAccessToken(this.store.getState()),
       'x-spotify-refresh-token': getSpotifyRefreshToken(this.store.getState()),
       'x-spotify-token-expiration': getSpotifyTokenExpiration(this.store.getState()),
     };
 
-    console.log('httpService making request', options);
-    return axios(options).then(onSuccess).catch(onError);
-  };
+    // console.log('httpService making request', options);
+    return axios(requestOptions).then(onSuccess).catch(onError);
+  }
 
-  get = (url) => {
+  get(url) {
     return this.httpRequest({
-      url: url,
+      url,
       method: 'GET',
     });
-  };
+  }
 
-  post = (url, data = {}) => {
+  post(url, data = {}) {
     return this.httpRequest({
-      url: url,
+      url,
       method: 'POST',
-      data: data,
+      data,
     });
-  };
+  }
 
-  put = (url) => {
+  put(url) {
     return this.httpRequest({
-      url: url,
+      url,
       method: 'PUT',
     });
-  };
+  }
 
-  delete = (url) => {
+  delete(url) {
     return this.httpRequest({
-      url: url,
+      url,
       method: 'DELETE',
     });
-  };
+  }
 }
 
-export default httpService;
+export default HttpService;

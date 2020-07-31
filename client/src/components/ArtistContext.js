@@ -88,9 +88,7 @@ const ArtistContext = ({
               albumGroup: e.album_group,
               albumType: e.album_type,
             }));
-            const newData = contextGridOffset
-              ? contextGridData.concat(data)
-              : data;
+            const newData = contextGridOffset ? contextGridData.concat(data) : data;
             setContextGridData(sortGridData(newData, contextSortType));
             setContextGridMore(!!rawData.next);
             if (!rawData.next) {
@@ -113,11 +111,7 @@ const ArtistContext = ({
 
   useEffect(() => {
     // get all the pages in the background
-    if (
-      dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
-    ) {
+    if (dataLoading && contextGridOffset < contextGridData.length && contextGridMore) {
       setContextGridOffset(contextGridData.length);
     }
   }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
@@ -135,9 +129,7 @@ const ArtistContext = ({
             description: '',
             image: getImage(e.images),
           }));
-          setContextListData(
-            contextListData.concat(parsedData).sort(sortByName)
-          );
+          setContextListData(contextListData.concat(parsedData).sort(sortByName));
           setContextListMore(data && data.artists && !!data.artists.next);
         })
         .catch((error) => console.log(error));
@@ -172,7 +164,10 @@ const ArtistContext = ({
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
-        <AlbumViewHeader contextData={{...contextData, ...contextDataCounts}} httpService={httpService} />
+        <AlbumViewHeader
+          contextData={{ ...contextData, ...contextDataCounts }}
+          httpService={httpService}
+        />
       </div>
       <div className="row content">
         {!isSpotifyAuthenticated && <SpotifyLogin />}
@@ -185,10 +180,7 @@ const ArtistContext = ({
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
             <ContextList httpService={httpService} />
-            <ContextGrid
-              contextGridData={contextGridData}
-              httpService={httpService}
-            />
+            <ContextGrid contextGridData={contextGridData} httpService={httpService} />
           </SplitPane>
         )}
       </div>

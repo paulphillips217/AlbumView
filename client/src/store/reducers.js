@@ -24,7 +24,8 @@ import {
   PLAYLIST_SORT,
   SAVED_ALBUM_DATA,
   SAVED_ALBUM_OFFSET,
-  SAVED_ALBUM_MORE, ONE_DRIVE_LOGGED_IN
+  SAVED_ALBUM_MORE,
+  ONE_DRIVE_LOGGED_IN,
 } from './types';
 
 const initialState = {
@@ -40,26 +41,21 @@ const initialState = {
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
-  savedAlbumData: [],
-  savedAlbumOffset: 0,
-  savedAlbumMore: false,
+  savedAlbumData: {totalCount: 0, data: []},
   contextGridData: [],
   contextGridOffset: 0,
   contextGridMore: false,
   contextListData: [],
   contextListOffset: 0,
   contextListMore: false,
-  albumViewTheme:
-    localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
+  albumViewTheme: localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
   contextGridColumns: localStorage.getItem('contextGridColumns') || 6,
   dataLoading: true,
   albumSort: localStorage.getItem('albumSort') || SortTypes.ArtistThenAlbumName,
   playlistSort: localStorage.getItem('playlistSort') || SortTypes.PlaylistName,
-  playlistTrackSort:
-    localStorage.getItem('playlistTrackSort') || SortTypes.PlaylistOrder,
-  savedTrackSort:
-    localStorage.getItem('savedTrackSort') || SortTypes.ArtistThenTrackName,
-  oneDriveLoggedIn: false
+  playlistTrackSort: localStorage.getItem('playlistTrackSort') || SortTypes.PlaylistOrder,
+  savedTrackSort: localStorage.getItem('savedTrackSort') || SortTypes.ArtistThenTrackName,
+  oneDriveLoggedIn: false,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -103,16 +99,6 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting saved album data', action.payload);
       return Object.assign({}, state, {
         savedAlbumData: action.payload,
-      });
-    case SAVED_ALBUM_OFFSET:
-      console.log('setting saved album offset', action.payload);
-      return Object.assign({}, state, {
-        savedAlbumOffset: action.payload,
-      });
-    case SAVED_ALBUM_MORE:
-      console.log('setting saved album more', action.payload);
-      return Object.assign({}, state, {
-        savedAlbumMore: action.payload,
       });
     case CONTEXT_GRID_DATA:
       console.log('setting context grid data', action.payload);

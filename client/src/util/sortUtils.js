@@ -33,8 +33,8 @@ export const cleanTitle = (title) => {
   // remove special characters
   cleanedTitle = cleanedTitle.replaceAll(/[\\/:*?"'<>| ._]/g, '');
   // remove anything within parentheses
-  return cleanedTitle.replace(/ *\([^)]*\) */g, "");
-}
+  return cleanedTitle.replace(/ *\([^)]*\) */g, '');
+};
 
 export const sortByArtistThenAlbumName = (a, b) => {
   const artist1 = stripLeadingArticle(a.artist).toLowerCase();

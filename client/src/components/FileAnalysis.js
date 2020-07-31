@@ -3,10 +3,7 @@ import { Button, Grid } from 'semantic-ui-react';
 import '../styles/App.css';
 import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
-import {
-  getSavedAlbumData,
-  getSpotifyAuthenticationState,
-} from '../store/selectors';
+import { getSavedAlbumData, getSpotifyAuthenticationState } from '../store/selectors';
 import { connect } from 'react-redux';
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
@@ -35,7 +32,7 @@ const FileAnalysis = ({
       const theAlbumArray = await readAlbumArray(fileData);
       console.log('handleRead got theAlbumArray', theAlbumArray);
       setAlbums(theAlbumArray);
-      blendAlbumLists(theAlbumArray, savedAlbumData);
+      blendAlbumLists(theAlbumArray, savedAlbumData.data);
     } else {
       console.log('file import data is empty');
     }
@@ -140,11 +137,7 @@ const FileAnalysis = ({
   };
 
   const GridItem = (item, index) => (
-    <Grid.Row
-      columns={4}
-      key={index}
-      style={{ ...theme, color: gridItemColor(item) }}
-    >
+    <Grid.Row columns={4} key={index} style={{ ...theme, color: gridItemColor(item) }}>
       <Grid.Column>
         {item.index ? (
           <ModalFileAlbum
@@ -160,9 +153,7 @@ const FileAnalysis = ({
         )}
       </Grid.Column>
       <Grid.Column>{item.index ? item.albumName : ''}</Grid.Column>
-      <Grid.Column>
-        {item.albumId ? item.artist : gridItemSearchButton(item)}
-      </Grid.Column>
+      <Grid.Column>{item.albumId ? item.artist : gridItemSearchButton(item)}</Grid.Column>
       <Grid.Column>
         {item.albumId ? item.albumName : gridItemSearchResults(item)}
       </Grid.Column>
@@ -203,7 +194,7 @@ const FileAnalysis = ({
 
 FileAnalysis.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
-  savedAlbumData: PropTypes.array.isRequired,
+  savedAlbumData: PropTypes.object.isRequired,
   readAlbumArray: PropTypes.func.isRequired,
   setUpTracks: PropTypes.func.isRequired,
   tearDownTracks: PropTypes.func.isRequired,

@@ -65,9 +65,7 @@ const TrackContext = ({
             image: getImage(e.track.album.images),
             releaseDate: e.track.album.release_date,
           }));
-          const newData = contextGridOffset
-            ? contextGridData.concat(data)
-            : data;
+          const newData = contextGridOffset ? contextGridData.concat(data) : data;
           setContextGridData(sortGridData(newData, contextSortType));
           setContextGridMore(!!rawData.next);
           if (!rawData.next) {
@@ -86,11 +84,7 @@ const TrackContext = ({
 
   useEffect(() => {
     // get all the pages in the background
-    if (
-      dataLoading &&
-      contextGridOffset < contextGridData.length &&
-      contextGridMore
-    ) {
+    if (dataLoading && contextGridOffset < contextGridData.length && contextGridMore) {
       setContextGridOffset(contextGridData.length);
     }
   }, [dataLoading, contextGridData, contextGridOffset, contextGridMore]);
@@ -103,10 +97,7 @@ const TrackContext = ({
       <div className="row content">
         {!isSpotifyAuthenticated && <SpotifyLogin />}
         {isSpotifyAuthenticated && (
-          <ContextGrid
-            contextGridData={contextGridData}
-            httpService={httpService}
-          />
+          <ContextGrid contextGridData={contextGridData} httpService={httpService} />
         )}
       </div>
       <div className="row footer"> </div>

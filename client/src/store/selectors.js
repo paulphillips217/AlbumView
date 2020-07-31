@@ -1,10 +1,13 @@
 import { ContextType } from './types';
 
-export const getSpotifyAuthenticationState = (store) => store.albumView.isSpotifyAuthenticated;
+export const getSpotifyAuthenticationState = (store) =>
+  store.albumView.isSpotifyAuthenticated;
 export const getSpotifyAccessToken = (store) =>
   store.albumView.spotifyAccessToken || localStorage.getItem('spotifyAccessToken') || '';
 export const getSpotifyRefreshToken = (store) =>
-  store.albumView.spotifyRefreshToken || localStorage.getItem('spotifyRefreshToken') || '';
+  store.albumView.spotifyRefreshToken ||
+  localStorage.getItem('spotifyRefreshToken') ||
+  '';
 export const getSpotifyTokenExpiration = (store) =>
   store.albumView.spotifyTokenExpiration ||
   localStorage.getItem('spotifyTokenExpiration') ||
@@ -19,12 +22,10 @@ export const getContextGridData = (store) => store.albumView.contextGridData;
 export const getContextGridOffset = (store) => store.albumView.contextGridOffset;
 export const getContextGridMore = (store) => store.albumView.contextGridMore;
 export const getContextListData = (store) => store.albumView.contextListData;
-export const getContextListOffset = (store) =>
-  store.albumView.contextListOffset;
+export const getContextListOffset = (store) => store.albumView.contextListOffset;
 export const getContextListMore = (store) => store.albumView.contextListMore;
 export const getAlbumViewTheme = (store) => store.albumView.albumViewTheme;
-export const getContextGridColumns = (store) =>
-  store.albumView.contextGridColumns;
+export const getContextGridColumns = (store) => store.albumView.contextGridColumns;
 export const getDataLoading = (store) => store.albumView.dataLoading;
 export const getAlbumSort = (store) => store.albumView.albumSort;
 export const getPlaylistSort = (store) => store.albumView.playlistSort;
@@ -44,6 +45,9 @@ export const getContextSortType = (store) => {
     case ContextType.Playlists:
       return getPlaylistTrackSort(store);
     default:
-      console.error('unknown context type in getContextSortType', store.albumView.contextType);
+      console.error(
+        'unknown context type in getContextSortType',
+        store.albumView.contextType
+      );
   }
 };

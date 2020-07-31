@@ -125,9 +125,7 @@ const AlbumViewHeader = ({
             <h1>{contextData.name}</h1>
             {contextData.description && (
               <p
-                dangerouslySetInnerHTML={createDescriptionMarkup(
-                  contextData.description
-                )}
+                dangerouslySetInnerHTML={createDescriptionMarkup(contextData.description)}
               />
             )}
           </Segment>
@@ -136,7 +134,9 @@ const AlbumViewHeader = ({
           <Segment basic textAlign="center">
             {dataLoading && (
               <Button onClick={handleCancelLoading}>
-                {loadingButtonText}<br />(click to cancel)
+                {loadingButtonText}
+                <br />
+                (click to cancel)
               </Button>
             )}
           </Segment>

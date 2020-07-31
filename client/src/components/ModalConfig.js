@@ -319,8 +319,10 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
   setContextGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
-  setSpotifyRefreshToken: (refreshToken) => dispatch(setSpotifyRefreshToken(refreshToken)),
-  setSpotifyTokenExpiration: (expiration) => dispatch(setSpotifyTokenExpiration(expiration)),
+  setSpotifyRefreshToken: (refreshToken) =>
+    dispatch(setSpotifyRefreshToken(refreshToken)),
+  setSpotifyTokenExpiration: (expiration) =>
+    dispatch(setSpotifyTokenExpiration(expiration)),
   setAlbumViewTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
   setContextType: (type) => dispatch(setContextType(type)),
   setContextItem: (id) => dispatch(setContextItem(id)),

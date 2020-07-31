@@ -12,4 +12,4 @@ const OneDriveLogin = () => (
   </div>
 );
 
-export default OneDriveLogin
+export default OneDriveLogin;

@@ -30,7 +30,7 @@ export const ContextType = {
   Tracks: 'tracks',
   RelatedArtists: 'related-artists',
   LocalFiles: 'local-files',
-  OneDriveFiles: 'one-drive-files'
+  OneDriveFiles: 'one-drive-files',
 };
 
 export const AlbumViewTheme = {

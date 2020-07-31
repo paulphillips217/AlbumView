@@ -25,16 +25,11 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
         return;
       }
       const splitPath = item.webkitRelativePath.split('/');
-      const artist =
-        splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
+      const artist = splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
       const albumName =
         splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
       const fileIndex = theAlbumArray.findIndex(
-        (a) =>
-          a.artist &&
-          a.artist === artist &&
-          a.albumName &&
-          a.albumName === albumName
+        (a) => a.artist && a.artist === artist && a.albumName && a.albumName === albumName
       );
       if (fileIndex >= 0) {
         theAlbumArray[fileIndex].tracks.push(key);
@@ -76,7 +71,7 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
       </div>
       <div className="row content">
         <FileAnalysis
-          savedAlbumData={savedAlbumData}
+          savedAlbumData={savedAlbumData.data}
           folderPicker={LocalFolderPicker}
           readAlbumArray={readAlbumArray}
           createTracks={createTracks}
@@ -90,7 +85,7 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
 };
 
 LocalFileContext.propTypes = {
-  savedAlbumData: PropTypes.array.isRequired,
+  savedAlbumData: PropTypes.object.isRequired,
   setDataLoading: PropTypes.func.isRequired,
   httpService: PropTypes.object.isRequired,
 };

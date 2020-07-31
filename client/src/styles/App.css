@@ -10,7 +10,7 @@
 }
 
 .single-panel-display {
-  height: calc( 100vh - 80px );
+  height: calc(100vh - 80px);
   overflow-y: scroll;
 }
 
@@ -122,7 +122,7 @@ td:last-child {
   color: rgb(255, 255, 255);
   cursor: pointer;
   display: inline-block;
-  font-family: Segoe UI, SegoeUI, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Segoe UI, SegoeUI, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 15px;
