@@ -19,8 +19,6 @@ import {
   PLAYLIST_TRACK_SORT,
   SAVED_TRACK_SORT,
   SAVED_ALBUM_DATA,
-  SAVED_ALBUM_OFFSET,
-  SAVED_ALBUM_MORE,
   ONE_DRIVE_LOGGED_IN,
 } from './types';
 
@@ -57,16 +55,6 @@ export const setRelatedToArtist = (artist) => ({
 export const setSavedAlbumData = (data) => ({
   type: SAVED_ALBUM_DATA,
   payload: data,
-});
-
-export const setSavedAlbumOffset = (offset) => ({
-  type: SAVED_ALBUM_OFFSET,
-  payload: offset,
-});
-
-export const setSavedAlbumMore = (more) => ({
-  type: SAVED_ALBUM_MORE,
-  payload: more,
 });
 
 export const setContextGridData = (data) => ({

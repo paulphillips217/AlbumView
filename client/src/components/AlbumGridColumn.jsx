@@ -1,7 +1,7 @@
-import { Grid, Icon } from 'semantic-ui-react';
-import { msToSongTime } from '../util/utilities';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Grid, Icon } from 'semantic-ui-react';
+import { msToSongTime } from '../util/utilities';
 
 const AlbumGridColumn = ({
   tracks,
@@ -10,7 +10,6 @@ const AlbumGridColumn = ({
   handleTrackHeartClick,
   handleTrackPlayClick,
 }) => {
-  console.log('AlbumGridColumn trackIndexOffset', trackIndexOffset);
   console.log('AlbumGridColumn tracks', tracks);
   const getTrackColor = (item) => {
     if (typeof item.is_playable === 'undefined') {
@@ -87,6 +86,7 @@ const AlbumGridColumn = ({
 AlbumGridColumn.propTypes = {
   tracks: PropTypes.array.isRequired,
   trackHearts: PropTypes.array.isRequired,
+  trackIndexOffset: PropTypes.number.isRequired,
   handleTrackHeartClick: PropTypes.func.isRequired,
   handleTrackPlayClick: PropTypes.func.isRequired,
 };

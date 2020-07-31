@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes, { string } from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';

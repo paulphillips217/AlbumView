@@ -4,7 +4,12 @@
     "es6": true,
     "jest": true
   },
-  "extends": ["plugin:react/recommended", "plugin:prettier/recommended", "airbnb"],
+  "extends": [
+    "plugin:react/recommended",
+    "plugin:prettier/recommended",
+    "airbnb",
+    "prettier"
+  ],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
