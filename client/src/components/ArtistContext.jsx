@@ -37,8 +37,10 @@ const ArtistContext = ({
   httpService,
 }) => {
   const theme = useTheme();
-  const [contextDataName, setContextDataName] = useState('');
+  const [contextDataName, setContextDataName] = useState('Your Saved Artists');
+  const [loadingState, setLoadingState] = useState({ totalCount: 0, loadingCount: 0 });
 
+  // load grid data
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
@@ -67,11 +69,12 @@ const ArtistContext = ({
             if (!rawData.next) {
               setLoading(false);
             }
+            setLoadingState({
+              totalCount: contextGridData.totalCount,
+              loadingCount: contextGridData.data.length,
+            });
           })
           .catch((error) => console.log(error));
-      } else {
-        setGridData({ totalCount: 0, data: [] });
-        setLoading(false);
       }
     };
     getGridData();
@@ -86,10 +89,12 @@ const ArtistContext = ({
     setLoading,
   ]);
 
+  // load list data
   useEffect(() => {
     const getList = () => {
       if (
         isSpotifyAuthenticated &&
+        dataLoading &&
         (contextListData.offset < contextListData.artistTotal ||
           contextListData.offset < contextListData.albumTotal ||
           contextListData.offset < contextListData.trackTotal ||
@@ -113,18 +118,40 @@ const ArtistContext = ({
                 });
               }
             });
+            const newOffset = +rawData.offset + SPOTIFY_PAGE_LIMIT;
+            const maxCount = Math.max(
+              +contextListData.artistTotal,
+              +contextListData.albumTotal,
+              +contextListData.trackTotal,
+              0
+            );
             setListData({
               ...rawData,
-              offset: +rawData.offset + SPOTIFY_PAGE_LIMIT,
+              offset: newOffset,
               data: artistList.sort(sortByName),
+            });
+            if (newOffset >= maxCount && maxCount > 0) {
+              setLoading(false);
+            }
+            setLoadingState({
+              totalCount: maxCount,
+              loadingCount: +rawData.offset,
             });
           })
           .catch((error) => console.log(error));
       }
     };
     getList();
-  }, [isSpotifyAuthenticated, contextListData, setListData, httpService]);
+  }, [
+    isSpotifyAuthenticated,
+    dataLoading,
+    contextListData,
+    setListData,
+    setLoading,
+    httpService,
+  ]);
 
+  // load title for header
   useEffect(() => {
     const getContextData = () => {
       if (isSpotifyAuthenticated && contextItem) {
@@ -134,8 +161,6 @@ const ArtistContext = ({
             setContextDataName(data.name);
           })
           .catch((error) => console.log(error));
-      } else {
-        setContextDataName('Your Saved Artists');
       }
     };
     getContextData();
@@ -148,8 +173,7 @@ const ArtistContext = ({
           contextData={{
             name: contextDataName,
             description: '',
-            totalCount: contextGridData.totalCount,
-            loadingCount: contextGridData.data.length,
+            ...loadingState,
           }}
           httpService={httpService}
         />

@@ -39,8 +39,13 @@ const PlaylistContext = ({
   httpService,
 }) => {
   const theme = useTheme();
-  const [contextData, setContextData] = useState({ name: '', description: '' });
+  const [contextData, setContextData] = useState({
+    name: 'Please Select a Playlist',
+    description: '',
+  });
+  const [loadingState, setLoadingState] = useState({ totalCount: 0, loadingCount: 0 });
 
+  // load grid
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
@@ -69,11 +74,12 @@ const PlaylistContext = ({
             if (!rawData.next) {
               setLoading(false);
             }
+            setLoadingState({
+              totalCount: contextGridData.totalCount,
+              loadingCount: contextGridData.data.length,
+            });
           })
           .catch((error) => console.log(error));
-      } else {
-        setGridData({ totalCount: 0, data: [] });
-        setLoading(false);
       }
     };
     getGridData();
@@ -88,9 +94,10 @@ const PlaylistContext = ({
     httpService,
   ]);
 
+  // load playlist list
   useEffect(() => {
     const getList = () => {
-      if (!isSpotifyAuthenticated) {
+      if (!isSpotifyAuthenticated || !dataLoading) {
         return;
       }
       const offset = contextListData.data.length;
@@ -110,13 +117,29 @@ const PlaylistContext = ({
               totalCount: data.total,
               data: sortGridData(newData, playlistSortType),
             });
+            if (!data.next) {
+              setLoading(false);
+            }
+            setLoadingState({
+              totalCount: Math.max(contextListData.totalCount, 0),
+              loadingCount: contextListData.data.length,
+            });
           })
           .catch((error) => console.log(error));
       }
     };
     getList();
-  }, [isSpotifyAuthenticated, contextListData, playlistSortType, setListData, httpService]);
+  }, [
+    isSpotifyAuthenticated,
+    dataLoading,
+    contextListData,
+    playlistSortType,
+    setListData,
+    setLoading,
+    httpService,
+  ]);
 
+  // load context for header
   useEffect(() => {
     const getContextData = () => {
       if (isSpotifyAuthenticated && contextItem) {
@@ -129,11 +152,6 @@ const PlaylistContext = ({
             });
           })
           .catch((error) => console.log(error));
-      } else {
-        setContextData({
-          name: 'Please Select a Playlist',
-          description: '',
-        });
       }
     };
     getContextData();
@@ -145,8 +163,7 @@ const PlaylistContext = ({
         <AlbumViewHeader
           contextData={{
             ...contextData,
-            totalCount: contextGridData.totalCount,
-            loadingCount: contextGridData.data.length,
+            ...loadingState,
           }}
           httpService={httpService}
         />

@@ -40,9 +40,10 @@ const RelatedArtistContext = ({
   httpService,
 }) => {
   const theme = useTheme();
-  const [contextDataName, setContextDataName] = useState('');
+  const [contextDataName, setContextDataName] = useState('Related Artists (choose one)');
+  const [loadingState, setLoadingState] = useState({ totalCount: 0, loadingCount: 0 });
 
-  // get the albums for the other artist
+  // load grid data
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
@@ -71,11 +72,12 @@ const RelatedArtistContext = ({
             if (!rawData.next) {
               setLoading(false);
             }
+            setLoadingState({
+              totalCount: contextGridData.totalCount,
+              loadingCount: contextGridData.data.length,
+            });
           })
           .catch((error) => console.log(error));
-      } else {
-        setGridData({ totalCount: 0, data: [] });
-        setLoading(false);
       }
     };
     getGridData();
@@ -95,6 +97,7 @@ const RelatedArtistContext = ({
     const getList = () => {
       if (
         isSpotifyAuthenticated &&
+        dataLoading &&
         (contextListData.offset < contextListData.artistTotal ||
           contextListData.offset < contextListData.albumTotal ||
           contextListData.offset < contextListData.trackTotal ||
@@ -118,25 +121,43 @@ const RelatedArtistContext = ({
                 });
               }
             });
+            const newOffset = +rawData.offset + SPOTIFY_PAGE_LIMIT;
+            const maxCount = Math.max(
+              +contextListData.artistTotal,
+              +contextListData.albumTotal,
+              +contextListData.trackTotal,
+              0
+            );
             setListData({
               ...rawData,
-              offset: +rawData.offset + SPOTIFY_PAGE_LIMIT,
+              offset: newOffset,
               data: artistList.sort(sortByName),
+            });
+            if (newOffset >= maxCount && maxCount > 0) {
+              setLoading(false);
+            }
+            setLoadingState({
+              totalCount: maxCount,
+              loadingCount: +rawData.offset,
             });
           })
           .catch((error) => console.log(error));
       }
     };
     getList();
-  }, [isSpotifyAuthenticated, contextListData, setListData, httpService]);
+  }, [
+    isSpotifyAuthenticated,
+    dataLoading,
+    contextListData,
+    setListData,
+    setLoading,
+    httpService,
+  ]);
 
   // get context text for the header
   useEffect(() => {
     const getContextData = () => {
-      if (!relatedToArtist && !contextItem) {
-        setContextDataName('Related Artists (choose one)');
-      }
-      if (relatedToArtist && !contextItem) {
+      if (isSpotifyAuthenticated && relatedToArtist && !contextItem) {
         httpService
           .get(`/spotify/artist-data/${relatedToArtist}`)
           .then((data) => {
@@ -163,8 +184,7 @@ const RelatedArtistContext = ({
           contextData={{
             name: contextDataName,
             description: '',
-            totalCount: contextGridData.totalCount,
-            loadingCount: contextGridData.data.length,
+            ...loadingState,
           }}
           httpService={httpService}
         />
