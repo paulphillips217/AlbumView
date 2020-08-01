@@ -41,11 +41,14 @@ export const trimTrackFileName = (name) => {
   let newName = name;
   // if the first two characters are numeric, remove them
   let num = newName.slice(0, 2);
+  // the best way to check for NaN is by checking for self-equality
+  // eslint-disable-next-line no-self-compare
   if (+num === +num) {
     newName = newName.slice(2, newName.length);
   } else {
     // if the first one character is numeric, remove it
     num = newName.slice(0, 1);
+    // eslint-disable-next-line no-self-compare
     if (+num === +num) {
       newName = newName.slice(1, newName.length);
     }
