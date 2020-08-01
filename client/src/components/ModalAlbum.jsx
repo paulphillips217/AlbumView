@@ -1,37 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 import moment from 'moment';
+import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
+import { useTheme } from 'emotion-theming';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
-import { useTheme } from 'emotion-theming';
 import {
   setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
   setContextItem,
-  setContextListData,
-  setContextListOffset,
+  resetContextListData,
   setContextType,
   setDataLoading,
   setRelatedToArtist,
 } from '../store/actions';
-import { connect } from 'react-redux';
 import { ContextType } from '../store/types';
+import HttpService from '../util/httpUtils';
 
 const ModalAlbum = ({
   albumId,
   image,
   useMiniImage,
-  setContextType,
-  setContextItem,
-  setDataLoading,
-  setRelatedToArtist,
-  setContextGridData,
-  setContextGridOffset,
-  setContextListData,
-  setContextListOffset,
-  setContextGridMore,
+  setType,
+  setItem,
+  setLoading,
+  setRelatedTo,
+  setGridData,
+  resetListData,
   httpService,
 }) => {
   const theme = useTheme();
@@ -122,14 +117,14 @@ const ModalAlbum = ({
       if (remove) {
         httpService
           .delete(`/spotify/delete-tracks/${id}`)
-          .then((data) => {
+          .then(() => {
             console.log('handleTrackHeartClick delete response');
           })
           .catch((error) => console.error(error));
       } else {
         httpService
           .put(`/spotify/save-tracks/${id}`)
-          .then((data) => {
+          .then(() => {
             console.log('handleTrackHeartClick save response');
           })
           .catch((error) => console.error(error));
@@ -142,14 +137,14 @@ const ModalAlbum = ({
     if (remove) {
       httpService
         .delete(`/spotify/delete-albums/${albumId}`)
-        .then((data) => {
+        .then(() => {
           console.log('handleAlbumHeartClick delete response');
         })
         .catch((error) => console.error(error));
     } else {
       httpService
         .put(`/spotify/save-albums/${albumId}`)
-        .then((data) => {
+        .then(() => {
           console.log('handleAlbumHeartClick save response');
         })
         .catch((error) => console.error(error));
@@ -160,7 +155,7 @@ const ModalAlbum = ({
   const handlePlayAlbum = async () => {
     try {
       setPlayerInactive(false);
-      let status = await httpService.get(`/spotify/player-status`);
+      const status = await httpService.get(`/spotify/player-status`);
       if (status.emptyResponse) {
         setPlayerInactive(true);
         return;
@@ -168,8 +163,8 @@ const ModalAlbum = ({
       await httpService.put(`/spotify/player-shuffle/false`);
       await httpService.put(`/spotify/player-pause`);
 
-      for (let index = 0; index < albumData.tracks.items.length; index++) {
-        await httpService.post(
+      for (let index = 0; index < albumData.tracks.items.length; index += 1) {
+        httpService.post(
           `/spotify/queue-track/${encodeURI(albumData.tracks.items[index].uri)}`
         );
       }
@@ -181,7 +176,7 @@ const ModalAlbum = ({
   const handleTrackPlayClick = async (index) => {
     try {
       setPlayerInactive(false);
-      let status = await httpService.get(`/spotify/player-status`);
+      const status = await httpService.get(`/spotify/player-status`);
       if (status.emptyResponse) {
         setPlayerInactive(true);
         return;
@@ -199,23 +194,22 @@ const ModalAlbum = ({
 
   const handleArtistClick = () => {
     if (albumData.artists) {
-      setContextGridOffset(0);
-      setContextListOffset(0);
-      setContextGridData([]);
-      setContextListData([]);
-      setRelatedToArtist('');
-      setContextGridMore(true);
-      setDataLoading(true);
-      setContextItem(albumData.artists[0].id);
-      setContextType(ContextType.Artists);
+      setGridData({ totalCount: 0, data: [] });
+      resetListData();
+      setRelatedTo('');
+      setLoading(true);
+      setItem(albumData.artists[0].id);
+      setType(ContextType.Artists);
     }
   };
 
   const DiscBlock = (discNumber, trackIndexOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
-        <Header size={'small'} className={'disc-number-header'} style={theme}>
-          Disc {discNumber + 1}
+        <Header size="small" className="disc-number-header" style={theme}>
+          Disc 
+          {' '}
+          {discNumber + 1}
         </Header>
       )}
       <Grid.Row>
@@ -243,7 +237,7 @@ const ModalAlbum = ({
 
   return (
     <Modal
-      trigger={
+      trigger={(
         <div>
           <Image
             size={useMiniImage ? 'mini' : ''}
@@ -252,7 +246,7 @@ const ModalAlbum = ({
             onClick={() => handleModalOpen()}
           />
         </div>
-      }
+      )}
       open={modalOpen}
       onClose={() => setModalOpen(false)}
     >
@@ -264,12 +258,7 @@ const ModalAlbum = ({
           color="red"
           onClick={() => handleAlbumHeartClick(albumHeart)}
         />
-        <Icon
-          name={'play'}
-          size="small"
-          color="green"
-          onClick={() => handlePlayAlbum()}
-        />
+        <Icon name="play" size="small" color="green" onClick={() => handlePlayAlbum()} />
         {playerInactive && <span style={{ float: 'right' }}>Player is inactive</span>}
       </Modal.Header>
       <Modal.Content image style={theme}>
@@ -293,15 +282,13 @@ ModalAlbum.propTypes = {
   albumId: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
   useMiniImage: PropTypes.bool,
-  setContextType: PropTypes.func.isRequired,
-  setContextItem: PropTypes.func.isRequired,
-  setRelatedToArtist: PropTypes.func.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextListData: PropTypes.func.isRequired,
-  setContextListOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  setType: PropTypes.func.isRequired,
+  setItem: PropTypes.func.isRequired,
+  setLoading: PropTypes.func.isRequired,
+  setRelatedTo: PropTypes.func.isRequired,
+  setGridData: PropTypes.func.isRequired,
+  resetListData: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 ModalAlbum.defaultProps = {
@@ -309,15 +296,12 @@ ModalAlbum.defaultProps = {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextType: (type) => dispatch(setContextType(type)),
-  setContextItem: (id) => dispatch(setContextItem(id)),
-  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextListData: (data) => dispatch(setContextListData(data)),
-  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setType: (type) => dispatch(setContextType(type)),
+  setItem: (id) => dispatch(setContextItem(id)),
+  setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
+  setGridData: (data) => dispatch(setContextGridData(data)),
+  resetListData: () => dispatch(resetContextListData()),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(null, mapDispatchToProps)(ModalAlbum);

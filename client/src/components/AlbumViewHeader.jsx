@@ -8,14 +8,10 @@ import { ContextType } from '../store/types';
 import {
   setContextType,
   setContextGridData,
-  setContextGridOffset,
-  setContextListData,
-  setContextListOffset,
+  resetContextListData,
   setContextItem,
   setRelatedToArtist,
   setDataLoading,
-  setContextGridMore,
-  setContextListMore,
 } from '../store/actions';
 import { getContextType, getDataLoading } from '../store/selectors';
 import ModalConfig from './ModalConfig';
@@ -24,16 +20,12 @@ const AlbumViewHeader = ({
   contextType,
   contextData,
   dataLoading,
-  setContextItem,
-  setDataLoading,
-  setContextType,
-  setRelatedToArtist,
-  setContextGridData,
-  setContextGridOffset,
-  setContextGridMore,
-  setContextListData,
-  setContextListOffset,
-  setContextListMore,
+  setItem,
+  setLoading,
+  setType,
+  setRelatedTo,
+  setGridData,
+  resetListData,
 }) => {
   const theme = useTheme();
 
@@ -76,22 +68,18 @@ const AlbumViewHeader = ({
   ];
 
   const handleDropdownChange = (e, { value }) => {
-    setContextGridOffset(0);
-    setContextListOffset(0);
-    setContextGridData([]);
-    setContextListData([]);
-    setContextType(value);
-    setContextItem('');
-    setRelatedToArtist('');
-    setContextGridMore(true);
-    setContextListMore(true);
-    setDataLoading(true);
+    setGridData({totalCount: 0, data: []});
+    resetListData();
+    setType(value);
+    setItem('');
+    setRelatedTo('');
+    setLoading(true);
     console.log('handle dropdown change', value);
   };
 
   const handleCancelLoading = () => {
     console.log('cancelling loading from header');
-    setDataLoading(false);
+    setLoading(false);
   };
 
   const createDescriptionMarkup = (text) => {
@@ -125,7 +113,9 @@ const AlbumViewHeader = ({
             <h1>{contextData.name}</h1>
             {contextData.description && (
               <p
+                /* eslint-disable no-alert, react/no-danger */
                 dangerouslySetInnerHTML={createDescriptionMarkup(contextData.description)}
+                /* eslint-disable no-alert, react/no-danger */
               />
             )}
           </Segment>
@@ -153,18 +143,19 @@ const AlbumViewHeader = ({
 
 AlbumViewHeader.propTypes = {
   contextType: PropTypes.string.isRequired,
-  contextData: PropTypes.object.isRequired,
+  contextData: PropTypes.shape({
+    name: PropTypes.string,
+    description: PropTypes.string,
+    totalCount: PropTypes.number,
+    loadingCount: PropTypes.number,
+  }).isRequired,
   dataLoading: PropTypes.bool.isRequired,
-  setContextType: PropTypes.func.isRequired,
-  setContextItem: PropTypes.func.isRequired,
-  setRelatedToArtist: PropTypes.func.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  setContextListData: PropTypes.func.isRequired,
-  setContextListOffset: PropTypes.func.isRequired,
-  setContextListMore: PropTypes.func.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
+  setType: PropTypes.func.isRequired,
+  setItem: PropTypes.func.isRequired,
+  setRelatedTo: PropTypes.func.isRequired,
+  setGridData: PropTypes.func.isRequired,
+  resetListData: PropTypes.func.isRequired,
+  setLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -173,16 +164,12 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextType: (type) => dispatch(setContextType(type)),
-  setContextItem: (id) => dispatch(setContextItem(id)),
-  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setContextListData: (data) => dispatch(setContextListData(data)),
-  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
-  setContextListMore: (isMore) => dispatch(setContextListMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setType: (type) => dispatch(setContextType(type)),
+  setItem: (id) => dispatch(setContextItem(id)),
+  setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
+  setGridData: (data) => dispatch(setContextGridData(data)),
+  resetListData: () => dispatch(resetContextListData()),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumViewHeader);

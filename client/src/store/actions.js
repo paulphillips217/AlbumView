@@ -6,11 +6,7 @@ import {
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
   CONTEXT_GRID_DATA,
-  CONTEXT_GRID_OFFSET,
   CONTEXT_LIST_DATA,
-  CONTEXT_LIST_OFFSET,
-  CONTEXT_GRID_MORE,
-  CONTEXT_LIST_MORE,
   ALBUM_VIEW_THEME,
   CONTEXT_GRID_COLUMNS,
   DATA_LOADING,
@@ -62,29 +58,21 @@ export const setContextGridData = (data) => ({
   payload: data,
 });
 
-export const setContextGridOffset = (offset) => ({
-  type: CONTEXT_GRID_OFFSET,
-  payload: offset,
-});
-
-export const setContextGridMore = (more) => ({
-  type: CONTEXT_GRID_MORE,
-  payload: more,
-});
-
 export const setContextListData = (data) => ({
   type: CONTEXT_LIST_DATA,
   payload: data,
 });
 
-export const setContextListOffset = (offset) => ({
-  type: CONTEXT_LIST_OFFSET,
-  payload: offset,
-});
-
-export const setContextListMore = (more) => ({
-  type: CONTEXT_LIST_MORE,
-  payload: more,
+export const resetContextListData = () => ({
+  type: CONTEXT_LIST_DATA,
+  payload: {
+    totalCount: -1,
+    artistTotal: -1,
+    albumTotal: -1,
+    trackTotal: -1,
+    offset: 0,
+    data: [],
+  },
 });
 
 export const setAlbumViewTheme = (theme) => ({

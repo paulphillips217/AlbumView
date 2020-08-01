@@ -1,27 +1,28 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import '../styles/splitPane.css';
 import '../styles/flex-height.css';
 import AlbumViewHeader from './AlbumViewHeader';
-import PropTypes from 'prop-types';
 import { getOneDriveLoggedIn, getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
 import OneDriveLogin from './OneDriveLogin';
 import OneDriveFolderPicker from './OneDriveFolderPicker';
 import FileAnalysis from './FileAnalysis';
 import { trimTrackFileName } from '../util/utilities';
+import HttpService from '../util/httpUtils';
 
 const OneDriveFileContext = ({
   isOneDriveLoggedIn,
   savedAlbumData,
-  setDataLoading,
+  setLoading,
   httpService,
 }) => {
   const theme = useTheme();
 
-  setDataLoading(false);
+  setLoading(false);
 
   const contextData = {
     name: 'OneDrive File Analysis',
@@ -38,7 +39,7 @@ const OneDriveFileContext = ({
       );
       console.log('artist list: ', artistList);
 
-      for (let artist of artistList) {
+      for (const artist of artistList) {
         if (artist.folder) {
           const albumList = await httpService.get(`/one-drive/children/${artist.id}`);
           console.log('album list: ', albumList);
@@ -100,9 +101,20 @@ const OneDriveFileContext = ({
 
 OneDriveFileContext.propTypes = {
   isOneDriveLoggedIn: PropTypes.bool.isRequired,
-  savedAlbumData: PropTypes.object.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  savedAlbumData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.string,
+        albumName: PropTypes.string,
+        artist: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.string,
+      })
+    ),
+  }).isRequired,
+  setLoading: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -111,7 +123,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(OneDriveFileContext);

@@ -36,9 +36,6 @@
     "eject": "react-scripts eject",
     "format": "prettier --write \"**/*.+(js|jsx|json|css|md)\""
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "proxy": "http://localhost:5000/",
   "browserslist": {
     "production": [
@@ -61,7 +58,8 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.1",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.7"
   },
   "prettier": {
     "singleQuote": true,

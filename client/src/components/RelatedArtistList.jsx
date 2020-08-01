@@ -1,26 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { List, Image } from 'semantic-ui-react';
+import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
+import { Button, List, Image } from 'semantic-ui-react';
 import { sortByName } from '../util/sortUtils';
 import { getRelatedToArtist } from '../store/selectors';
-import {
-  setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
-  setContextItem,
-  setDataLoading,
-} from '../store/actions';
-import { useTheme } from 'emotion-theming';
+import { setContextGridData, setContextItem, setDataLoading } from '../store/actions';
+import HttpService from '../util/httpUtils';
 
 const RelatedArtistList = ({
   relatedToArtist,
-  setContextItem,
-  setDataLoading,
-  setContextGridData,
-  setContextGridOffset,
-  setContextGridMore,
+  setItem,
+  setLoading,
+  setGridData,
   httpService,
 }) => {
   const theme = useTheme();
@@ -48,15 +41,13 @@ const RelatedArtistList = ({
     };
 
     getList();
-  }, [relatedToArtist]);
+  }, [relatedToArtist, httpService]);
 
   const handleClick = (id) => {
     console.log('handle click id', id);
-    setContextGridData([]);
-    setContextGridOffset(0);
-    setContextGridMore(true);
-    setContextItem(id);
-    setDataLoading(true);
+    setGridData({ totalCount: 0, data: [] });
+    setItem(id);
+    setLoading(true);
   };
 
   const ListItem = (item, index) => (
@@ -64,13 +55,13 @@ const RelatedArtistList = ({
       <Image src={item.image} size="mini" />
       <List.Content>
         <List.Header>
-          <button
+          <Button
             style={theme}
             className="link-button"
             onClick={(e) => handleClick(item.id, e)}
           >
             {item.name}
-          </button>
+          </Button>
         </List.Header>
         {item.author && (
           <List.Description>
@@ -84,26 +75,24 @@ const RelatedArtistList = ({
   );
 
   const ListTable = () => (
-    <List floated={'left'} divided relaxed>
+    <List floated="left" divided relaxed>
       {relatedArtistListData.map((item, index) => ListItem(item, index))}
     </List>
   );
 
   return (
     <div className="left-align-list">
-      {relatedArtistListData && relatedArtistListData.length > 0 ? <ListTable /> : null}
+      {relatedArtistListData.length > 0 ? <ListTable /> : null}
     </div>
   );
 };
 
 RelatedArtistList.propTypes = {
   relatedToArtist: PropTypes.string.isRequired,
-  httpService: PropTypes.object.isRequired,
-  setContextItem: PropTypes.func.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
+  setItem: PropTypes.func.isRequired,
+  setGridData: PropTypes.func.isRequired,
+  setLoading: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -111,11 +100,9 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextItem: (id) => dispatch(setContextItem(id)),
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setItem: (id) => dispatch(setContextItem(id)),
+  setGridData: (data) => dispatch(setContextGridData(data)),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RelatedArtistList);

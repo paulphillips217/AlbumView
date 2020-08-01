@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
+import { useTheme } from 'emotion-theming';
 import { Button, Header, List } from 'semantic-ui-react';
+import HttpService from '../util/httpUtils';
 
 const OneDriveFolderPicker = ({ setFileData, httpService }) => {
   const theme = useTheme();
@@ -22,8 +23,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
         const updatedList = [...folders];
         folderList.forEach((folder) => {
           if (!updatedList.some((f) => f.id === folder.id)) {
-            folder.parentId = id;
-            updatedList.push(folder);
+            updatedList.push({ ...folder, parentId: id });
           }
         });
         setFolders(updatedList);
@@ -32,6 +32,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
       .catch((error) => console.log(error));
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => handleClickFolder('root'), []);
 
   const FolderSubList = ({ rootId }) => (
@@ -59,6 +60,10 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
     </List.List>
   );
 
+  FolderSubList.propTypes = {
+    rootId: PropTypes.string.isRequired,
+  };
+
   return (
     <div style={{ ...theme, paddingLeft: '80px', paddingTop: '80px' }}>
       <Header as="h3" style={{ ...theme }}>
@@ -73,7 +78,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
             name="folder"
             style={{
               cursor: 'pointer',
-              color: 'root' === musicFolder ? 'red' : theme.color,
+              color: musicFolder === 'root' ? 'red' : theme.color,
             }}
             onClick={() => handleClickFolder('root')}
           />
@@ -89,7 +94,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
 
 OneDriveFolderPicker.propTypes = {
   setFileData: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 export default OneDriveFolderPicker;

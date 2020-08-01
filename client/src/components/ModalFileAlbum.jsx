@@ -1,10 +1,10 @@
-import React, { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Header, Image, Modal } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
+import { Header, Image, Modal } from 'semantic-ui-react';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
-import { getImage } from '../util/utilities';
+import HttpService from '../util/httpUtils';
 
 // audio player from https://www.npmjs.com/package/react-h5-audio-player
 
@@ -30,7 +30,7 @@ const ModalFileAlbum = ({
       .then((rawData) => {
         console.log('Last.fm data', rawData);
         if (rawData && rawData.album) {
-          const image = rawData.album.image.find((i) => 'extralarge' === i.size);
+          const image = rawData.album.image.find((i) => i.size === 'extralarge');
           setAlbumImageUrl(image['#text']);
           console.log('getAlbumArt url: ', image['#text']);
         }
@@ -70,19 +70,28 @@ const ModalFileAlbum = ({
 
   return (
     <Modal
-      trigger={
-        <div style={{ cursor: 'pointer' }} onClick={handleModalOpen}>
+      trigger={(
+        <div
+          style={{ cursor: 'pointer' }}
+          onClick={handleModalOpen}
+          onKeyPress={handleModalOpen}
+          role='button'
+          tabIndex={albumIndex}
+        >
           {artistName}
         </div>
-      }
+      )}
       open={modalOpen}
       onClose={handleModalClose}
     >
-      <Modal.Header style={theme}> {albumName}</Modal.Header>
+      <Modal.Header style={theme}> 
+        {' '}
+        {albumName}
+      </Modal.Header>
       <Modal.Content image style={theme}>
         <Image wrapped src={albumImageUrl} />
         <Modal.Description style={{ width: '80%' }}>
-          <Fragment>
+          <>
             <Header style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}>
               {artistName}
             </Header>
@@ -90,12 +99,15 @@ const ModalFileAlbum = ({
               {albumTrackList.length > 0 &&
                 albumTrackList.map((item, index) => (
                   <li
-                    key={index}
+                    key={Date.now()}
                     style={{
                       color: currentTrack === index ? 'green' : theme.color,
                       cursor: 'pointer',
                     }}
                     onClick={() => handleClickListItem(index)}
+                    onKeyPress={() => handleClickListItem(index)}
+                    role='menu'
+                    tabIndex={index}
                   >
                     {item.name}
                   </li>
@@ -108,11 +120,11 @@ const ModalFileAlbum = ({
               onClickPrevious={handleClickPrevious}
               onClickNext={handleClickNext}
               onEnded={handleClickNext}
-              showSkipControls={true}
+              showSkipControls
               showJumpControls={false}
               customAdditionalControls={[]}
             />
-          </Fragment>
+          </>
         </Modal.Description>
       </Modal.Content>
     </Modal>
@@ -125,7 +137,7 @@ ModalFileAlbum.propTypes = {
   albumName: PropTypes.string.isRequired,
   setUpTracks: PropTypes.func.isRequired,
   tearDownTracks: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 export default ModalFileAlbum;

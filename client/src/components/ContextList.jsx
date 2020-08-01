@@ -1,43 +1,37 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
-import { List, Image } from 'semantic-ui-react';
+import { Button, List, Image } from 'semantic-ui-react';
 import { getContextListData, getContextType } from '../store/selectors';
 import {
   setContextGridData,
-  setContextGridMore,
-  setContextGridOffset,
   setContextItem,
   setDataLoading,
   setRelatedToArtist,
 } from '../store/actions';
 import { ContextType } from '../store/types';
-import PropTypes from 'prop-types';
-import { useTheme } from 'emotion-theming';
 
 const ContextList = ({
   contextType,
   contextListData,
-  setContextItem,
-  setDataLoading,
-  setRelatedToArtist,
-  setContextGridData,
-  setContextGridOffset,
-  setContextGridMore,
+  setItem,
+  setLoading,
+  setRelatedTo,
+  setGridData,
 }) => {
   const theme = useTheme();
 
   const handleClick = (id) => {
     console.log('handle click id', id);
-    setContextGridData([]);
-    setContextGridOffset(0);
-    setContextGridMore(true);
+    setGridData({ totalCount: 0, data: [] });
     if (contextType === ContextType.RelatedArtists) {
-      setRelatedToArtist(id);
-      setContextItem('');
+      setRelatedTo(id);
+      setItem('');
     } else {
-      setContextItem(id);
-      setDataLoading(true);
+      setItem(id);
+      setLoading(true);
     }
   };
 
@@ -51,13 +45,13 @@ const ContextList = ({
       />
       <List.Content>
         <List.Header>
-          <button
+          <Button
             style={theme}
             className="link-button"
             onClick={(e) => handleClick(item.id, e)}
           >
             {item.name}
-          </button>
+          </Button>
         </List.Header>
         {item.author && (
           <List.Description>
@@ -71,27 +65,36 @@ const ContextList = ({
   );
 
   const ListTable = () => (
-    <List floated={'left'} divided relaxed>
-      {contextListData.map((item, index) => ListItem(item, index))}
+    <List floated="left" divided relaxed>
+      {contextListData.data.map((item, index) => ListItem(item, index))}
     </List>
   );
 
   return (
     <div className="left-align-list">
-      {contextListData && contextListData.length > 0 ? <ListTable /> : null}
+      {contextListData.data.length > 0 ? <ListTable /> : null}
     </div>
   );
 };
 
 ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
-  contextListData: PropTypes.array.isRequired,
-  setContextItem: PropTypes.func.isRequired,
-  setRelatedToArtist: PropTypes.func.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextGridMore: PropTypes.func.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
+  contextListData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+        author: PropTypes.string,
+        description: PropTypes.string,
+        image: PropTypes.string,
+      })
+    ),
+  }).isRequired,
+  setItem: PropTypes.func.isRequired,
+  setRelatedTo: PropTypes.func.isRequired,
+  setGridData: PropTypes.func.isRequired,
+  setLoading: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -100,12 +103,10 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setContextItem: (id) => dispatch(setContextItem(id)),
-  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextGridMore: (isMore) => dispatch(setContextGridMore(isMore)),
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setItem: (id) => dispatch(setContextItem(id)),
+  setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
+  setGridData: (data) => dispatch(setContextGridData(data)),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContextList);

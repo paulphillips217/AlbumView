@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import PropTypes, { string } from 'prop-types';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -89,7 +89,7 @@ const AlbumContext = ({
       </div>
       <div className="row content">
         {isSpotifyAuthenticated && (
-          <ContextGrid contextGridData={savedAlbumData.data} httpService={httpService} />
+          <ContextGrid contextGridData={savedAlbumData} httpService={httpService} />
         )}
         {!isSpotifyAuthenticated && <SpotifyLogin />}
       </div>
@@ -109,7 +109,7 @@ AlbumContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: string,
+        releaseDate: PropTypes.string,
       })
     ),
   }).isRequired,

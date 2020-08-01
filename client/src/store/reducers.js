@@ -9,11 +9,7 @@ import {
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
   CONTEXT_GRID_DATA,
-  CONTEXT_GRID_OFFSET,
   CONTEXT_LIST_DATA,
-  CONTEXT_LIST_OFFSET,
-  CONTEXT_GRID_MORE,
-  CONTEXT_LIST_MORE,
   ALBUM_VIEW_THEME,
   CONTEXT_GRID_COLUMNS,
   DATA_LOADING,
@@ -39,13 +35,16 @@ const initialState = {
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
-  savedAlbumData: {totalCount: 0, data: []},
-  contextGridData: [],
-  contextGridOffset: 0,
-  contextGridMore: false,
-  contextListData: [],
-  contextListOffset: 0,
-  contextListMore: false,
+  savedAlbumData: { totalCount: 0, data: [] },
+  contextGridData: { totalCount: 0, data: [] },
+  contextListData: {
+    totalCount: -1,
+    artistTotal: -1,
+    albumTotal: -1,
+    trackTotal: -1,
+    offset: 0,
+    data: [],
+  },
   albumViewTheme: localStorage.getItem('albumViewTheme') || AlbumViewTheme.Light,
   contextGridColumns: localStorage.getItem('contextGridColumns') || 6,
   dataLoading: true,
@@ -103,30 +102,10 @@ export function albumViewReducer(state = initialState, action) {
       return Object.assign({}, state, {
         contextGridData: action.payload,
       });
-    case CONTEXT_GRID_OFFSET:
-      console.log('setting context grid offset', action.payload);
-      return Object.assign({}, state, {
-        contextGridOffset: action.payload,
-      });
-    case CONTEXT_GRID_MORE:
-      console.log('setting context grid more', action.payload);
-      return Object.assign({}, state, {
-        contextGridMore: action.payload,
-      });
     case CONTEXT_LIST_DATA:
       console.log('setting context list data', action.payload);
       return Object.assign({}, state, {
         contextListData: action.payload,
-      });
-    case CONTEXT_LIST_OFFSET:
-      console.log('setting context list offset', action.payload);
-      return Object.assign({}, state, {
-        contextListOffset: action.payload,
-      });
-    case CONTEXT_LIST_MORE:
-      console.log('setting context list more', action.payload);
-      return Object.assign({}, state, {
-        contextListMore: action.payload,
       });
     case ALBUM_VIEW_THEME:
       console.log('setting album view theme', action.payload);
@@ -135,10 +114,10 @@ export function albumViewReducer(state = initialState, action) {
         albumViewTheme: action.payload,
       });
     case CONTEXT_GRID_COLUMNS:
-      console.log('setting context grid columns', action.payload);
-      localStorage.setItem('contextGridColumns', action.payload);
+      console.log('setting context grid columns', +action.payload);
+      localStorage.setItem('contextGridColumns', +action.payload);
       return Object.assign({}, state, {
-        contextGridColumns: action.payload,
+        contextGridColumns: +action.payload,
       });
     case DATA_LOADING:
       console.log('setting data loading', action.payload);

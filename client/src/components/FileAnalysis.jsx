@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Button, Grid } from 'semantic-ui-react';
-import '../styles/App.css';
-import { useTheme } from 'emotion-theming';
 import PropTypes from 'prop-types';
-import { getSavedAlbumData, getSpotifyAuthenticationState } from '../store/selectors';
 import { connect } from 'react-redux';
+import { useTheme } from 'emotion-theming';
+import '../styles/App.css';
+import { Button, Grid } from 'semantic-ui-react';
+import { getSavedAlbumData, getSpotifyAuthenticationState } from '../store/selectors';
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
 import { cleanTitle, sortGridData } from '../util/sortUtils';
 import ModalAlbum from './ModalAlbum';
 import ModalFileAlbum from './ModalFileAlbum';
+import HttpService from '../util/httpUtils';
 
 const FileAnalysis = ({
   isSpotifyAuthenticated,
@@ -26,17 +27,6 @@ const FileAnalysis = ({
   const [albumGridData, setAlbumGridData] = useState([]);
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
-
-  const handleRead = async () => {
-    if (fileData && fileData.length > 0) {
-      const theAlbumArray = await readAlbumArray(fileData);
-      console.log('handleRead got theAlbumArray', theAlbumArray);
-      setAlbums(theAlbumArray);
-      blendAlbumLists(theAlbumArray, savedAlbumData.data);
-    } else {
-      console.log('file import data is empty');
-    }
-  };
 
   const blendAlbumLists = (localAlbumList, spotifyAlbumList) => {
     const blendedList = spotifyAlbumList.slice();
@@ -62,6 +52,17 @@ const FileAnalysis = ({
     }
     console.log('blended album list: ', blendedList);
     setAlbumGridData(blendedList);
+  };
+
+  const handleRead = async () => {
+    if (fileData && fileData.length > 0) {
+      const theAlbumArray = await readAlbumArray(fileData);
+      console.log('handleRead got theAlbumArray', theAlbumArray);
+      setAlbums(theAlbumArray);
+      blendAlbumLists(theAlbumArray, savedAlbumData.data);
+    } else {
+      console.log('file import data is empty');
+    }
   };
 
   const handleSearch = (item) => {
@@ -101,6 +102,7 @@ const FileAnalysis = ({
     if (isSpotifyAuthenticated) {
       return <Button onClick={() => handleSearch(item)}>Search</Button>;
     }
+    return '';
   };
 
   const gridItemSearchResults = (item) => {
@@ -194,11 +196,23 @@ const FileAnalysis = ({
 
 FileAnalysis.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
-  savedAlbumData: PropTypes.object.isRequired,
+  savedAlbumData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.string,
+        albumName: PropTypes.string,
+        artist: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.string,
+      })
+    ),
+  }).isRequired,
+  folderPicker: PropTypes.elementType.isRequired,
   readAlbumArray: PropTypes.func.isRequired,
-  setUpTracks: PropTypes.func.isRequired,
+  createTracks: PropTypes.func.isRequired,
   tearDownTracks: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({

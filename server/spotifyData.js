@@ -127,14 +127,14 @@ const talkToSpotify = async (req, res) => {
 const aggregateSpotifyArtistData = async (req, res) => {
   const credentials = await spotifyTokens.getCredentialsFromHeader(req);
   const accessToken = credentials.access_token;
-  let url = `https://api.spotify.com/v1/me/following?type=artist&after=${req.params.offset}&limit=${req.params.limit}`;
-  console.log(
-    'aggregateSpotifyArtistData first url',
-    req.path,
-    url,
-    req.method
-  );
+
+  let url = '';
   let artistList = [];
+  const offset = +req.params.offset;
+  const limit = +req.params.limit;
+  let artistTotal = +req.params.artists;
+  let albumTotal = +req.params.albums;
+  let trackTotal = +req.params.tracks;
 
   res.set({
     'Access-Control-Expose-Headers':
@@ -144,116 +144,123 @@ const aggregateSpotifyArtistData = async (req, res) => {
     'x-spotify-token-expiration': credentials.token_expiration,
   });
 
-  // first we get the artists you're following
-
   try {
-    let response = await axios({
-      url: url,
-      method: req.method,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    console.log('axios got response for ', url);
-    //    console.log(
-    //      'aggregateSpotifyArtistData raw: ',
-    //      JSON.stringify(response.data)
-    //    );
-    if (response && response.data && isJson(response.data)) {
-      response.data.artists.items.map((item) => {
-        artistList.push({
-          id: item.id,
-          name: item.name,
-          images: item.images,
-        });
+    // first we get the artists you're following
+    // if we don't know what the total is it will be set to -1
+    if (artistTotal < 0 || offset < artistTotal) {
+      url = `https://api.spotify.com/v1/me/following?type=artist&after=${offset}&limit=${limit}`;
+      console.log('aggregate first url', req.path, url, req.method);
+      let response = await axios({
+        url: url,
+        method: req.method,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
+      console.log('axios got response for ', url);
+      //    console.log(
+      //      'aggregateSpotifyArtistData raw: ',
+      //      JSON.stringify(response.data)
+      //    );
+      if (response && response.data && isJson(response.data)) {
+        artistTotal = +response.data.artists.total;
+        response.data.artists.items.forEach((item) => {
+          artistList.push({
+            id: item.id,
+            name: item.name,
+            images: item.images,
+          });
+        });
+      }
+      //console.log(
+      //  'aggregateSpotifyArtistData artistList: ',
+      //  JSON.stringify(artistList)
+      //);
     }
-    //console.log(
-    //  'aggregateSpotifyArtistData artistList: ',
-    //  JSON.stringify(artistList)
-    //);
 
     // second is the list of favorite albums
-
-    url = `https://api.spotify.com/v1/me/albums?offset=${req.params.offset}&limit=${req.params.limit}`;
-    console.log(
-      'aggregateSpotifyArtistData second url',
-      req.path,
-      url,
-      req.method
-    );
-    response = await axios({
-      url: url,
-      method: req.method,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    console.log('axios got response for ', url);
-    //console.log(
-    //  'aggregateSpotifyArtistData 2 raw: ',
-    //  JSON.stringify(response.data)
-    //);
-    if (response && response.data && isJson(response.data)) {
-      response.data.items.map((item) => {
-        if (!artistList.some((a) => a.id === item.album.artists[0].id)) {
-          artistList.push({
-            id: item.album.artists[0].id,
-            name: item.album.artists[0].name,
-            images: '',
-          });
-        }
+    // if we don't know what the total is it will be set to -1
+    if (albumTotal < 0 || offset < albumTotal) {
+      url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${limit}`;
+      console.log('aggregate second url', req.path, url, req.method);
+      response = await axios({
+        url: url,
+        method: req.method,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
+      console.log('axios got response for ', url);
+      //console.log(
+      //  'aggregateSpotifyArtistData 2 raw: ',
+      //  JSON.stringify(response.data)
+      //);
+      if (response && response.data && isJson(response.data)) {
+        albumTotal = +response.data.total;
+        response.data.items.forEach((item) => {
+          if (!artistList.some((a) => a.id === item.album.artists[0].id)) {
+            artistList.push({
+              id: item.album.artists[0].id,
+              name: item.album.artists[0].name,
+              images: '',
+            });
+          }
+        });
+      }
+      //console.log(
+      //  'aggregateSpotifyArtistData artistList: ',
+      //  JSON.stringify(artistList)
+      //);
     }
-    //console.log(
-    //  'aggregateSpotifyArtistData artistList: ',
-    //  JSON.stringify(artistList)
-    //);
 
     // third is the list of favorite tracks
-
-    url = `https://api.spotify.com/v1/me/tracks?offset=${req.params.offset}&limit=${req.params.limit}`;
-    console.log(
-      'aggregateSpotifyArtistData third url',
-      req.path,
-      url,
-      req.method
-    );
-    response = await axios({
-      url: url,
-      method: req.method,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    console.log('axios got response for ', url);
-    //console.log(
-    //  'aggregateSpotifyArtistData 2 raw: ',
-    //  JSON.stringify(response.data)
-    //);
-    if (response && response.data && isJson(response.data)) {
-      response.data.items.map((item) => {
-        if (!artistList.some((a) => a.id === item.track.artists[0].id)) {
-          artistList.push({
-            id: item.track.artists[0].id,
-            name: item.track.artists[0].name,
-            images: '',
-          });
-        }
+    // if we don't know what the total is it will be set to -1
+    if (trackTotal < 0 || offset < trackTotal) {
+      url = `https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`;
+      console.log('aggregate third url', req.path, url, req.method);
+      response = await axios({
+        url: url,
+        method: req.method,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
+      console.log('axios got response for ', url);
+      //console.log(
+      //  'aggregateSpotifyArtistData 2 raw: ',
+      //  JSON.stringify(response.data)
+      //);
+      if (response && response.data && isJson(response.data)) {
+        trackTotal = +response.data.total;
+        response.data.items.forEach((item) => {
+          if (!artistList.some((a) => a.id === item.track.artists[0].id)) {
+            artistList.push({
+              id: item.track.artists[0].id,
+              name: item.track.artists[0].name,
+              images: '',
+            });
+          }
+        });
+      }
+      //console.log(
+      //  'aggregateSpotifyArtistData artistList: ',
+      //  JSON.stringify(artistList)
+      //);
     }
-    //console.log(
-    //  'aggregateSpotifyArtistData artistList: ',
-    //  JSON.stringify(artistList)
-    //);
 
-    res.json(artistList);
+    res.json({
+      artistTotal,
+      albumTotal,
+      trackTotal,
+      offset,
+      data: artistList,
+    });
   } catch (err) {
     console.error(JSON.stringify(err));
     res.json({ empty: true });

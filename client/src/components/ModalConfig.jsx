@@ -1,5 +1,8 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { useTheme } from 'emotion-theming';
 import { Button, Dropdown, Modal, Tab } from 'semantic-ui-react';
 import {
   getAlbumSort,
@@ -15,11 +18,8 @@ import {
   setAlbumViewTheme,
   setContextGridColumns,
   setContextGridData,
-  setContextGridOffset,
   setContextItem,
-  setContextListData,
-  setContextListOffset,
-  setContextType,
+  resetContextListData,
   setPlaylistSort,
   setPlaylistTrackSort,
   setSpotifyRefreshToken,
@@ -27,10 +27,7 @@ import {
   setSavedTrackSort,
   setSpotifyTokenExpiration,
 } from '../store/actions';
-import { connect } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { AlbumViewTheme, SortTypes } from '../store/types';
-import { useTheme } from 'emotion-theming';
 
 const ModalConfig = ({
   albumViewTheme,
@@ -39,22 +36,19 @@ const ModalConfig = ({
   playlistSort,
   savedTrackSort,
   playlistTrackSort,
-  setSpotifyAccessToken,
-  setSpotifyRefreshToken,
-  setSpotifyTokenExpiration,
-  setAlbumViewTheme,
-  setContextGridColumns,
-  setContextItem,
-  setContextType,
-  setRelatedToArtist,
-  setContextGridData,
-  setContextGridOffset,
-  setContextListData,
-  setContextListOffset,
-  setAlbumSort,
-  setPlaylistSort,
-  setSavedTrackSort,
-  setPlaylistTrackSort,
+  setSpotifyAccess,
+  setSpotifyRefresh,
+  setSpotifyExpiration,
+  setTheme,
+  setGridColumns,
+  setItem,
+  setRelatedTo,
+  setGridData,
+  resetListData,
+  setAlbumSortOrder,
+  setPlaylistSortOrder,
+  setSavedTrackSortOrder,
+  setPlaylistTrackSortOrder,
 }) => {
   const theme = useTheme();
   const history = useHistory();
@@ -150,39 +144,37 @@ const ModalConfig = ({
   ];
 
   const handleThemeChange = (e, { value }) => {
-    setAlbumViewTheme(value);
+    setTheme(value);
   };
 
   const handleAlbumSortChange = (e, { value }) => {
-    setAlbumSort(value);
+    setAlbumSortOrder(value);
   };
 
   const handlePlaylistSortChange = (e, { value }) => {
-    setPlaylistSort(value);
+    setPlaylistSortOrder(value);
   };
 
   const handleSavedTrackSortChange = (e, { value }) => {
-    setSavedTrackSort(value);
+    setSavedTrackSortOrder(value);
   };
 
   const handlePlaylistTrackSortChange = (e, { value }) => {
-    setPlaylistTrackSort(value);
+    setPlaylistTrackSortOrder(value);
   };
 
   const handleContextGridColumnsChange = (e) => {
-    setContextGridColumns(e.target.value);
+    setGridColumns(e.target.value);
   };
 
   const handleLogOut = () => {
-    setSpotifyRefreshToken('');
-    setSpotifyAccessToken('');
-    setSpotifyTokenExpiration('');
-    setContextItem('');
-    setRelatedToArtist('');
-    setContextGridData([]);
-    setContextGridOffset(0);
-    setContextListData([]);
-    setContextListOffset(0);
+    setSpotifyRefresh('');
+    setSpotifyAccess('');
+    setSpotifyExpiration('');
+    setItem('');
+    setRelatedTo('');
+    setGridData({totalCount: 0, data: []});
+    resetListData();
     history.push('/');
   };
 
@@ -265,7 +257,7 @@ const ModalConfig = ({
   ];
 
   return (
-    <Modal size={'mini'} trigger={<Button icon="options" />} style={theme}>
+    <Modal size="mini" trigger={<Button icon="options" />} style={theme}>
       <Modal.Header style={theme}>Configuration Settings</Modal.Header>
       <Modal.Content style={theme}>
         <Tab
@@ -289,22 +281,19 @@ ModalConfig.propTypes = {
   playlistSort: PropTypes.string.isRequired,
   savedTrackSort: PropTypes.string.isRequired,
   playlistTrackSort: PropTypes.string.isRequired,
-  setSpotifyAccessToken: PropTypes.func.isRequired,
-  setContextGridColumns: PropTypes.func.isRequired,
-  setSpotifyRefreshToken: PropTypes.func.isRequired,
-  setSpotifyTokenExpiration: PropTypes.func.isRequired,
-  setContextType: PropTypes.func.isRequired,
-  setContextItem: PropTypes.func.isRequired,
-  setAlbumViewTheme: PropTypes.func.isRequired,
-  setRelatedToArtist: PropTypes.func.isRequired,
-  setContextGridData: PropTypes.func.isRequired,
-  setContextGridOffset: PropTypes.func.isRequired,
-  setContextListData: PropTypes.func.isRequired,
-  setContextListOffset: PropTypes.func.isRequired,
-  setAlbumSort: PropTypes.func.isRequired,
-  setPlaylistSort: PropTypes.func.isRequired,
-  setSavedTrackSort: PropTypes.func.isRequired,
-  setPlaylistTrackSort: PropTypes.func.isRequired,
+  setSpotifyAccess: PropTypes.func.isRequired,
+  setGridColumns: PropTypes.func.isRequired,
+  setSpotifyRefresh: PropTypes.func.isRequired,
+  setSpotifyExpiration: PropTypes.func.isRequired,
+  setItem: PropTypes.func.isRequired,
+  setTheme: PropTypes.func.isRequired,
+  setRelatedTo: PropTypes.func.isRequired,
+  setGridData: PropTypes.func.isRequired,
+  resetListData: PropTypes.func.isRequired,
+  setAlbumSortOrder: PropTypes.func.isRequired,
+  setPlaylistSortOrder: PropTypes.func.isRequired,
+  setSavedTrackSortOrder: PropTypes.func.isRequired,
+  setPlaylistTrackSortOrder: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -317,24 +306,21 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
-  setContextGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
-  setSpotifyRefreshToken: (refreshToken) =>
+  setSpotifyAccess: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
+  setGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
+  setSpotifyRefresh: (refreshToken) =>
     dispatch(setSpotifyRefreshToken(refreshToken)),
-  setSpotifyTokenExpiration: (expiration) =>
+  setSpotifyExpiration: (expiration) =>
     dispatch(setSpotifyTokenExpiration(expiration)),
-  setAlbumViewTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
-  setContextType: (type) => dispatch(setContextType(type)),
-  setContextItem: (id) => dispatch(setContextItem(id)),
-  setRelatedToArtist: (id) => dispatch(setRelatedToArtist(id)),
-  setContextGridData: (data) => dispatch(setContextGridData(data)),
-  setContextGridOffset: (offset) => dispatch(setContextGridOffset(offset)),
-  setContextListData: (data) => dispatch(setContextListData(data)),
-  setContextListOffset: (offset) => dispatch(setContextListOffset(offset)),
-  setAlbumSort: (sort) => dispatch(setAlbumSort(sort)),
-  setPlaylistSort: (sort) => dispatch(setPlaylistSort(sort)),
-  setSavedTrackSort: (sort) => dispatch(setSavedTrackSort(sort)),
-  setPlaylistTrackSort: (sort) => dispatch(setPlaylistTrackSort(sort)),
+  setTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
+  setItem: (id) => dispatch(setContextItem(id)),
+  setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
+  setGridData: (data) => dispatch(setContextGridData(data)),
+  resetListData: () => dispatch(resetContextListData()),
+  setAlbumSortOrder: (sort) => dispatch(setAlbumSort(sort)),
+  setPlaylistSortOrder: (sort) => dispatch(setPlaylistSort(sort)),
+  setSavedTrackSortOrder: (sort) => dispatch(setSavedTrackSort(sort)),
+  setPlaylistTrackSortOrder: (sort) => dispatch(setPlaylistTrackSort(sort)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalConfig);

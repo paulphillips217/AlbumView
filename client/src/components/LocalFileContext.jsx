@@ -1,21 +1,22 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import '../styles/splitPane.css';
 import '../styles/flex-height.css';
 import AlbumViewHeader from './AlbumViewHeader';
-import PropTypes from 'prop-types';
 import { getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
 import FileAnalysis from './FileAnalysis';
 import LocalFolderPicker from './LocalFolderPicker';
 import { trimTrackFileName } from '../util/utilities';
+import HttpService from '../util/httpUtils';
 
-const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
+const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
   const theme = useTheme();
 
-  setDataLoading(false);
+  setLoading(false);
 
   const readAlbumArray = (fileData) => {
     const theAlbumArray = [];
@@ -35,8 +36,8 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
         theAlbumArray[fileIndex].tracks.push(key);
       } else {
         theAlbumArray.push({
-          artist: artist,
-          albumName: albumName,
+          artist,
+          albumName,
           index: index + 1,
           tracks: [key],
         });
@@ -85,9 +86,20 @@ const LocalFileContext = ({ savedAlbumData, setDataLoading, httpService }) => {
 };
 
 LocalFileContext.propTypes = {
-  savedAlbumData: PropTypes.object.isRequired,
-  setDataLoading: PropTypes.func.isRequired,
-  httpService: PropTypes.object.isRequired,
+  savedAlbumData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.string,
+        albumName: PropTypes.string,
+        artist: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.string,
+      })
+    ),
+  }).isRequired,
+  setLoading: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -95,7 +107,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setDataLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LocalFileContext);

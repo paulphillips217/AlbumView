@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import SplitPane from 'react-split-pane';
+import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import '../styles/splitPane.css';
 import '../styles/flex-height.css';
-import { useTheme } from 'emotion-theming';
 import ContextList from './ContextList';
 import ContextGrid from './ContextGrid';
 import AlbumViewHeader from './AlbumViewHeader';
+import RelatedArtistList from './RelatedArtistList';
 import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
 import { sortByName, sortGridData } from '../util/sortUtils';
@@ -18,15 +19,17 @@ import {
   getContextListData,
   getContextSortType,
   getDataLoading,
+  getRelatedToArtist,
   getSpotifyAuthenticationState,
 } from '../store/selectors';
 import { setContextGridData, setContextListData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
 
-const ArtistContext = ({
+const RelatedArtistContext = ({
   isSpotifyAuthenticated,
   contextItem,
+  relatedToArtist,
   dataLoading,
   contextGridData,
   contextSortType,
@@ -39,6 +42,7 @@ const ArtistContext = ({
   const theme = useTheme();
   const [contextDataName, setContextDataName] = useState('');
 
+  // get the albums for the other artist
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
@@ -78,14 +82,15 @@ const ArtistContext = ({
   }, [
     isSpotifyAuthenticated,
     contextItem,
-    contextGridData,
     contextSortType,
+    contextGridData,
     dataLoading,
-    httpService,
     setGridData,
     setLoading,
+    httpService,
   ]);
 
+  // get the list of favorite artists
   useEffect(() => {
     const getList = () => {
       if (
@@ -125,8 +130,20 @@ const ArtistContext = ({
     getList();
   }, [isSpotifyAuthenticated, contextListData, setListData, httpService]);
 
+  // get context text for the header
   useEffect(() => {
     const getContextData = () => {
+      if (!relatedToArtist && !contextItem) {
+        setContextDataName('Related Artists (choose one)');
+      }
+      if (relatedToArtist && !contextItem) {
+        httpService
+          .get(`/spotify/artist-data/${relatedToArtist}`)
+          .then((data) => {
+            setContextDataName(`${data.name} (choose related artist)`);
+          })
+          .catch((error) => console.log(error));
+      }
       if (isSpotifyAuthenticated && contextItem) {
         httpService
           .get(`/spotify/artist-data/${contextItem}`)
@@ -134,12 +151,10 @@ const ArtistContext = ({
             setContextDataName(data.name);
           })
           .catch((error) => console.log(error));
-      } else {
-        setContextDataName('Your Saved Artists');
       }
     };
     getContextData();
-  }, [isSpotifyAuthenticated, contextItem, setContextDataName, httpService]);
+  }, [isSpotifyAuthenticated, contextItem, relatedToArtist, httpService]);
 
   return (
     <div className="box" style={theme}>
@@ -165,7 +180,16 @@ const ArtistContext = ({
             paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
           >
             <ContextList httpService={httpService} />
-            <ContextGrid contextGridData={contextGridData} httpService={httpService} />
+            <SplitPane
+              split="vertical"
+              minSize={50}
+              defaultSize={350}
+              style={{ position: 'relative' }}
+              paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+            >
+              <RelatedArtistList httpService={httpService} />
+              <ContextGrid contextGridData={contextGridData} httpService={httpService} />
+            </SplitPane>
           </SplitPane>
         )}
       </div>
@@ -174,9 +198,10 @@ const ArtistContext = ({
   );
 };
 
-ArtistContext.propTypes = {
+RelatedArtistContext.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
   contextItem: PropTypes.string.isRequired,
+  relatedToArtist: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.shape({
     totalCount: PropTypes.number,
@@ -212,6 +237,7 @@ ArtistContext.propTypes = {
 const mapStateToProps = (state) => ({
   isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
   contextItem: getContextItem(state),
+  relatedToArtist: getRelatedToArtist(state),
   dataLoading: getDataLoading(state),
   contextGridData: getContextGridData(state),
   contextSortType: getContextSortType(state),
@@ -224,4 +250,4 @@ const mapDispatchToProps = (dispatch) => ({
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ArtistContext);
+export default connect(mapStateToProps, mapDispatchToProps)(RelatedArtistContext);

@@ -1,13 +1,14 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import { Grid, Header } from 'semantic-ui-react';
-import { useTheme } from 'emotion-theming';
 import { filterByAlbumType } from '../util/utilities';
 import { getContextType, getContextGridColumns } from '../store/selectors';
 import { ContextType } from '../store/types';
-import PropTypes from 'prop-types';
 import ModalAlbum from './ModalAlbum';
+import HttpService from '../util/httpUtils';
 
 const ContextGrid = ({
   contextType,
@@ -31,36 +32,35 @@ const ContextGrid = ({
 
   const AlbumGrid = () => (
     <Grid columns={contextGridColumns} style={{ width: '100%' }}>
-      {contextGridData.map((e, index) => GridItem(e, index))}
+      {contextGridData.data.map((e, index) => GridItem(e, index))}
     </Grid>
   );
 
   const ArtistAlbumType = ({ category, title }) => {
-    if (contextGridData.some((item) => filterByAlbumType(item, category))) {
+    if (contextGridData.data.some((item) => filterByAlbumType(item, category))) {
       return (
-        <Fragment>
+        <>
           <Header as="h2" floated="left" style={{ ...theme, paddingTop: '50px' }}>
             {title}
           </Header>
           <Grid columns={contextGridColumns} style={{ width: '100%' }}>
-            {contextGridData
+            {contextGridData.data
               .filter((item) => filterByAlbumType(item, category))
               .map((e, index) => GridItem(e, index))}
           </Grid>
-        </Fragment>
+        </>
       );
-    } else {
-      return '';
     }
+    return '';
   };
 
   const ArtistAlbumGrid = () => (
-    <Fragment>
-      <ArtistAlbumType category={'album'} title={'Albums'} />
-      <ArtistAlbumType category={'single'} title={'Singles'} />
-      <ArtistAlbumType category={'compilation'} title={'Compilations'} />
-      <ArtistAlbumType category={'appears_on'} title={'Appears On'} />
-    </Fragment>
+    <>
+      <ArtistAlbumType category="album" title="Albums" />
+      <ArtistAlbumType category="single" title="Singles" />
+      <ArtistAlbumType category="compilation" title="Compilations" />
+      <ArtistAlbumType category="appears_on" title="Appears On" />
+    </>
   );
 
   const useArtistAlbumGrid =
@@ -68,25 +68,28 @@ const ContextGrid = ({
 
   return (
     <div className="grid-container">
-      {useArtistAlbumGrid && contextGridData && contextGridData.length > 0 ? (
-        <ArtistAlbumGrid />
-      ) : (
-        ''
-      )}
-      {!useArtistAlbumGrid && contextGridData && contextGridData.length > 0 ? (
-        <AlbumGrid />
-      ) : (
-        ''
-      )}
+      {useArtistAlbumGrid && contextGridData.data.length > 0 ? <ArtistAlbumGrid /> : ''}
+      {!useArtistAlbumGrid && contextGridData.data.length > 0 ? <AlbumGrid /> : ''}
     </div>
   );
 };
 
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
-  contextGridData: PropTypes.array.isRequired,
+  contextGridData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.string,
+        albumName: PropTypes.string,
+        artist: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.string,
+      })
+    ),
+  }).isRequired,
   contextGridColumns: PropTypes.number.isRequired,
-  httpService: PropTypes.object.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({

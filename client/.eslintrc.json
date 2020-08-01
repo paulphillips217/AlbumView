@@ -5,8 +5,7 @@
     "jest": true
   },
   "extends": [
-    "plugin:react/recommended",
-    "plugin:prettier/recommended",
+    "react-app",
     "airbnb",
     "prettier"
   ],

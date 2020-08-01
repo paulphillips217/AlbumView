@@ -32,7 +32,7 @@ router.get('/albums/contains/:ids', spotifyData.talkToSpotify);
 router.get('/track-list/:offset/:limit', spotifyData.talkToSpotify);
 router.get('/tracks/contains/:ids', spotifyData.talkToSpotify);
 router.get('/artist-data/:id', spotifyData.talkToSpotify);
-router.get('/artist-list/:offset/:limit', spotifyData.aggregateSpotifyArtistData);
+router.get('/artist-list/:offset/:limit/:artists/:albums/:tracks', spotifyData.aggregateSpotifyArtistData);
 router.get('/artist-albums/:id/:offset/:limit', spotifyData.talkToSpotify);
 router.get('/related-artists/:id', spotifyData.talkToSpotify);
 router.get('/player-status', spotifyData.talkToSpotify);

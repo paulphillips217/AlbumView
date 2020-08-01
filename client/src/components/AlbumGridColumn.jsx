@@ -84,8 +84,15 @@ const AlbumGridColumn = ({
 };
 
 AlbumGridColumn.propTypes = {
-  tracks: PropTypes.array.isRequired,
-  trackHearts: PropTypes.array.isRequired,
+  tracks: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      track_number: PropTypes.string,
+      duration_ms: PropTypes.number,
+    })
+  ).isRequired,
+  trackHearts: PropTypes.arrayOf(PropTypes.string).isRequired,
   trackIndexOffset: PropTypes.number.isRequired,
   handleTrackHeartClick: PropTypes.func.isRequired,
   handleTrackPlayClick: PropTypes.func.isRequired,

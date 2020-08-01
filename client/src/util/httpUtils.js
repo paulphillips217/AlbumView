@@ -18,7 +18,7 @@ class HttpService {
 
   httpRequest(options) {
     const onSuccess = (response) => {
-      // console.debug('httpRequest got response', response);
+      console.debug('httpRequest got response', response);
       // console.log('axios response headers: ', response.headers);
       try {
         const oldSpotifyAccessToken = getSpotifyAccessToken(this.store.getState());
