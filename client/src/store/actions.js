@@ -17,6 +17,7 @@ import {
   SAVED_ALBUM_DATA,
   ONE_DRIVE_LOGGED_IN,
 } from './types';
+import { sortGridData } from '../util/sortUtils';
 
 export const setSpotifyAccessToken = (accessToken) => ({
   type: SPOTIFY_ACCESS_TOKEN,
@@ -114,3 +115,20 @@ export const setOneDriveLoggedIn = (isLoggedIn) => ({
   type: ONE_DRIVE_LOGGED_IN,
   payload: isLoggedIn,
 });
+
+export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) => {
+  console.log('addSavedAlbum action: ', album);
+  const newData = savedAlbumData.data.concat(album);
+  dispatch(setSavedAlbumData({
+    totalCount: newData.length,
+    data: sortGridData(newData, contextSortType),
+  }));
+}
+
+export const removeSavedAlbum = (albumId, savedAlbumData, dispatch) => {
+  const newData = savedAlbumData.data.filter(item => item.albumId !== albumId);
+  dispatch(setSavedAlbumData({
+    totalCount: newData.length,
+    data: newData
+  }));
+}

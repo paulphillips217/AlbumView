@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import { Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
+import {
+  Dimmer,
+  Loader,
+  Grid,
+  Image,
+  Header,
+  Modal,
+  Icon,
+  Segment,
+} from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
@@ -13,20 +22,27 @@ import {
   setContextType,
   setDataLoading,
   setRelatedToArtist,
+  addSavedAlbum,
+  removeSavedAlbum,
 } from '../store/actions';
 import { ContextType } from '../store/types';
 import HttpService from '../util/httpUtils';
+import { getContextSortType, getSavedAlbumData } from '../store/selectors';
 
 const ModalAlbum = ({
   albumId,
   image,
   useMiniImage,
+  savedAlbumData,
+  contextSortType,
   setType,
   setItem,
   setLoading,
   setRelatedTo,
   setGridData,
   resetListData,
+  addAlbum,
+  removeAlbum,
   httpService,
 }) => {
   const theme = useTheme();
@@ -35,6 +51,7 @@ const ModalAlbum = ({
   const [trackHearts, setTrackHearts] = useState([]);
   const [albumHeart, setAlbumHeart] = useState(false);
   const [playerInactive, setPlayerInactive] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     const getHeartSettings = () => {
@@ -105,6 +122,7 @@ const ModalAlbum = ({
         .get(`/spotify/album-data/${albumId}`)
         .then((data) => {
           setAlbumData(data);
+          console.log('opening modal album with data: ', data);
         })
         .catch((error) => console.error(error));
       setModalOpen(true);
@@ -134,11 +152,14 @@ const ModalAlbum = ({
   };
 
   const handleAlbumHeartClick = (remove) => {
+    setShowLoader(true);
     if (remove) {
       httpService
         .delete(`/spotify/delete-albums/${albumId}`)
         .then(() => {
           console.log('handleAlbumHeartClick delete response');
+          removeAlbum(albumId, savedAlbumData);
+          setShowLoader(false);
         })
         .catch((error) => console.error(error));
     } else {
@@ -146,6 +167,18 @@ const ModalAlbum = ({
         .put(`/spotify/save-albums/${albumId}`)
         .then(() => {
           console.log('handleAlbumHeartClick save response');
+          addAlbum(
+            {
+              albumId: albumData.id,
+              albumName: albumData.name,
+              artist: albumData.artists[0] ? albumData.artists[0].name : 'unknown artist',
+              image: getImage(albumData.images),
+              releaseDate: albumData.release_date,
+            },
+            savedAlbumData,
+            contextSortType
+          );
+          setShowLoader(false);
         })
         .catch((error) => console.error(error));
     }
@@ -207,9 +240,7 @@ const ModalAlbum = ({
     <Grid columns={2}>
       {discTracks.length > 1 && (
         <Header size="small" className="disc-number-header" style={theme}>
-          Disc 
-          {' '}
-          {discNumber + 1}
+          Disc {discNumber + 1}
         </Header>
       )}
       <Grid.Row>
@@ -237,7 +268,7 @@ const ModalAlbum = ({
 
   return (
     <Modal
-      trigger={(
+      trigger={
         <div>
           <Image
             size={useMiniImage ? 'mini' : ''}
@@ -246,34 +277,46 @@ const ModalAlbum = ({
             onClick={() => handleModalOpen()}
           />
         </div>
-      )}
+      }
       open={modalOpen}
       onClose={() => setModalOpen(false)}
     >
-      <Modal.Header style={theme}>
-        {headerTitle}
-        <Icon
-          name={albumHeart ? 'heart' : 'heart outline'}
-          size="small"
-          color="red"
-          onClick={() => handleAlbumHeartClick(albumHeart)}
-        />
-        <Icon name="play" size="small" color="green" onClick={() => handlePlayAlbum()} />
-        {playerInactive && <span style={{ float: 'right' }}>Player is inactive</span>}
-      </Modal.Header>
-      <Modal.Content image style={theme}>
-        <Image wrapped src={albumData.images && getImage(albumData.images)} />
-        <Modal.Description style={{ width: '80%' }}>
-          <Header
-            style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}
-            onClick={() => handleArtistClick()}
-          >
-            {albumData.artists && albumData.artists[0].name}
-          </Header>
-          {discTracks &&
-            discTracks.map((item, index) => DiscBlock(index, getTrackIndexOffset(index)))}
-        </Modal.Description>
-      </Modal.Content>
+      <Dimmer.Dimmable as={Fragment} dimmed={showLoader}>
+        <Dimmer active={showLoader} inverted>
+          <Loader>Loading</Loader>
+        </Dimmer>
+        <Modal.Header style={theme}>
+          {headerTitle}
+          <Icon
+            name={albumHeart ? 'heart' : 'heart outline'}
+            size="small"
+            color="red"
+            onClick={() => handleAlbumHeartClick(albumHeart)}
+          />
+          <Icon
+            name="play"
+            size="small"
+            color="green"
+            onClick={() => handlePlayAlbum()}
+          />
+          {playerInactive && <span style={{ float: 'right' }}>Player is inactive</span>}
+        </Modal.Header>
+        <Modal.Content image style={theme}>
+          <Image wrapped src={albumData.images && getImage(albumData.images)} />
+          <Modal.Description style={{ width: '80%' }}>
+            <Header
+              style={{ ...theme, paddingBottom: '10px', cursor: 'pointer' }}
+              onClick={() => handleArtistClick()}
+            >
+              {albumData.artists && albumData.artists[0].name}
+            </Header>
+            {discTracks &&
+              discTracks.map((item, index) =>
+                DiscBlock(index, getTrackIndexOffset(index))
+              )}
+          </Modal.Description>
+        </Modal.Content>
+      </Dimmer.Dimmable>
     </Modal>
   );
 };
@@ -288,12 +331,32 @@ ModalAlbum.propTypes = {
   setRelatedTo: PropTypes.func.isRequired,
   setGridData: PropTypes.func.isRequired,
   resetListData: PropTypes.func.isRequired,
+  savedAlbumData: PropTypes.shape({
+    totalCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.string,
+        albumName: PropTypes.string,
+        artist: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.string,
+      })
+    ),
+  }).isRequired,
+  contextSortType: PropTypes.string.isRequired,
+  addAlbum: PropTypes.func.isRequired,
+  removeAlbum: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 ModalAlbum.defaultProps = {
   useMiniImage: false,
 };
+
+const mapStateToProps = (state) => ({
+  savedAlbumData: getSavedAlbumData(state),
+  contextSortType: getContextSortType(state),
+});
 
 const mapDispatchToProps = (dispatch) => ({
   setType: (type) => dispatch(setContextType(type)),
@@ -302,6 +365,10 @@ const mapDispatchToProps = (dispatch) => ({
   setGridData: (data) => dispatch(setContextGridData(data)),
   resetListData: () => dispatch(resetContextListData()),
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  addAlbum: (album, savedAlbumData, contextSortType) =>
+    addSavedAlbum(album, savedAlbumData, contextSortType, dispatch),
+  removeAlbum: (savedAlbumData, albumId) =>
+    removeSavedAlbum(savedAlbumData, albumId, dispatch),
 });
 
-export default connect(null, mapDispatchToProps)(ModalAlbum);
+export default connect(mapStateToProps, mapDispatchToProps)(ModalAlbum);
