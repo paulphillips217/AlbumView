@@ -173,7 +173,7 @@ const ModalConfig = ({
     setSpotifyExpiration('');
     setItem('');
     setRelatedTo('');
-    setGridData({totalCount: 0, data: []});
+    setGridData({spotifyCount: 0, data: []});
     resetListData();
     history.push('/');
   };

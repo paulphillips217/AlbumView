@@ -54,7 +54,7 @@ const App = ({
   if (urlParams.has('spotify_access_token')) {
     setSpotifyAccessToken(urlParams.get('spotify_access_token'));
     console.log(`spotify_access_token: ${urlParams.get('spotify_access_token')}`);
-    history.push('/');
+    history.push('/xxx');
   }
   if (urlParams.has('oneDriveLogin')) {
     setOneDriveLoggedIn(urlParams.get('oneDriveLogin'));

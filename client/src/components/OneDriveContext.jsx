@@ -45,7 +45,7 @@ const OneDriveFileContext = ({
           console.log('album list: ', albumList);
           albumList.forEach((album) =>
             theAlbumArray.push({
-              index: album.id,
+              oneDriveId: album.id,
               artist: artist.name,
               albumName: album.name,
               tracks: [],
@@ -62,7 +62,7 @@ const OneDriveFileContext = ({
   };
 
   const createTracks = async (album) => {
-    const trackList = await httpService.get(`/one-drive/children/${album.index}`);
+    const trackList = await httpService.get(`/one-drive/children/${album.oneDriveId}`);
     console.log('createTracks', trackList);
     return trackList
       .filter((t) => t.file.mimeType.includes('audio'))
@@ -84,6 +84,7 @@ const OneDriveFileContext = ({
       <div className="row content">
         {isOneDriveLoggedIn && (
           <FileAnalysis
+            albumFileIdProp='oneDriveId'
             savedAlbumData={savedAlbumData.data}
             folderPicker={OneDriveFolderPicker}
             readAlbumArray={readAlbumArray}
@@ -102,7 +103,8 @@ const OneDriveFileContext = ({
 OneDriveFileContext.propTypes = {
   isOneDriveLoggedIn: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
+    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,
@@ -110,6 +112,8 @@ OneDriveFileContext.propTypes = {
         artist: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
       })
     ),
   }).isRequired,

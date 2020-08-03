@@ -77,7 +77,7 @@ const ContextGrid = ({
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextGridData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

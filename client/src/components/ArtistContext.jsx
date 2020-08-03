@@ -38,7 +38,7 @@ const ArtistContext = ({
 }) => {
   const theme = useTheme();
   const [contextDataName, setContextDataName] = useState('Your Saved Artists');
-  const [loadingState, setLoadingState] = useState({ totalCount: 0, loadingCount: 0 });
+  const [loadingState, setLoadingState] = useState({ spotifyCount: 0, loadingCount: 0 });
 
   // load grid data
   useEffect(() => {
@@ -63,14 +63,14 @@ const ArtistContext = ({
             }));
             const newData = contextGridData.data.concat(data);
             setGridData({
-              totalCount: rawData.total,
+              spotifyCount: rawData.total,
               data: sortGridData(newData, contextSortType),
             });
             if (!rawData.next) {
               setLoading(false);
             }
             setLoadingState({
-              totalCount: contextGridData.totalCount,
+              spotifyCount: contextGridData.spotifyCount,
               loadingCount: contextGridData.data.length,
             });
           })
@@ -134,7 +134,7 @@ const ArtistContext = ({
               setLoading(false);
             }
             setLoadingState({
-              totalCount: maxCount,
+              spotifyCount: maxCount,
               loadingCount: +rawData.offset,
             });
           })
@@ -203,7 +203,7 @@ ArtistContext.propTypes = {
   contextItem: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,
@@ -216,7 +216,7 @@ ArtistContext.propTypes = {
   }).isRequired,
   contextSortType: PropTypes.string.isRequired,
   contextListData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

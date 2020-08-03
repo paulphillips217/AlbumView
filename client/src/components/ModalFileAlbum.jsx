@@ -5,6 +5,7 @@ import { Header, Image, Modal } from 'semantic-ui-react';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import HttpService from '../util/httpUtils';
+import { getRandomInt } from '../util/utilities';
 
 // audio player from https://www.npmjs.com/package/react-h5-audio-player
 
@@ -99,7 +100,7 @@ const ModalFileAlbum = ({
               {albumTrackList.length > 0 &&
                 albumTrackList.map((item, index) => (
                   <li
-                    key={Date.now()}
+                    key={getRandomInt(9999)}
                     style={{
                       color: currentTrack === index ? 'green' : theme.color,
                       cursor: 'pointer',

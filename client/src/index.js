@@ -9,7 +9,6 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
 import HttpService from './util/httpUtils';
-import FileAnalysis from './components/FileAnalysis';
 
 const commService = new HttpService(store);
 
@@ -18,10 +17,6 @@ const routing = (
     <React.StrictMode>
       <Router>
         <Switch>
-          <Route
-            path="/files"
-            render={(props) => <FileAnalysis {...props} httpService={commService} />}
-          />
           <Route render={(props) => <App {...props} httpService={commService} />} />
         </Switch>
       </Router>

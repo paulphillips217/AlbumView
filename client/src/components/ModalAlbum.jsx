@@ -2,16 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import {
-  Dimmer,
-  Loader,
-  Grid,
-  Image,
-  Header,
-  Modal,
-  Icon,
-  Segment,
-} from 'semantic-ui-react';
+import { Dimmer, Loader, Grid, Image, Header, Modal, Icon } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import { getImage } from '../util/utilities';
 import AlbumGridColumn from './AlbumGridColumn';
@@ -227,7 +218,7 @@ const ModalAlbum = ({
 
   const handleArtistClick = () => {
     if (albumData.artists) {
-      setGridData({ totalCount: 0, data: [] });
+      setGridData({ spotifyCount: 0, data: [] });
       resetListData();
       setRelatedTo('');
       setLoading(true);
@@ -266,21 +257,20 @@ const ModalAlbum = ({
     </Grid>
   );
 
+  const modalTrigger = () =>
+    image ? (
+      <Image
+        size={useMiniImage ? 'mini' : ''}
+        style={{ cursor: 'pointer' }}
+        src={image}
+        onClick={() => handleModalOpen()}
+      />
+    ) : (
+      <Icon link name="file image outline" size="huge" onClick={() => handleModalOpen()} />
+    );
+
   return (
-    <Modal
-      trigger={
-        <div>
-          <Image
-            size={useMiniImage ? 'mini' : ''}
-            style={{ cursor: 'pointer' }}
-            src={image}
-            onClick={() => handleModalOpen()}
-          />
-        </div>
-      }
-      open={modalOpen}
-      onClose={() => setModalOpen(false)}
-    >
+    <Modal trigger={modalTrigger()} open={modalOpen} onClose={() => setModalOpen(false)}>
       <Dimmer.Dimmable as={Fragment} dimmed={showLoader}>
         <Dimmer active={showLoader} inverted>
           <Loader>Loading</Loader>
@@ -332,7 +322,8 @@ ModalAlbum.propTypes = {
   setGridData: PropTypes.func.isRequired,
   resetListData: PropTypes.func.isRequired,
   savedAlbumData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
+    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,
@@ -340,6 +331,8 @@ ModalAlbum.propTypes = {
         artist: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
       })
     ),
   }).isRequired,

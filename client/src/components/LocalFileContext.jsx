@@ -38,7 +38,7 @@ const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
         theAlbumArray.push({
           artist,
           albumName,
-          index: index + 1,
+          localId: index + 1,
           tracks: [key],
         });
       }
@@ -72,6 +72,7 @@ const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
       </div>
       <div className="row content">
         <FileAnalysis
+          albumFileIdProp='localId'
           savedAlbumData={savedAlbumData.data}
           folderPicker={LocalFolderPicker}
           readAlbumArray={readAlbumArray}
@@ -87,7 +88,8 @@ const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
 
 LocalFileContext.propTypes = {
   savedAlbumData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
+    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,
@@ -95,6 +97,8 @@ LocalFileContext.propTypes = {
         artist: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
       })
     ),
   }).isRequired,

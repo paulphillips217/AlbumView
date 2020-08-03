@@ -23,8 +23,8 @@ class HttpService {
       try {
         const oldSpotifyAccessToken = getSpotifyAccessToken(this.store.getState());
         const newSpotifyAccessToken = response.headers['x-spotify-access-token'];
-        if (oldSpotifyAccessToken !== newSpotifyAccessToken) {
-          // console.log('capturing headers from response');
+        if (newSpotifyAccessToken && newSpotifyAccessToken !== 'undefined' && oldSpotifyAccessToken !== newSpotifyAccessToken) {
+          console.log('capturing headers from response');
           this.store.dispatch(setSpotifyAccessToken(newSpotifyAccessToken));
           const spotifyRefreshToken = response.headers['x-spotify-refresh-token'];
           this.store.dispatch(setSpotifyRefreshToken(spotifyRefreshToken));
@@ -32,10 +32,9 @@ class HttpService {
           this.store.dispatch(setSpotifyTokenExpiration(spotifyTokenExpiration));
         }
       } catch (err) {
-        // console.error(err);
+        console.error(err);
       }
 
-      // console.debug('Request Successful!');
       return response.data;
     };
 
@@ -43,14 +42,12 @@ class HttpService {
       console.error('Request Failed:', error.config);
 
       if (error.response) {
-        // Request was made but server responded with something
-        // other than 2xx
+        // Request was made but server responded with something other than 2xx
         console.error('Status:', error.response.status);
         console.error('Data:', error.response.data);
         console.error('Headers:', error.response.headers);
       } else {
-        // Something else happened while setting up the request
-        // triggered the error
+        // Something else happened while setting up the request triggered the error
         console.error('Error Message:', error.message);
       }
 

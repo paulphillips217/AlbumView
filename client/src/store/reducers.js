@@ -23,10 +23,6 @@ import {
 } from './types';
 
 const initialState = {
-  isSpotifyAuthenticated:
-    localStorage.getItem('accessToken') &&
-    localStorage.getItem('accessToken').length > 0 &&
-    localStorage.getItem('accessToken') !== 'undefined',
   spotifyAccessToken: localStorage.getItem('spotifyAccessToken') || '',
   spotifyRefreshToken: localStorage.getItem('spotifyRefreshToken') || '',
   spotifyTokenExpiration: moment(localStorage.getItem('spotifyTokenExpiration')).isValid()
@@ -35,10 +31,10 @@ const initialState = {
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
-  savedAlbumData: { totalCount: 0, data: [] },
-  contextGridData: { totalCount: 0, data: [] },
+  savedAlbumData: { spotifyCount: 0, offset: 0, data: [] },
+  contextGridData: { spotifyCount: 0, data: [] },
   contextListData: {
-    totalCount: -1,
+    spotifyCount: -1,
     artistTotal: -1,
     albumTotal: -1,
     trackTotal: -1,
@@ -62,7 +58,6 @@ export function albumViewReducer(state = initialState, action) {
       localStorage.setItem('spotifyAccessToken', action.payload);
       return Object.assign({}, state, {
         spotifyAccessToken: action.payload,
-        isSpotifyAuthenticated: !!action.payload,
       });
     case SPOTIFY_REFRESH_TOKEN:
       console.log('setting spotify refresh token', action.payload);

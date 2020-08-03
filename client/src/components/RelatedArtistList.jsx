@@ -45,7 +45,7 @@ const RelatedArtistList = ({
 
   const handleClick = (id) => {
     console.log('handle click id', id);
-    setGridData({ totalCount: 0, data: [] });
+    setGridData({ spotifyCount: 0, data: [] });
     setItem(id);
     setLoading(true);
   };

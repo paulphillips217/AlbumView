@@ -9,7 +9,6 @@ import ContextGrid from './ContextGrid';
 import AlbumViewHeader from './AlbumViewHeader';
 import { SPOTIFY_PAGE_LIMIT } from '../store/types';
 import { getImage } from '../util/utilities';
-import { sortGridData } from '../util/sortUtils';
 import {
   getSavedAlbumData,
   getContextSortType,
@@ -19,6 +18,7 @@ import {
 import { setSavedAlbumData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
+import { blendAlbumLists } from './FileAnalysis';
 
 const AlbumContext = ({
   isSpotifyAuthenticated,
@@ -33,12 +33,19 @@ const AlbumContext = ({
 
   useEffect(() => {
     const getGridData = () => {
-      if (!dataLoading || !isSpotifyAuthenticated) {
+      if (
+        !dataLoading ||
+        !isSpotifyAuthenticated ||
+        (savedAlbumData.offset >= savedAlbumData.spotifyCount &&
+          savedAlbumData.spotifyCount > 0)
+      ) {
+        if (dataLoading) {
+          setLoading(false);
+        }
         return;
       }
-      const offset = savedAlbumData.data.length;
       httpService
-        .get(`/spotify/album-list/${offset}/${SPOTIFY_PAGE_LIMIT}`)
+        .get(`/spotify/album-list/${savedAlbumData.offset}/${SPOTIFY_PAGE_LIMIT}`)
         .then((rawData) => {
           // console.log('saved album data', rawData, offset);
           const data = rawData.items.map((e) => ({
@@ -47,12 +54,18 @@ const AlbumContext = ({
             artist: e.album.artists[0] ? e.album.artists[0].name : 'unknown artist',
             image: getImage(e.album.images),
             releaseDate: e.album.release_date,
+            localId: 0,
+            oneDriveId: '',
           }));
-          const newData = savedAlbumData.data.concat(data);
-          setAlbumData({
-            totalCount: rawData.total,
-            data: sortGridData(newData, contextSortType),
-          });
+          blendAlbumLists(
+            data,
+            'albumId',
+            savedAlbumData,
+            rawData.total,
+            savedAlbumData.offset + SPOTIFY_PAGE_LIMIT,
+            contextSortType,
+            setAlbumData
+          );
           if (!rawData.next) {
             setLoading(false);
           }
@@ -81,8 +94,8 @@ const AlbumContext = ({
         <AlbumViewHeader
           contextData={{
             ...contextData,
-            totalCount: savedAlbumData.totalCount,
-            loadingCount: savedAlbumData.data.length,
+            spotifyCount: savedAlbumData.spotifyCount,
+            loadingCount: savedAlbumData.offset,
           }}
           httpService={httpService}
         />
@@ -102,7 +115,8 @@ AlbumContext.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
+    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,
@@ -110,6 +124,8 @@ AlbumContext.propTypes = {
         artist: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
       })
     ),
   }).isRequired,

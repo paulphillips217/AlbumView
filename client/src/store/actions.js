@@ -67,7 +67,7 @@ export const setContextListData = (data) => ({
 export const resetContextListData = () => ({
   type: CONTEXT_LIST_DATA,
   payload: {
-    totalCount: -1,
+    spotifyCount: -1,
     artistTotal: -1,
     albumTotal: -1,
     trackTotal: -1,
@@ -119,16 +119,25 @@ export const setOneDriveLoggedIn = (isLoggedIn) => ({
 export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) => {
   console.log('addSavedAlbum action: ', album);
   const newData = savedAlbumData.data.concat(album);
-  dispatch(setSavedAlbumData({
-    totalCount: newData.length,
-    data: sortGridData(newData, contextSortType),
-  }));
-}
+  dispatch(
+    setSavedAlbumData({
+      spotifyCount: savedAlbumData.spotifyCount + 1,
+      offset: savedAlbumData.offset + 1,
+      data: sortGridData(newData, contextSortType),
+    })
+  );
+};
 
 export const removeSavedAlbum = (albumId, savedAlbumData, dispatch) => {
-  const newData = savedAlbumData.data.filter(item => item.albumId !== albumId);
-  dispatch(setSavedAlbumData({
-    totalCount: newData.length,
-    data: newData
-  }));
-}
+  if (savedAlbumData.data.some((item) => item.albumId === albumId)) {
+    const newData = savedAlbumData.data.filter((item) => item.albumId !== albumId);
+    // for simplification we assume it's only one we're removing
+    dispatch(
+      setSavedAlbumData({
+        spotifyCount: savedAlbumData.spotifyCount - 1,
+        offset: savedAlbumData.offset - 1,
+        data: newData,
+      })
+    );
+  }
+};

@@ -43,7 +43,7 @@ const PlaylistContext = ({
     name: 'Please Select a Playlist',
     description: '',
   });
-  const [loadingState, setLoadingState] = useState({ totalCount: 0, loadingCount: 0 });
+  const [loadingState, setLoadingState] = useState({ spotifyCount: 0, loadingCount: 0 });
 
   // load grid
   useEffect(() => {
@@ -68,14 +68,14 @@ const PlaylistContext = ({
             }));
             const newData = contextGridData.data.concat(data);
             setGridData({
-              totalCount: rawData.total,
+              spotifyCount: rawData.total,
               data: sortGridData(newData, contextSortType),
             });
             if (!rawData.next) {
               setLoading(false);
             }
             setLoadingState({
-              totalCount: contextGridData.totalCount,
+              spotifyCount: contextGridData.spotifyCount,
               loadingCount: contextGridData.data.length,
             });
           })
@@ -101,7 +101,7 @@ const PlaylistContext = ({
         return;
       }
       const offset = contextListData.data.length;
-      if (contextListData.totalCount < 0 || offset < contextListData.totalCount) {
+      if (contextListData.spotifyCount < 0 || offset < contextListData.spotifyCount) {
         httpService
           .get(`/spotify/playlist-list/${offset}/${SPOTIFY_PAGE_LIMIT}`)
           .then((data) => {
@@ -114,14 +114,14 @@ const PlaylistContext = ({
             }));
             const newData = contextListData.data.concat(parsedData);
             setListData({
-              totalCount: data.total,
+              spotifyCount: data.total,
               data: sortGridData(newData, playlistSortType),
             });
             if (!data.next) {
               setLoading(false);
             }
             setLoadingState({
-              totalCount: Math.max(contextListData.totalCount, 0),
+              spotifyCount: Math.max(contextListData.spotifyCount, 0),
               loadingCount: contextListData.data.length,
             });
           })
@@ -193,7 +193,7 @@ PlaylistContext.propTypes = {
   contextItem: PropTypes.string.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         trackName: PropTypes.string,
@@ -207,7 +207,7 @@ PlaylistContext.propTypes = {
   }).isRequired,
   contextSortType: PropTypes.string.isRequired,
   contextListData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,

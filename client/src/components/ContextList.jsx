@@ -25,7 +25,7 @@ const ContextList = ({
 
   const handleClick = (id) => {
     console.log('handle click id', id);
-    setGridData({ totalCount: 0, data: [] });
+    setGridData({ spotifyCount: 0, data: [] });
     if (contextType === ContextType.RelatedArtists) {
       setRelatedTo(id);
       setItem('');
@@ -80,7 +80,7 @@ const ContextList = ({
 ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
   contextListData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,

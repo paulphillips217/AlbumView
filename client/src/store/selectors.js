@@ -1,7 +1,9 @@
 import { ContextType } from './types';
 
-export const getSpotifyAuthenticationState = (store) =>
-  store.albumView.isSpotifyAuthenticated;
+export const getSpotifyAuthenticationState = (store) => {
+  const authToken = getSpotifyAccessToken(store);
+  return authToken && authToken !== 'undefined';
+}
 export const getSpotifyAccessToken = (store) =>
   store.albumView.spotifyAccessToken || localStorage.getItem('spotifyAccessToken') || '';
 export const getSpotifyRefreshToken = (store) =>
@@ -33,6 +35,7 @@ export const getContextSortType = (store) => {
     case ContextType.Artists:
     case ContextType.RelatedArtists:
     case ContextType.LocalFiles:
+    case ContextType.OneDriveFiles:
       return getAlbumSort(store);
     case ContextType.Tracks:
       return getSavedTrackSort(store);

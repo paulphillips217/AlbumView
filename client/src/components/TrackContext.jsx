@@ -53,7 +53,7 @@ const TrackContext = ({
           }));
           const newData = contextGridData.data.concat(data);
           setGridData({
-            totalCount: rawData.total,
+            spotifyCount: rawData.total,
             data: sortGridData(newData, contextSortType),
           });
           if (!rawData.next) {
@@ -80,7 +80,7 @@ const TrackContext = ({
           contextData={{
             name: 'Your Saved Tracks',
             description: '',
-            totalCount: contextGridData.totalCount,
+            spotifyCount: contextGridData.spotifyCount,
             loadingCount: contextGridData.data.length,
           }}
           httpService={httpService}
@@ -101,7 +101,7 @@ TrackContext.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   contextGridData: PropTypes.shape({
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

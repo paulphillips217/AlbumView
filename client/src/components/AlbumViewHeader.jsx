@@ -68,7 +68,7 @@ const AlbumViewHeader = ({
   ];
 
   const handleDropdownChange = (e, { value }) => {
-    setGridData({totalCount: 0, data: []});
+    setGridData({ spotifyCount: 0, offset: 0, data: [] });
     resetListData();
     setType(value);
     setItem('');
@@ -86,8 +86,8 @@ const AlbumViewHeader = ({
     return { __html: text };
   };
 
-  const loadingButtonText = contextData.totalCount
-    ? `Loading ${contextData.loadingCount} of ${contextData.totalCount}`
+  const loadingButtonText = contextData.spotifyCount
+    ? `Loading ${contextData.loadingCount} of ${contextData.spotifyCount}`
     : 'Loading';
 
   return (
@@ -146,7 +146,7 @@ AlbumViewHeader.propTypes = {
   contextData: PropTypes.shape({
     name: PropTypes.string,
     description: PropTypes.string,
-    totalCount: PropTypes.number,
+    spotifyCount: PropTypes.number,
     loadingCount: PropTypes.number,
   }).isRequired,
   dataLoading: PropTypes.bool.isRequired,
