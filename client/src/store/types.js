@@ -41,3 +41,9 @@ export const SortTypes = {
   PlaylistAuthor: 'PlaylistAuthor',
   PlaylistOrder: 'PlaylistOrder',
 };
+
+export const ModalDisplayTypes = {
+  Spotify: 'spotify',
+  Local: 'local',
+  OneDrive: 'oneDrive',
+};
