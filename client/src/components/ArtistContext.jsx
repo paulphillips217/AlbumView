@@ -217,6 +217,10 @@ ArtistContext.propTypes = {
   contextSortType: PropTypes.string.isRequired,
   contextListData: PropTypes.shape({
     spotifyCount: PropTypes.number,
+    offset: PropTypes.number,
+    artistTotal: PropTypes.number,
+    albumTotal: PropTypes.number,
+    trackTotal: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

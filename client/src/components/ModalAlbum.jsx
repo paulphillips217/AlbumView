@@ -16,10 +16,40 @@ import { ModalDisplayTypes } from '../store/types';
 import HttpService from '../util/httpUtils';
 import { getContextSortType, getSavedAlbumData } from '../store/selectors';
 import SpotifyModalDisplay from './SpotifyModalDisplay';
+import LocalModalDisplay from './LocalModalDisplay';
+import {
+  createLocalTracks,
+  createOneDriveTracks,
+  tearDownLocalTracks,
+  tearDownOneDriveTracks
+} from '../util/localFileUtils';
 
-const ModalAlbum = ({ albumId, image, useMiniImage, httpService }) => {
+const ModalAlbum = ({
+  albumId,
+  artistName,
+  albumName,
+  image,
+  localId,
+  oneDriveId,
+  useMiniImage,
+  savedAlbumData,
+  httpService,
+}) => {
+  const getInitialDisplayType = () => {
+    if (albumId) {
+      return ModalDisplayTypes.Spotify;
+    }
+    if (localId) {
+      return ModalDisplayTypes.Local;
+    }
+    if (oneDriveId) {
+      return ModalDisplayTypes.OneDrive;
+    }
+    return '';
+  }
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalDisplayType, setModalDisplayType] = useState(ModalDisplayTypes.Spotify);
+  const [modalDisplayType, setModalDisplayType] = useState(getInitialDisplayType());
 
   const modalTrigger = () =>
     image ? (
@@ -38,29 +68,66 @@ const ModalAlbum = ({ albumId, image, useMiniImage, httpService }) => {
       />
     );
 
+  const setUpLocalTracks = (albumFileId) => {
+    const album = savedAlbumData.data.find((item) => item.localId === albumFileId);
+    return createLocalTracks(album, httpService);
+  };
+
+  const setUpOneDriveTracks = (albumFileId) => {
+    const album = savedAlbumData.data.find((item) => item.oneDriveId === albumFileId);
+    return createOneDriveTracks(album, httpService);
+  };
+
   // render child component conditional on modalOpen so that the data is queried on initial render
   return (
     <Modal trigger={modalTrigger()} open={modalOpen} onClose={() => setModalOpen(false)}>
-      {modalOpen && modalDisplayType === ModalDisplayTypes.Spotify && (
+      {modalOpen && albumId && modalDisplayType === ModalDisplayTypes.Spotify && (
         <SpotifyModalDisplay
           albumId={albumId}
           setModalDisplayType={setModalDisplayType}
           httpService={httpService}
         />
       )}
-      {modalOpen && modalDisplayType === ModalDisplayTypes.Local && (
-        <div> Hello World, its Local</div>
+      {modalOpen && localId > 0 && modalDisplayType === ModalDisplayTypes.Local && (
+        <LocalModalDisplay
+          albumFileId={localId}
+          albumId={albumId}
+          localId={localId}
+          oneDriveId={oneDriveId}
+          artistName={artistName}
+          albumName={albumName}
+          tearDownTracks={tearDownLocalTracks}
+          setUpTracks={setUpLocalTracks}
+          setModalDisplayType={setModalDisplayType}
+          httpService={httpService}
+        />
       )}
-      {modalOpen && modalDisplayType === ModalDisplayTypes.OneDrive && (
-        <div> Hello Moon Child, its OneDrive</div>
+      {modalOpen && oneDriveId && modalDisplayType === ModalDisplayTypes.OneDrive && (
+        <LocalModalDisplay
+          albumFileId={oneDriveId}
+          albumId={albumId}
+          localId={localId}
+          oneDriveId={oneDriveId}
+          artistName={artistName}
+          albumName={albumName}
+          tearDownTracks={tearDownOneDriveTracks}
+          setUpTracks={setUpOneDriveTracks}
+          setModalDisplayType={setModalDisplayType}
+          httpService={httpService}
+        />
       )}
+      <div>Hello World</div>
     </Modal>
   );
 };
 
 ModalAlbum.propTypes = {
-  albumId: PropTypes.string.isRequired,
+  albumId: PropTypes.string,
+  artistName: PropTypes.string.isRequired,
+  albumName: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
+  localId: PropTypes.number,
+  oneDriveId: PropTypes.string,
   useMiniImage: PropTypes.bool,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
@@ -81,6 +148,9 @@ ModalAlbum.propTypes = {
 };
 
 ModalAlbum.defaultProps = {
+  albumId: null,
+  localId: 0,
+  oneDriveId: '',
   useMiniImage: false,
 };
 

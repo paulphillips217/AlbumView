@@ -56,7 +56,11 @@ const ContextList = ({
         {item.author && (
           <List.Description>
             <div style={theme}>
-              by: {item.author} <br />
+              by: 
+              {' '}
+              {item.author} 
+              {' '}
+              <br />
             </div>
           </List.Description>
         )}

@@ -6,7 +6,7 @@ import HttpService from '../util/httpUtils';
 import LocalModalDisplay from './LocalModalDisplay';
 
 const ModalFileAlbum = ({
-  albumIndex,
+  albumFileId,
   artistName,
   albumName,
   setUpTracks,
@@ -29,7 +29,7 @@ const ModalFileAlbum = ({
     >
       {modalOpen && (
         <LocalModalDisplay
-          albumIndex={albumIndex}
+          albumFileId={albumFileId}
           artistName={artistName}
           albumName={albumName}
           setUpTracks={setUpTracks}
@@ -42,7 +42,7 @@ const ModalFileAlbum = ({
 };
 
 ModalFileAlbum.propTypes = {
-  albumIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  albumFileId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   artistName: PropTypes.string.isRequired,
   albumName: PropTypes.string.isRequired,
   setUpTracks: PropTypes.func.isRequired,

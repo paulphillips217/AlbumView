@@ -18,7 +18,7 @@ import {
 import { setSavedAlbumData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
-import { blendAlbumLists } from './FileAnalysis';
+import { blendAlbumLists } from '../util/localFileUtils';
 
 const AlbumContext = ({
   isSpotifyAuthenticated,

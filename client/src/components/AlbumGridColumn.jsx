@@ -38,16 +38,14 @@ const AlbumGridColumn = ({
                   item.id,
                   trackIndexOffset + item.track_number - 1,
                   trackHearts[trackIndexOffset + item.track_number - 1]
-                )
-              }
+                )}
             />
             <Icon
               name="play"
               size="small"
               color={getTrackColor(item)}
               onClick={() =>
-                handleTrackPlayClick(trackIndexOffset + item.track_number - 1)
-              }
+                handleTrackPlayClick(trackIndexOffset + item.track_number - 1)}
             />
           </Grid.Column>
           <Grid.Column

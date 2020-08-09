@@ -66,7 +66,11 @@ const RelatedArtistList = ({
         {item.author && (
           <List.Description>
             <div>
-              by: {item.author} <br />
+              by: 
+              {' '}
+              {item.author} 
+              {' '}
+              <br />
             </div>
           </List.Description>
         )}

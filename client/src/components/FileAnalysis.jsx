@@ -11,61 +11,12 @@ import {
 } from '../store/selectors';
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
-import { cleanTitle, sortGridData } from '../util/sortUtils';
+import { sortGridData } from '../util/sortUtils';
 import ModalAlbum from './ModalAlbum';
 import ModalFileAlbum from './ModalFileAlbum';
 import HttpService from '../util/httpUtils';
 import { setSavedAlbumData } from '../store/actions';
-
-export const blendAlbumLists = (
-  mergeList,
-  mergeListIdProp,
-  savedAlbumData,
-  spotifyCount,
-  offset,
-  contextSortType,
-  setAlbumData
-) => {
-  // start with the spotify list and add any file albums to it
-  const blendedList = savedAlbumData.data.slice();
-
-  if (mergeList && mergeList.length > 0) {
-    // loop through the file system albums
-    mergeList.forEach((item) => {
-      // match on artist & album name, but don't match if there are different valid id's
-      // because there are multiple spotify album versions
-      const matchIndex = blendedList.findIndex(
-        (a) =>
-          cleanTitle(a.artist) === cleanTitle(item.artist) &&
-          cleanTitle(a.albumName) === cleanTitle(item.albumName) &&
-          (a[mergeListIdProp] === item[mergeListIdProp] ||
-            !a[mergeListIdProp] ||
-            !item[mergeListIdProp])
-      );
-      if (matchIndex >= 0) {
-        // the album was found in the file system, so it exists in both places
-        blendedList[matchIndex][mergeListIdProp] = item[mergeListIdProp];
-      } else {
-        // the album isn't in the spotify list, so add it
-        const album = {
-          [mergeListIdProp]: item[mergeListIdProp],
-          albumName: item.albumName,
-          artist: item.artist,
-          image: item.image ? item.image : '',
-          releaseDate: item.releaseDate ? item.releaseDate : '',
-        };
-        blendedList.push(album);
-        // console.log('blendAlbumLists added album: ', album);
-      }
-    });
-  }
-  console.log('blended album list: ', blendedList);
-  setAlbumData({
-    spotifyCount,
-    offset,
-    data: sortGridData(blendedList, contextSortType),
-  });
-};
+import { blendAlbumLists } from '../util/localFileUtils';
 
 const FileAnalysis = ({
   isSpotifyAuthenticated,
@@ -132,9 +83,9 @@ const FileAnalysis = ({
       .catch((error) => console.log(error));
   };
 
-  const setUpTracks = (index) => {
-    const album = albums.find((a) => index === a[albumFileIdProp]);
-    return createTracks(album, fileData);
+  const setUpTracks = (albumFileId) => {
+    const album = albums.find((a) => albumFileId === a[albumFileIdProp]);
+    return createTracks(album, httpService);
   };
 
   const gridItemSearchButton = (item) => {
@@ -152,6 +103,8 @@ const FileAnalysis = ({
           <div>
             <ModalAlbum
               albumId={result.albumId}
+              artistName={result.artist}
+              albumName={result.albumName}
               image={result.image}
               useMiniImage
               httpService={httpService}
@@ -182,7 +135,7 @@ const FileAnalysis = ({
       <Grid.Column>
         {item[albumFileIdProp] ? (
           <ModalFileAlbum
-            albumIndex={item[albumFileIdProp]}
+            albumFileId={item[albumFileIdProp]}
             artistName={item.artist}
             albumName={item.albumName}
             setUpTracks={setUpTracks}

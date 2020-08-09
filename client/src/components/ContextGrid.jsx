@@ -21,7 +21,15 @@ const ContextGrid = ({
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
       <div style={theme}>
-        <ModalAlbum albumId={item.albumId} image={item.image} httpService={httpService} />
+        <ModalAlbum
+          albumId={item.albumId}
+          artistName={item.artist}
+          albumName={item.albumName}
+          image={item.image}
+          localId={item.localId}
+          oneDriveId={item.oneDriveId}
+          httpService={httpService}
+        />
         <div style={theme}>
           {!!item.artist && <div>{item.artist}</div>}
           {item.trackName || item.albumName}

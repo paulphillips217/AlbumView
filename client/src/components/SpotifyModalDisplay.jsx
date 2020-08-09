@@ -128,6 +128,13 @@ const SpotifyModalDisplay = ({
     );
   }
 
+  let typeCount = albumId ? 1 : 0;
+  const albumObject = savedAlbumData.data.find((item) => item.albumId === albumId);
+  if (albumObject) {
+    typeCount += albumObject.localId ? 1 : 0;
+    typeCount += albumObject.oneDriveId ? 1 : 0;
+  }
+
   const getTrackIndexOffset = (discNumber) => {
     return discTracks.reduce((result, disc, index) => {
       if (index < discNumber) {
@@ -311,23 +318,29 @@ const SpotifyModalDisplay = ({
               </Header>
             </Grid.Column>
             <Grid.Column floated="right" style={{ padding: '0' }}>
-              <Menu compact floated="right">
-                <Menu.Item name="Spotify" active>
-                  Spotify
-                </Menu.Item>
-                <Menu.Item
-                  name="Local"
-                  onClick={() => setModalDisplayType(ModalDisplayTypes.Local)}
-                >
-                  Local
-                </Menu.Item>
-                <Menu.Item
-                  name="OneDrive"
-                  onClick={() => setModalDisplayType(ModalDisplayTypes.OneDrive)}
-                >
-                  OneDrive
-                </Menu.Item>
-              </Menu>
+              {typeCount > 1 && (
+                <Menu compact floated="right">
+                  <Menu.Item name="Spotify" active>
+                    Spotify
+                  </Menu.Item>
+                  {albumObject && albumObject.localId && (
+                    <Menu.Item
+                      name="Local"
+                      onClick={() => setModalDisplayType(ModalDisplayTypes.Local)}
+                    >
+                      Local
+                    </Menu.Item>
+                  )}
+                  {albumObject && albumObject.oneDriveId && (
+                    <Menu.Item
+                      name="OneDrive"
+                      onClick={() => setModalDisplayType(ModalDisplayTypes.OneDrive)}
+                    >
+                      OneDrive
+                    </Menu.Item>
+                  )}
+                </Menu>
+              )}
             </Grid.Column>
           </Grid>
           {discTracks &&

@@ -11,8 +11,8 @@ import { setDataLoading } from '../store/actions';
 import OneDriveLogin from './OneDriveLogin';
 import OneDriveFolderPicker from './OneDriveFolderPicker';
 import FileAnalysis from './FileAnalysis';
-import { trimTrackFileName } from '../util/utilities';
 import HttpService from '../util/httpUtils';
+import { createOneDriveTracks, tearDownOneDriveTracks } from '../util/localFileUtils';
 
 const OneDriveFileContext = ({
   isOneDriveLoggedIn,
@@ -61,21 +61,6 @@ const OneDriveFileContext = ({
     return theAlbumArray;
   };
 
-  const createTracks = async (album) => {
-    const trackList = await httpService.get(`/one-drive/children/${album.oneDriveId}`);
-    console.log('createTracks', trackList);
-    return trackList
-      .filter((t) => t.file.mimeType.includes('audio'))
-      .map((t) => ({
-        name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
-        url: t['@microsoft.graph.downloadUrl'],
-      }));
-  };
-
-  const tearDownTracks = () => {
-    console.log('tearDownTracks');
-  };
-
   return (
     <div className="box" style={theme}>
       <div className="row header" style={{ paddingBottom: '5px' }}>
@@ -88,8 +73,8 @@ const OneDriveFileContext = ({
             savedAlbumData={savedAlbumData.data}
             folderPicker={OneDriveFolderPicker}
             readAlbumArray={readAlbumArray}
-            createTracks={createTracks}
-            tearDownTracks={tearDownTracks}
+            createTracks={createOneDriveTracks}
+            tearDownTracks={tearDownOneDriveTracks}
             httpService={httpService}
           />
         )}

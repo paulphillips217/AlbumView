@@ -10,8 +10,8 @@ import { getSavedAlbumData } from '../store/selectors';
 import { setDataLoading } from '../store/actions';
 import FileAnalysis from './FileAnalysis';
 import LocalFolderPicker from './LocalFolderPicker';
-import { trimTrackFileName } from '../util/utilities';
 import HttpService from '../util/httpUtils';
+import { createLocalTracks, tearDownLocalTracks } from '../util/localFileUtils';
 
 const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
   const theme = useTheme();
@@ -33,31 +33,18 @@ const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
         (a) => a.artist && a.artist === artist && a.albumName && a.albumName === albumName
       );
       if (fileIndex >= 0) {
-        theAlbumArray[fileIndex].tracks.push(key);
+        theAlbumArray[fileIndex].tracks.push(item);
       } else {
         theAlbumArray.push({
           artist,
           albumName,
           localId: index + 1,
-          tracks: [key],
+          tracks: [item],
         });
       }
     });
     console.log('read local albums: ', theAlbumArray);
     return theAlbumArray;
-  };
-
-  const createTracks = (album, fileData) => {
-    console.log('createTracks');
-    return album.tracks.map((t) => ({
-      name: trimTrackFileName(fileData[t].name),
-      url: URL.createObjectURL(fileData[t]),
-    }));
-  };
-
-  const tearDownTracks = (albumTrackList) => {
-    console.log('tearDownTracks');
-    albumTrackList.map((t) => URL.revokeObjectURL(t.url));
   };
 
   const contextData = {
@@ -76,8 +63,8 @@ const LocalFileContext = ({ savedAlbumData, setLoading, httpService }) => {
           savedAlbumData={savedAlbumData.data}
           folderPicker={LocalFolderPicker}
           readAlbumArray={readAlbumArray}
-          createTracks={createTracks}
-          tearDownTracks={tearDownTracks}
+          createTracks={createLocalTracks}
+          tearDownTracks={tearDownLocalTracks}
           httpService={httpService}
         />
       </div>
