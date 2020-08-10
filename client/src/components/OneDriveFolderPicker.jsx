@@ -4,14 +4,14 @@ import { useTheme } from 'emotion-theming';
 import { Button, Header, List } from 'semantic-ui-react';
 import HttpService from '../util/httpUtils';
 
-const OneDriveFolderPicker = ({ setFileData, httpService }) => {
+const OneDriveFolderPicker = ({ setLocalFileData, httpService }) => {
   const theme = useTheme();
   const [folders, setFolders] = useState([]);
   const [musicFolder, setMusicFolder] = useState('root');
 
   const handleClickDone = () => {
     console.log('handleClickDone', musicFolder);
-    setFileData(musicFolder);
+    setLocalFileData(musicFolder);
   };
 
   const handleClickFolder = (id) => {
@@ -93,7 +93,7 @@ const OneDriveFolderPicker = ({ setFileData, httpService }) => {
 };
 
 OneDriveFolderPicker.propTypes = {
-  setFileData: PropTypes.func.isRequired,
+  setLocalFileData: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 

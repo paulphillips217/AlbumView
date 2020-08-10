@@ -19,7 +19,7 @@ import {
   SAVED_TRACK_SORT,
   PLAYLIST_SORT,
   SAVED_ALBUM_DATA,
-  ONE_DRIVE_LOGGED_IN,
+  ONE_DRIVE_LOGGED_IN, LOCAL_FILE_DATA, ONE_DRIVE_ROOT
 } from './types';
 
 const initialState = {
@@ -49,6 +49,8 @@ const initialState = {
   playlistTrackSort: localStorage.getItem('playlistTrackSort') || SortTypes.PlaylistOrder,
   savedTrackSort: localStorage.getItem('savedTrackSort') || SortTypes.ArtistThenTrackName,
   oneDriveLoggedIn: false,
+  localFileData: [],
+  oneDriveRoot: '',
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -147,6 +149,16 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting oneDrive logged in', action.payload);
       return Object.assign({}, state, {
         oneDriveLoggedIn: action.payload,
+      });
+    case LOCAL_FILE_DATA:
+      console.log('setting localFileData', action.payload);
+      return Object.assign({}, state, {
+        localFileData: action.payload,
+      });
+    case ONE_DRIVE_ROOT:
+      console.log('setting oneDriveRoot', action.payload);
+      return Object.assign({}, state, {
+        oneDriveRoot: action.payload,
       });
     default:
       return state;

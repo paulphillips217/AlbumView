@@ -116,7 +116,6 @@ const ModalAlbum = ({
           httpService={httpService}
         />
       )}
-      <div>Hello World</div>
     </Modal>
   );
 };

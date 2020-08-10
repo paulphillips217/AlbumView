@@ -15,7 +15,7 @@ import {
   PLAYLIST_TRACK_SORT,
   SAVED_TRACK_SORT,
   SAVED_ALBUM_DATA,
-  ONE_DRIVE_LOGGED_IN,
+  ONE_DRIVE_LOGGED_IN, LOCAL_FILE_DATA, ONE_DRIVE_ROOT
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
@@ -114,6 +114,16 @@ export const setSavedTrackSort = (sortOrder) => ({
 export const setOneDriveLoggedIn = (isLoggedIn) => ({
   type: ONE_DRIVE_LOGGED_IN,
   payload: isLoggedIn,
+});
+
+export const setLocalFileData = (data) => ({
+  type: LOCAL_FILE_DATA,
+  payload: data,
+});
+
+export const setOneDriveRoot = (root) => ({
+  type: ONE_DRIVE_ROOT,
+  payload: root,
 });
 
 export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) => {

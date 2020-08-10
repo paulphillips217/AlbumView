@@ -3,7 +3,7 @@ import { cleanTitle, sortGridData } from './sortUtils';
 
 export const createLocalTracks = (album) => {
   console.log('createLocalTracks');
-  return album.tracks.map((track) => ({
+  return album.localFileObjects.map((track) => ({
     name: trimTrackFileName(track.name),
     url: URL.createObjectURL(track),
   }));
@@ -80,7 +80,7 @@ export const blendAlbumLists = (
       }
     });
   }
-  console.log('blended album list: ', blendedList);
+  // console.log('blended album list: ', blendedList);
   setAlbumData({
     spotifyCount,
     offset,

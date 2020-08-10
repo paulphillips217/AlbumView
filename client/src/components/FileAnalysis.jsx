@@ -24,23 +24,22 @@ const FileAnalysis = ({
   savedAlbumData,
   contextSortType,
   folderPicker,
+  localFileData,
   readAlbumArray,
   createTracks,
   tearDownTracks,
   setAlbumData,
+  setLocalFileData,
   httpService,
 }) => {
   const theme = useTheme();
-  const [fileData, setFileData] = useState([]);
-  const [albums, setAlbums] = useState([]);
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
 
   const handleRead = async () => {
-    if (fileData && fileData.length > 0) {
-      const theAlbumArray = await readAlbumArray(fileData);
+    if (localFileData && localFileData.length > 0) {
+      const theAlbumArray = await readAlbumArray(localFileData);
       console.log('handleRead got theAlbumArray', theAlbumArray);
-      setAlbums(theAlbumArray);
       blendAlbumLists(
         theAlbumArray,
         albumFileIdProp,
@@ -84,7 +83,9 @@ const FileAnalysis = ({
   };
 
   const setUpTracks = (albumFileId) => {
-    const album = albums.find((a) => albumFileId === a[albumFileIdProp]);
+    const album = savedAlbumData.data.find(
+      (item) => item[albumFileIdProp] === albumFileId
+    );
     return createTracks(album, httpService);
   };
 
@@ -154,20 +155,24 @@ const FileAnalysis = ({
     </Grid.Row>
   );
 
+  const anyLocalAlbums = savedAlbumData.data.some((album) => !!album[albumFileIdProp]);
+
+  console.log('localFileData in FileAnalysis is: ', localFileData);
+
   return (
     <div style={{ ...theme, paddingLeft: '20px' }}>
-      {!fileData.length &&
-        !albums.length &&
-        React.createElement(folderPicker, { setFileData, httpService }, null)}
-      {fileData.length > 0 && !albums.length && (
+      {!localFileData.length &&
+        !anyLocalAlbums &&
+        React.createElement(folderPicker, { setLocalFileData, httpService }, null)}
+      {localFileData.length > 0 && !anyLocalAlbums && (
         <Button onClick={handleRead}>Read Files</Button>
       )}
-      {albums.length > 0 && (
+      {anyLocalAlbums && (
         <Button onClick={() => setHideMatches(!hideMatches)}>
           {hideMatches ? 'Show Matches' : 'Hide Matches'}
         </Button>
       )}
-      {albums.length > 0 && savedAlbumData.data.length > 0 && (
+      {anyLocalAlbums && savedAlbumData.data.length > 0 && (
         <Grid celled centered style={{ width: '80%' }}>
           <Grid.Row columns={2} style={theme}>
             <Grid.Column>
@@ -205,11 +210,13 @@ FileAnalysis.propTypes = {
     ),
   }).isRequired,
   folderPicker: PropTypes.elementType.isRequired,
+  localFileData: PropTypes.any.isRequired,
   contextSortType: PropTypes.string.isRequired,
   readAlbumArray: PropTypes.func.isRequired,
   createTracks: PropTypes.func.isRequired,
   tearDownTracks: PropTypes.func.isRequired,
   setAlbumData: PropTypes.func.isRequired,
+  setLocalFileData: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 

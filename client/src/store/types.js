@@ -16,6 +16,8 @@ export const PLAYLIST_SORT = 'PLAYLIST_SORT';
 export const PLAYLIST_TRACK_SORT = 'PLAYLIST_TRACK_SORT';
 export const SAVED_TRACK_SORT = 'SAVED_TRACK_SORT';
 export const ONE_DRIVE_LOGGED_IN = 'ONE_DRIVE_LOGGED_IN';
+export const LOCAL_FILE_DATA = 'LOCAL_FILE_DATA';
+export const ONE_DRIVE_ROOT = 'ONE_DRIVE_ROOT';
 
 export const ContextType = {
   Playlists: 'playlists',

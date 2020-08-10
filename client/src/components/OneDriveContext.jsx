@@ -6,8 +6,8 @@ import '../styles/App.css';
 import '../styles/splitPane.css';
 import '../styles/flex-height.css';
 import AlbumViewHeader from './AlbumViewHeader';
-import { getOneDriveLoggedIn, getSavedAlbumData } from '../store/selectors';
-import { setDataLoading } from '../store/actions';
+import { getOneDriveLoggedIn, getOneDriveRoot, getSavedAlbumData } from '../store/selectors';
+import { setDataLoading, setOneDriveRoot } from '../store/actions';
 import OneDriveLogin from './OneDriveLogin';
 import OneDriveFolderPicker from './OneDriveFolderPicker';
 import FileAnalysis from './FileAnalysis';
@@ -17,7 +17,9 @@ import { createOneDriveTracks, tearDownOneDriveTracks } from '../util/localFileU
 const OneDriveFileContext = ({
   isOneDriveLoggedIn,
   savedAlbumData,
+  localFileData,
   setLoading,
+  setFileData,
   httpService,
 }) => {
   const theme = useTheme();
@@ -72,9 +74,11 @@ const OneDriveFileContext = ({
             albumFileIdProp='oneDriveId'
             savedAlbumData={savedAlbumData.data}
             folderPicker={OneDriveFolderPicker}
+            localFileData={localFileData}
             readAlbumArray={readAlbumArray}
             createTracks={createOneDriveTracks}
             tearDownTracks={tearDownOneDriveTracks}
+            setLocalFileData={setFileData}
             httpService={httpService}
           />
         )}
@@ -102,17 +106,21 @@ OneDriveFileContext.propTypes = {
       })
     ),
   }).isRequired,
+  localFileData: PropTypes.string.isRequired,
   setLoading: PropTypes.func.isRequired,
+  setFileData: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
   isOneDriveLoggedIn: getOneDriveLoggedIn(state),
   savedAlbumData: getSavedAlbumData(state),
+  localFileData: getOneDriveRoot(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setFileData: (data) => dispatch(setOneDriveRoot(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(OneDriveFileContext);
