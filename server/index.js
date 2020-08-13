@@ -28,9 +28,10 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: !isDev,
 });
+const db = require("./data/db.js"); // importing the db config
+
 
 // Priority serve any static files.
-
 if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/public')));
 } else {
@@ -151,6 +152,11 @@ app.get('/db-test', async (req, res) => {
     console.error(err);
     res.send('Error ' + err);
   }
+});
+
+app.get("/todo", async (req, res) => {
+  const todos = await db("todo"); // making a query to get all todos
+  res.json({ todos });
 });
 
 // All remaining requests return the React app, so it can handle routing.

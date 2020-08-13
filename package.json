@@ -10,7 +10,10 @@
     "server": "nodemon server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client/ && npm install && npm run build"
+    "build": "cd client/ && npm install && npm run build",
+    "migrate": "knex migrate:latest",
+    "rollback": "knex migrate:rollback",
+    "seed": "knex seed:run "
   },
   "cacheDirectories": [
     "node_modules",
@@ -24,6 +27,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "isomorphic-fetch": "^2.2.1",
+    "knex": "^0.21.4",
     "moment": "^2.26.0",
     "node-cron": "^2.0.3",
     "node-fetch": "^2.6.0",
