@@ -1,12 +1,10 @@
 exports.seed = function(knex) {
   // Deletes ALL existing entries
-  return knex('todo').del()
+  return knex('artist').del()
     .then(function () {
       // Inserts seed entries
-      return knex('todo').insert([
-        {id: 1, task: 'Create API'},
-        {id: 2, task: 'Watch Money Heist'},
-        {id: 3, task: 'Do Dishex'}
+      return knex('artist').insert([
+        {spotifyId: "3eqjTLE0HfPfh78zjh6TqT", name: "Bruce Springsteen"},
       ]);
     });
 };

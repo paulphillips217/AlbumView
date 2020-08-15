@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const moment = require('moment');
 const spotify = require('./credentials');
+const user = require('./data/user');
 
 const getSpotifyAccessToken = (req, res, next) => {
   const { code } = req.query;
@@ -49,68 +50,35 @@ const getSpotifyAccessToken = (req, res, next) => {
   }
 };
 
-const storeSpotifyAccessTokenInDatabase = (pool, token) => {
-  try {
-    pool.query(
-      'UPDATE credentials SET credential = $1 WHERE id = 1',
-      [token],
-      (error, results) => {
-        if (error) {
-          console.error(error);
-          throw error;
-        }
-        console.log(`storeAccessToken result: ${results}`);
-      }
-    );
-  } catch (err) {
-    console.error(err);
-  }
-};
+const getSpotifyCredentials = async (req) => {
+  const {
+    spotifyAuthToken,
+    spotifyRefreshToken,
+    spotifyExpiration,
+  } = await user.getCredentials(req.user.userId);
 
-const getSpotifyAccessTokenFromDatabase = (pool, callback) => {
-  try {
-    pool.query('SELECT * FROM credentials WHERE id = 1', (error, results) => {
-      if (error) {
-        console.error(error);
-        throw error;
-      }
-      const credential = results.rows[0].credential;
-      const accessToken = JSON.parse(credential).access_token;
-      callback(accessToken);
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
+  console.log('getCredentialsFromHeader from database', {
+    spotifyAuthToken,
+    spotifyRefreshToken,
+    spotifyExpiration,
+  });
 
-const getCredentialsFromHeader = async (req) => {
-  const tokenExpirationRaw = getSpotifyTokenExpirationFromHeader(req);
-  const refreshToken = getSpotifyRefreshTokenFromHeader(req);
-  const tokenExpiration = moment(tokenExpirationRaw);
+  const tokenExpiration = moment(spotifyExpiration);
   const currentTime = moment();
-  if (tokenExpiration <= currentTime && refreshToken) {
+  if (tokenExpiration <= currentTime && spotifyRefreshToken) {
     console.log('getCredentialsFromHeader refreshing credentials');
-    console.log('getCredentialsFromHeader token before refresh: ', getSpotifyAccessTokenFromHeader(req));
-    return await refreshSpotifyAccessToken(refreshToken);
+    console.log(
+      'getCredentialsFromHeader token before refresh: ',
+      spotifyAuthToken
+    );
+    return await refreshSpotifyAccessToken(spotifyRefreshToken);
   }
   console.log('getCredentialsFromHeader using existing credentials');
   return {
-    access_token: getSpotifyAccessTokenFromHeader(req),
-    refresh_token: getSpotifyRefreshTokenFromHeader(req),
-    token_expiration: getSpotifyTokenExpirationFromHeader(req),
+    access_token: spotifyAuthToken,
+    refresh_token: spotifyRefreshToken,
+    token_expiration: spotifyExpiration,
   };
-};
-
-const getSpotifyAccessTokenFromHeader = (req) => {
-  return req.header('x-spotify-access-token');
-};
-
-const getSpotifyRefreshTokenFromHeader = (req) => {
-  return req.header('x-spotify-refresh-token');
-};
-
-const getSpotifyTokenExpirationFromHeader = (req) => {
-  return req.header('x-spotify-token-expiration');
 };
 
 const refreshSpotifyAccessToken = async (refresh_token) => {
@@ -170,10 +138,5 @@ const refreshSpotifyAccessToken = async (refresh_token) => {
 
 module.exports = {
   getSpotifyAccessToken,
-  storeSpotifyAccessTokenInDatabase,
-  getSpotifyAccessTokenFromDatabase,
-  getCredentialsFromHeader,
-  getSpotifyAccessTokenFromHeader,
-  getSpotifyRefreshTokenFromHeader,
-  refreshSpotifyAccessToken,
+  getSpotifyCredentials,
 };

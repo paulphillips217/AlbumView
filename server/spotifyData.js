@@ -78,7 +78,10 @@ const getSpotifyUrl = (req) => {
 };
 
 const talkToSpotify = async (req, res) => {
-  const credentials = await spotifyTokens.getCredentialsFromHeader(req);
+
+  console.log('talkToSpotify req.user', req.user);
+
+  const credentials = await spotifyTokens.getSpotifyCredentials(req);
   const accessToken = credentials.access_token;
   console.log('talkToSpotify token: ', accessToken);
   const url = getSpotifyUrl(req);
@@ -125,7 +128,7 @@ const talkToSpotify = async (req, res) => {
 };
 
 const aggregateSpotifyArtistData = async (req, res) => {
-  const credentials = await spotifyTokens.getCredentialsFromHeader(req);
+  const credentials = await spotifyTokens.getSpotifyCredentials(req);
   const accessToken = credentials.access_token;
 
   let url = '';

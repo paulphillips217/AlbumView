@@ -7,10 +7,12 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const express = require('express');
+const cookieParser = require('cookie-parser')
 const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const session = require('cookie-session');
+const passport = require('passport');
 
 const spotifyRoutes = require('./routes/spotify');
 const lastFmRoutes = require('./routes/last-fm');
@@ -19,17 +21,12 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
 
-const { Pool } = require('pg');
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: !isDev,
-});
-const db = require("./data/db.js"); // importing the db config
-
+const db = require('./data/db.js');
 
 // Priority serve any static files.
 if (isDev) {
@@ -38,19 +35,49 @@ if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
 
+/* AlbumView authentication starts here */
+const JWTStrategy = require('passport-jwt').Strategy;
+
+passport.use(
+  new JWTStrategy(
+    {
+      jwtFromRequest: (req) => {
+        console.log('getting JWT from request - cookies', req.cookies);
+        return req.cookies ? req.cookies.jwt : '';
+      },
+      secretOrKey: process.env.JWT_SECRET,
+    },
+    (jwtPayload, done) => {
+      console.log('JWTStrategy payload', jwtPayload);
+      if (!jwtPayload) {
+        console.log('empty JWTStrategy payload');
+        return done('empty payload');
+      }
+      if (Date.now() > jwtPayload.expires) {
+        console.log('JWTStrategy - jwt expired');
+        return done('jwt expired');
+      }
+      return done(null, jwtPayload);
+    }
+  )
+);
+
+/* AlbumView authentication ends here */
+
 /* OneDrive setup starts here */
 
-const passport = require('passport');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const oneDriveRoutes = require('./routes/one-drive');
 
 // Session middleware
-app.use(session({
-  secret: 'my_secret_value_is_secret',
-  resave: false,
-  saveUninitialized: false,
-  unset: 'destroy'
-}));
+app.use(
+  session({
+    secret: 'my_secret_value_is_secret',
+    resave: false,
+    saveUninitialized: false,
+    unset: 'destroy',
+  })
+);
 
 // Configure passport
 
@@ -58,14 +85,14 @@ app.use(session({
 var users = {};
 
 // Passport calls serializeUser and deserializeUser to manage users
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
   console.log('serializeUser ', user);
   // Use the OID property of the user as a key
   users[user.profile.oid] = user;
-  done (null, user.profile.oid);
+  done(null, user.profile.oid);
 });
 
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function (id, done) {
   console.log('deserializeUser ', id);
   done(null, users[id] ? users[id] : null);
 });
@@ -74,22 +101,30 @@ passport.deserializeUser(function(id, done) {
 const oauth2 = require('simple-oauth2').create({
   client: {
     id: process.env.OAUTH_APP_ID,
-    secret: process.env.OAUTH_APP_PASSWORD
+    secret: process.env.OAUTH_APP_PASSWORD,
   },
   auth: {
     tokenHost: process.env.OAUTH_AUTHORITY,
     authorizePath: process.env.OAUTH_AUTHORIZE_ENDPOINT,
-    tokenPath: process.env.OAUTH_TOKEN_ENDPOINT
-  }
+    tokenPath: process.env.OAUTH_TOKEN_ENDPOINT,
+  },
 });
 
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
-async function signInComplete(iss, sub, profile, accessToken, refreshToken, params, done) {
-  console.log('signInComplete profile.oid', profile.oid)
+async function signInComplete(
+  iss,
+  sub,
+  profile,
+  accessToken,
+  refreshToken,
+  params,
+  done
+) {
+  console.log('signInComplete profile.oid', profile.oid);
 
   if (!profile.oid) {
-    return done(new Error("No OID found in user profile."));
+    return done(new Error('No OID found in user profile.'));
   }
 
   // Create a simple-oauth2 token from raw tokens
@@ -101,21 +136,23 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
 }
 
 // Configure OIDC strategy
-passport.use(new OIDCStrategy(
-  {
-    identityMetadata: `${process.env.OAUTH_AUTHORITY}${process.env.OAUTH_ID_METADATA}`,
-    clientID: process.env.OAUTH_APP_ID,
-    responseType: 'code id_token',
-    responseMode: 'form_post',
-    redirectUrl: process.env.OAUTH_REDIRECT_URI,
-    allowHttpForRedirectUrl: true,
-    clientSecret: process.env.OAUTH_APP_PASSWORD,
-    validateIssuer: false,
-    passReqToCallback: false,
-    scope: process.env.OAUTH_SCOPES.split(' ')
-  },
-  signInComplete
-));
+passport.use(
+  new OIDCStrategy(
+    {
+      identityMetadata: `${process.env.OAUTH_AUTHORITY}${process.env.OAUTH_ID_METADATA}`,
+      clientID: process.env.OAUTH_APP_ID,
+      responseType: 'code id_token',
+      responseMode: 'form_post',
+      redirectUrl: process.env.OAUTH_REDIRECT_URI,
+      allowHttpForRedirectUrl: true,
+      clientSecret: process.env.OAUTH_APP_PASSWORD,
+      validateIssuer: false,
+      passReqToCallback: false,
+      scope: process.env.OAUTH_SCOPES.split(' '),
+    },
+    signInComplete
+  )
+);
 
 // Initialize passport
 app.use(passport.initialize());
@@ -141,22 +178,8 @@ app.get('/node-env', (req, res) => {
 });
 
 app.get('/db-test', async (req, res) => {
-  try {
-    pool.query('SELECT * FROM credentials', (error, results) => {
-      if (error) {
-        throw error;
-      }
-      res.send('cred: ' + results.rows[0].credential);
-    });
-  } catch (err) {
-    console.error(err);
-    res.send('Error ' + err);
-  }
-});
-
-app.get("/todo", async (req, res) => {
-  const todos = await db("todo"); // making a query to get all todos
-  res.json({ todos });
+  const artist = await db('artist'); // making a query to get all todos
+  res.json({ artist });
 });
 
 // All remaining requests return the React app, so it can handle routing.

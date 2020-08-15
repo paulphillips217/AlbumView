@@ -55,6 +55,7 @@ class HttpService {
     };
 
     const requestOptions = options;
+    requestOptions.withCredentials = true;
     requestOptions.headers = {
       'x-spotify-access-token': getSpotifyAccessToken(this.store.getState()),
       'x-spotify-refresh-token': getSpotifyRefreshToken(this.store.getState()),
