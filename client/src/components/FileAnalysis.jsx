@@ -7,7 +7,7 @@ import { Button, Grid } from 'semantic-ui-react';
 import {
   getContextSortType,
   getSavedAlbumData,
-  getSpotifyAuthenticationState,
+  getSpotifyIsAuthenticated,
 } from '../store/selectors';
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
@@ -221,7 +221,7 @@ FileAnalysis.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   savedAlbumData: getSavedAlbumData(state),
   contextSortType: getContextSortType(state),
 });

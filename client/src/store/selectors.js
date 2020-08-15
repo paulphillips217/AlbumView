@@ -1,19 +1,6 @@
 import { ContextType } from './types';
 
-export const getSpotifyAuthenticationState = (store) => {
-  const authToken = getSpotifyAccessToken(store);
-  return authToken && authToken !== 'undefined';
-};
-export const getSpotifyAccessToken = (store) =>
-  store.albumView.spotifyAccessToken || localStorage.getItem('spotifyAccessToken') || '';
-export const getSpotifyRefreshToken = (store) =>
-  store.albumView.spotifyRefreshToken ||
-  localStorage.getItem('spotifyRefreshToken') ||
-  '';
-export const getSpotifyTokenExpiration = (store) =>
-  store.albumView.spotifyTokenExpiration ||
-  localStorage.getItem('spotifyTokenExpiration') ||
-  '';
+export const getSpotifyIsAuthenticated = (store) => store.albumView.spotifyIsAuthenticated;
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;
 export const getRelatedToArtist = (store) => store.albumView.relatedToArtist;

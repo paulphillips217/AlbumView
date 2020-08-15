@@ -1,7 +1,4 @@
 import {
-  SPOTIFY_ACCESS_TOKEN,
-  SPOTIFY_REFRESH_TOKEN,
-  SPOTIFY_TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
@@ -15,23 +12,16 @@ import {
   PLAYLIST_TRACK_SORT,
   SAVED_TRACK_SORT,
   SAVED_ALBUM_DATA,
-  ONE_DRIVE_LOGGED_IN, LOCAL_FILE_DATA, ONE_DRIVE_ROOT
+  ONE_DRIVE_LOGGED_IN,
+  LOCAL_FILE_DATA,
+  ONE_DRIVE_ROOT,
+  SPOTIFY_IS_AUTHENTICATED,
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
-export const setSpotifyAccessToken = (accessToken) => ({
-  type: SPOTIFY_ACCESS_TOKEN,
-  payload: accessToken,
-});
-
-export const setSpotifyRefreshToken = (refreshToken) => ({
-  type: SPOTIFY_REFRESH_TOKEN,
-  payload: refreshToken,
-});
-
-export const setSpotifyTokenExpiration = (tokenExpiration) => ({
-  type: SPOTIFY_TOKEN_EXPIRATION,
-  payload: tokenExpiration,
+export const setSpotifyIsAuthenticated = (isAuthenticated) => ({
+  type: SPOTIFY_IS_AUTHENTICATED,
+  payload: isAuthenticated,
 });
 
 export const setContextType = (type) => ({

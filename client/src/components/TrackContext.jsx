@@ -14,7 +14,7 @@ import {
   getContextGridData,
   getContextSortType,
   getDataLoading,
-  getSpotifyAuthenticationState,
+  getSpotifyIsAuthenticated,
 } from '../store/selectors';
 import { setContextGridData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
@@ -119,7 +119,7 @@ TrackContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   dataLoading: getDataLoading(state),
   contextGridData: getContextGridData(state),
   contextSortType: getContextSortType(state),

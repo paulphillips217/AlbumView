@@ -13,7 +13,7 @@ import {
   getSavedAlbumData,
   getContextSortType,
   getDataLoading,
-  getSpotifyAuthenticationState,
+  getSpotifyIsAuthenticated,
 } from '../store/selectors';
 import { setSavedAlbumData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
@@ -136,7 +136,7 @@ AlbumContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   dataLoading: getDataLoading(state),
   savedAlbumData: getSavedAlbumData(state),
   contextSortType: getContextSortType(state),

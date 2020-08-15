@@ -33,11 +33,9 @@ const setSessionJwt = async (req, res) => {
 
     /** assign our jwt to the cookie */
     res.cookie('jwt', token, { httpOnly: true });
+    res.cookie('spotify', 'true');
 
-    const clientUrl = process.env.CLIENT_URL;
-    res.redirect(
-      `${clientUrl}/?spotify_access_token=${req.credentials.access_token}&spotify_refresh_token=${req.credentials.refresh_token}&spotify_token_expiration=${req.credentials.token_expiration}`
-    );
+    res.redirect(process.env.CLIENT_URL);
   });
 };
 

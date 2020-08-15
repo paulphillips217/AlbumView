@@ -1,10 +1,6 @@
-import moment from 'moment';
 import {
   ContextType,
   AlbumViewTheme,
-  SPOTIFY_ACCESS_TOKEN,
-  SPOTIFY_REFRESH_TOKEN,
-  SPOTIFY_TOKEN_EXPIRATION,
   CONTEXT_TYPE,
   CONTEXT_ITEM,
   RELATED_TO_ARTIST,
@@ -19,15 +15,14 @@ import {
   SAVED_TRACK_SORT,
   PLAYLIST_SORT,
   SAVED_ALBUM_DATA,
-  ONE_DRIVE_LOGGED_IN, LOCAL_FILE_DATA, ONE_DRIVE_ROOT
+  ONE_DRIVE_LOGGED_IN,
+  LOCAL_FILE_DATA,
+  ONE_DRIVE_ROOT,
+  SPOTIFY_IS_AUTHENTICATED,
 } from './types';
 
 const initialState = {
-  spotifyAccessToken: localStorage.getItem('spotifyAccessToken') || '',
-  spotifyRefreshToken: localStorage.getItem('spotifyRefreshToken') || '',
-  spotifyTokenExpiration: moment(localStorage.getItem('spotifyTokenExpiration')).isValid()
-    ? moment(localStorage.getItem('spotifyTokenExpiration')).format()
-    : moment().format(),
+  spotifyIsAuthenticated: false,
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
@@ -55,23 +50,10 @@ const initialState = {
 
 export function albumViewReducer(state = initialState, action) {
   switch (action.type) {
-    case SPOTIFY_ACCESS_TOKEN:
-      console.log('setting spotify access token', action.payload);
-      localStorage.setItem('spotifyAccessToken', action.payload);
+    case SPOTIFY_IS_AUTHENTICATED:
+      console.log('setting spotify is authenticated', action.payload);
       return Object.assign({}, state, {
-        spotifyAccessToken: action.payload,
-      });
-    case SPOTIFY_REFRESH_TOKEN:
-      console.log('setting spotify refresh token', action.payload);
-      localStorage.setItem('spotifyRefreshToken', action.payload);
-      return Object.assign({}, state, {
-        spotifyRefreshToken: action.payload,
-      });
-    case SPOTIFY_TOKEN_EXPIRATION:
-      console.log('setting spotify token expiration', action.payload);
-      localStorage.setItem('spotifyTokenExpiration', action.payload);
-      return Object.assign({}, state, {
-        spotifyTokenExpiration: action.payload,
+        spotifyIsAuthenticated: action.payload,
       });
     case CONTEXT_TYPE:
       console.log('setting context type', action.payload);

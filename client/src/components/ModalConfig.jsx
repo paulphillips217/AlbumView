@@ -13,7 +13,6 @@ import {
   getSavedTrackSort,
 } from '../store/selectors';
 import {
-  setSpotifyAccessToken,
   setAlbumSort,
   setAlbumViewTheme,
   setContextGridColumns,
@@ -22,10 +21,8 @@ import {
   resetContextListData,
   setPlaylistSort,
   setPlaylistTrackSort,
-  setSpotifyRefreshToken,
   setRelatedToArtist,
   setSavedTrackSort,
-  setSpotifyTokenExpiration,
 } from '../store/actions';
 import { AlbumViewTheme, SortTypes } from '../store/types';
 
@@ -36,9 +33,6 @@ const ModalConfig = ({
   playlistSort,
   savedTrackSort,
   playlistTrackSort,
-  setSpotifyAccess,
-  setSpotifyRefresh,
-  setSpotifyExpiration,
   setTheme,
   setGridColumns,
   setItem,
@@ -168,12 +162,12 @@ const ModalConfig = ({
   };
 
   const handleLogOut = () => {
-    setSpotifyRefresh('');
-    setSpotifyAccess('');
-    setSpotifyExpiration('');
+    // kill the cookie
+    document.cookie = 'spotify= ;max-age=0';
+    console.log('handleLogOut - updated cookie', document.cookie);
     setItem('');
     setRelatedTo('');
-    setGridData({spotifyCount: 0, data: []});
+    setGridData({ spotifyCount: 0, data: [] });
     resetListData();
     history.push('/');
   };
@@ -281,10 +275,7 @@ ModalConfig.propTypes = {
   playlistSort: PropTypes.string.isRequired,
   savedTrackSort: PropTypes.string.isRequired,
   playlistTrackSort: PropTypes.string.isRequired,
-  setSpotifyAccess: PropTypes.func.isRequired,
   setGridColumns: PropTypes.func.isRequired,
-  setSpotifyRefresh: PropTypes.func.isRequired,
-  setSpotifyExpiration: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
   setTheme: PropTypes.func.isRequired,
   setRelatedTo: PropTypes.func.isRequired,
@@ -306,12 +297,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setSpotifyAccess: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
   setGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
-  setSpotifyRefresh: (refreshToken) =>
-    dispatch(setSpotifyRefreshToken(refreshToken)),
-  setSpotifyExpiration: (expiration) =>
-    dispatch(setSpotifyTokenExpiration(expiration)),
   setTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
   setItem: (id) => dispatch(setContextItem(id)),
   setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),

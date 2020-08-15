@@ -178,7 +178,7 @@ app.get('/node-env', (req, res) => {
 });
 
 app.get('/db-test', async (req, res) => {
-  const artist = await db('artist'); // making a query to get all todos
+  const artist = await db('artist').first();
   res.json({ artist });
 });
 

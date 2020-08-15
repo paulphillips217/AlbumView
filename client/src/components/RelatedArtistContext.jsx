@@ -20,7 +20,7 @@ import {
   getContextSortType,
   getDataLoading,
   getRelatedToArtist,
-  getSpotifyAuthenticationState,
+  getSpotifyIsAuthenticated,
 } from '../store/selectors';
 import { setContextGridData, setContextListData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
@@ -259,7 +259,7 @@ RelatedArtistContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isSpotifyAuthenticated: getSpotifyAuthenticationState(state),
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   contextItem: getContextItem(state),
   relatedToArtist: getRelatedToArtist(state),
   dataLoading: getDataLoading(state),

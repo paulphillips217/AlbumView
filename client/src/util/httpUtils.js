@@ -1,14 +1,4 @@
 import axios from 'axios';
-import {
-  getSpotifyAccessToken,
-  getSpotifyRefreshToken,
-  getSpotifyTokenExpiration,
-} from '../store/selectors';
-import {
-  setSpotifyAccessToken,
-  setSpotifyRefreshToken,
-  setSpotifyTokenExpiration,
-} from '../store/actions';
 
 class HttpService {
   constructor(store) {
@@ -19,22 +9,6 @@ class HttpService {
   httpRequest(options) {
     const onSuccess = (response) => {
       console.debug('httpRequest got response', response);
-      // console.log('axios response headers: ', response.headers);
-      try {
-        const oldSpotifyAccessToken = getSpotifyAccessToken(this.store.getState());
-        const newSpotifyAccessToken = response.headers['x-spotify-access-token'];
-        if (newSpotifyAccessToken && newSpotifyAccessToken !== 'undefined' && oldSpotifyAccessToken !== newSpotifyAccessToken) {
-          console.log('capturing headers from response');
-          this.store.dispatch(setSpotifyAccessToken(newSpotifyAccessToken));
-          const spotifyRefreshToken = response.headers['x-spotify-refresh-token'];
-          this.store.dispatch(setSpotifyRefreshToken(spotifyRefreshToken));
-          const spotifyTokenExpiration = response.headers['x-spotify-token-expiration'];
-          this.store.dispatch(setSpotifyTokenExpiration(spotifyTokenExpiration));
-        }
-      } catch (err) {
-        console.error(err);
-      }
-
       return response.data;
     };
 
@@ -56,13 +30,6 @@ class HttpService {
 
     const requestOptions = options;
     requestOptions.withCredentials = true;
-    requestOptions.headers = {
-      'x-spotify-access-token': getSpotifyAccessToken(this.store.getState()),
-      'x-spotify-refresh-token': getSpotifyRefreshToken(this.store.getState()),
-      'x-spotify-token-expiration': getSpotifyTokenExpiration(this.store.getState()),
-    };
-
-    // console.log('httpService making request', options);
     return axios(requestOptions).then(onSuccess).catch(onError);
   }
 

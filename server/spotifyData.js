@@ -1,4 +1,3 @@
-//const fetch = require('node-fetch');
 const axios = require('axios');
 const spotifyTokens = require('./accessToken');
 const isJson = require('./utilities');
@@ -78,53 +77,59 @@ const getSpotifyUrl = (req) => {
 };
 
 const talkToSpotify = async (req, res) => {
+  try {
+    console.log('talkToSpotify req.user', req.user);
+    const credentials = await spotifyTokens.getSpotifyCredentials(req);
 
-  console.log('talkToSpotify req.user', req.user);
-
-  const credentials = await spotifyTokens.getSpotifyCredentials(req);
-  const accessToken = credentials.access_token;
-  console.log('talkToSpotify token: ', accessToken);
-  const url = getSpotifyUrl(req);
-  console.log('talkToSpotify: ', req.path, url, req.method);
-
-  res.set({
-    'Access-Control-Expose-Headers':
-      'x-spotify-access-token, x-spotify-refresh-token, x-spotify-token-expiration',
-    'x-spotify-access-token': credentials.access_token,
-    'x-spotify-refresh-token': credentials.refresh_token,
-    'x-spotify-token-expiration': credentials.token_expiration,
-  });
-
-  axios({
-    url: url,
-    method: req.method,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-    .then((response) => {
-      console.log('axios got response for ', url);
-      //if (response && response.data && isJson(response.data)) {
-      if (response && response.data) {
-        res.json(response.data);
-      } else {
-        console.log('axios got empty response');
-        /*
-        if (typeof response === 'undefined') {
-          console.log('axios response is undefined');
-        } else {
-          console.log('axios response object: ', response);
-        }
-         */
-        res.json({ emptyResponse: true });
-      }
-    })
-    .catch((err) => {
-      console.error('caught error in talkToSpotify: ', JSON.stringify(err));
+    if (!credentials || !credentials.access_token) {
+      console.log(
+        'talkToSpotify - failed to get credentials, removing invalid cookie'
+      );
+      res.cookie('jwt', '', { maxAge: 0 });
+      res.cookie('spotify', '', { maxAge: 0 });
       res.json({ empty: true });
-    });
+      return;
+    }
+
+    const accessToken = credentials.access_token;
+    console.log('talkToSpotify token: ', accessToken);
+    const url = getSpotifyUrl(req);
+    console.log('talkToSpotify: ', req.path, url, req.method);
+
+    axios({
+      url: url,
+      method: req.method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((response) => {
+        console.log('axios got response for ', url);
+        //if (response && response.data && isJson(response.data)) {
+        if (response && response.data) {
+          res.json(response.data);
+        } else {
+          console.log('axios got empty response');
+          /*
+          if (typeof response === 'undefined') {
+            console.log('axios response is undefined');
+          } else {
+            console.log('axios response object: ', response);
+          }
+           */
+          res.json({ emptyResponse: true });
+        }
+      })
+      .catch((err) => {
+        console.error('caught error in talkToSpotify: ', JSON.stringify(err));
+        res.json({ empty: true });
+      });
+
+  } catch (err) {
+    console.error('talkToSpotify error getting credentials', err);
+  }
 };
 
 const aggregateSpotifyArtistData = async (req, res) => {
@@ -138,14 +143,6 @@ const aggregateSpotifyArtistData = async (req, res) => {
   let artistTotal = +req.params.artists;
   let albumTotal = +req.params.albums;
   let trackTotal = +req.params.tracks;
-
-  res.set({
-    'Access-Control-Expose-Headers':
-      'x-spotify-access-token, x-spotify-refresh-token, x-spotify-token-expiration',
-    'x-spotify-access-token': credentials.access_token,
-    'x-spotify-refresh-token': credentials.refresh_token,
-    'x-spotify-token-expiration': credentials.token_expiration,
-  });
 
   try {
     // first we get the artists you're following

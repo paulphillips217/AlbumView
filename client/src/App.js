@@ -9,11 +9,7 @@ import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
-import {
-  setSpotifyAccessToken,
-  setOneDriveLoggedIn,
-  setSpotifyRefreshToken,
-} from './store/actions';
+import { setOneDriveLoggedIn, setSpotifyIsAuthenticated } from './store/actions';
 import { getAlbumViewTheme, getContextType } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
@@ -39,23 +35,16 @@ const darkTheme = {
 const App = ({
   contextType,
   albumViewTheme,
-  setSpotifyAccessToken,
-  setSpotifyRefreshToken,
+  setSpotifyLoggedIn,
   setOneDriveLoggedIn,
   httpService,
 }) => {
   const history = useHistory();
   const urlParams = new URLSearchParams(window.location.search);
 
-  if (urlParams.has('spotify_refresh_token')) {
-    setSpotifyRefreshToken(urlParams.get('spotify_refresh_token'));
-    console.log(`spotify_refresh_token: ${urlParams.get('spotify_refresh_token')}`);
-  }
-  if (urlParams.has('spotify_access_token')) {
-    setSpotifyAccessToken(urlParams.get('spotify_access_token'));
-    console.log(`spotify_access_token: ${urlParams.get('spotify_access_token')}`);
-    history.push('/xxx');
-  }
+  console.log('Album View Cookie: ', document.cookie);
+  setSpotifyLoggedIn(document.cookie.includes('spotify='));
+
   if (urlParams.has('oneDriveLogin')) {
     setOneDriveLoggedIn(urlParams.get('oneDriveLogin'));
     console.log(`oneDriveLogin is set`);
@@ -107,8 +96,7 @@ const App = ({
 App.propTypes = {
   contextType: PropTypes.string.isRequired,
   albumViewTheme: PropTypes.string.isRequired,
-  setSpotifyAccessToken: PropTypes.func.isRequired,
-  setSpotifyRefreshToken: PropTypes.func.isRequired,
+  setSpotifyLoggedIn: PropTypes.func.isRequired,
   setOneDriveLoggedIn: PropTypes.func.isRequired,
 };
 
@@ -118,9 +106,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setSpotifyAccessToken: (accessToken) => dispatch(setSpotifyAccessToken(accessToken)),
-  setSpotifyRefreshToken: (refreshToken) =>
-    dispatch(setSpotifyRefreshToken(refreshToken)),
+  setSpotifyLoggedIn: (isAuthenticated) =>
+    dispatch(setSpotifyIsAuthenticated(isAuthenticated)),
   setOneDriveLoggedIn: (isLoggedIn) => dispatch(setOneDriveLoggedIn(isLoggedIn)),
 });
 
