@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment');
 const spotifyData = require('../spotifyData');
 const authorizeSpotify = require('../authorizeSpotify');
-const spotifyTokens = require('../accessToken');
+const spotifyTokens = require('../spotifyTokens');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const user = require('../data/user');
@@ -15,17 +16,22 @@ const setSessionJwt = async (req, res) => {
 
   const userId = await user.initializeUser(req.credentials);
   console.log('setSessionJwt initialized user', userId);
+  if (userId <= 0) {
+    res.status(400).send({ error: 'database error' });
+    return;
+  }
 
   /** This is what ends up in our JWT */
   const payload = {
     userId: userId,
-    expires: Date.now() + parseInt(process.env.JWT_EXPIRATION_MS),
+    expires: moment().add(parseInt(process.env.JWT_EXPIRATION_HOURS), 'hours'),
   };
 
   /** assigns payload to req.user */
   req.login(payload, { session: false }, (error) => {
     if (error) {
       res.status(400).send({ error });
+      return;
     }
 
     /** generate a signed json web token and return it in the response */

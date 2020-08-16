@@ -76,7 +76,10 @@ const getSpotifyCredentials = async (req) => {
       'getCredentialsFromHeader token before refresh: ',
       spotifyAuthToken
     );
-    return await refreshSpotifyAccessToken(spotifyRefreshToken);
+    return await refreshSpotifyAccessToken(
+      req.user.userId,
+      spotifyRefreshToken
+    );
   }
 
   console.log('getCredentialsFromHeader using existing credentials');
@@ -87,16 +90,10 @@ const getSpotifyCredentials = async (req) => {
   };
 };
 
-const refreshSpotifyAccessToken = async (refresh_token) => {
+const refreshSpotifyAccessToken = async (userId, refresh_token) => {
   if (!refresh_token) {
-    console.log(
-      'refreshSpotifyAccessToken: refresh token is empty, logging out'
-    );
-    return {
-      access_token: '',
-      refresh_token: '',
-      token_expiration: moment().format(),
-    };
+    console.log('refreshSpotifyAccessToken: refresh token is empty');
+    return {};
   }
 
   const url = 'https://accounts.spotify.com/api/token';
@@ -131,14 +128,19 @@ const refreshSpotifyAccessToken = async (refresh_token) => {
       .format();
     credentials.refresh_token = refresh_token;
     console.log('refreshSpotifyAccessToken got credentials');
+
+    // add the new tokens to the database
+    await user.updateSpotifyTokens(userId, {
+      spotifyAuthToken: credentials.access_token,
+      spotifyRefreshToken: credentials.refresh_token,
+      spotifyExpiration: credentials.token_expiration,
+    });
+
     return credentials;
+
   } catch (err) {
     console.error(err);
-    return {
-      access_token: '',
-      refresh_token: '',
-      token_expiration: moment().format(),
-    };
+    return {};
   }
 };
 

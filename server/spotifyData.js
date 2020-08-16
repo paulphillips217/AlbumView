@@ -1,5 +1,5 @@
 const axios = require('axios');
-const spotifyTokens = require('./accessToken');
+const spotifyTokens = require('./spotifyTokens');
 const isJson = require('./utilities');
 
 const getSpotifyUrl = (req) => {
@@ -126,10 +126,13 @@ const talkToSpotify = async (req, res) => {
         console.error('caught error in talkToSpotify: ', JSON.stringify(err));
         res.json({ empty: true });
       });
-
   } catch (err) {
     console.error('talkToSpotify error getting credentials', err);
   }
+};
+
+const getSavedAlbums = async (req, res) => {
+
 };
 
 const aggregateSpotifyArtistData = async (req, res) => {
