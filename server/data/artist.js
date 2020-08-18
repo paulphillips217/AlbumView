@@ -9,3 +9,14 @@ const insertFromSpotify = (artists) => {
     [db("album").insert(artists)],
   );
 }
+
+const insertSingleArtist = async () => {
+  return db('artist').insert({
+    spotifyId: 'abc123',
+    name: 'test artist',
+  });
+}
+
+module.exports = {
+  insertSingleArtist,
+};
