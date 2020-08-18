@@ -50,8 +50,8 @@ const getSpotifyAccessToken = (req, res, next) => {
   }
 };
 
-const getSpotifyCredentials = async (req) => {
-  const credentials = await user.getCredentials(req.user.userId);
+const getSpotifyCredentials = async (userId) => {
+  const credentials = await user.getCredentials(userId);
   if (!credentials) {
     console.log('getSpotifyCredentials - user not found in database');
     return {};
@@ -77,7 +77,7 @@ const getSpotifyCredentials = async (req) => {
       spotifyAuthToken
     );
     return await refreshSpotifyAccessToken(
-      req.user.userId,
+      userId,
       spotifyRefreshToken
     );
   }

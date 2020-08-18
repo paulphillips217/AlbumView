@@ -79,7 +79,7 @@ const getSpotifyUrl = (req) => {
 const talkToSpotify = async (req, res) => {
   try {
     console.log('talkToSpotify req.user', req.user);
-    const credentials = await spotifyTokens.getSpotifyCredentials(req);
+    const credentials = await spotifyTokens.getSpotifyCredentials(req.user.userId);
 
     if (!credentials || !credentials.access_token) {
       console.log(
@@ -131,12 +131,20 @@ const talkToSpotify = async (req, res) => {
   }
 };
 
-const getSavedAlbums = async (req, res) => {
+const initiateSavedAlbums = async (req, res) => {
+  // get the first page of saved albums from Spotify
+
+  // kick off worker to get the rest of the saved albums
+
+  //
 
 };
 
+const getSavedAlbums = async (req, res) => {
+}
+
 const aggregateSpotifyArtistData = async (req, res) => {
-  const credentials = await spotifyTokens.getSpotifyCredentials(req);
+  const credentials = await spotifyTokens.getSpotifyCredentials(req.user.userId);
   const accessToken = credentials.access_token;
 
   let url = '';

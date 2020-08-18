@@ -1,8 +1,19 @@
+if (process.env.NODE_ENV !== 'production') {
+  const result = require('dotenv').config({ path: './server/variables.env' });
+  if (result.error) {
+    throw result.error;
+  }
+  //console.log('worker environment', result.parsed);
+}
+
 let throng = require('throng');
 let Queue = require("bull");
 
+const db = require('./data/db.js');
+const artist = require('./data/artist');
+
 // Connect to a local redis instance locally, and the Heroku-provided URL in production
-let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+//let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
 // Spin up multiple processes to handle jobs to take advantage of more CPU cores
 // See: https://devcenter.heroku.com/articles/node-concurrency for more info
@@ -18,25 +29,27 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function start() {
+const start = async () => {
   // Connect to the named work queue
-  let workQueue = new Queue('work', REDIS_URL);
+  let workQueue = new Queue('work', process.env.REDIS_URL);
+  console.log('starting worker process');
+  const artist = await db('artist').first();
+  console.log('worker process got artist', artist);
 
   workQueue.process(maxJobsPerWorker, async (job) => {
     // This is an example job that just slowly reports on progress
     // while doing no work. Replace this with your own job logic.
     let progress = 0;
 
-    // throw an error 5% of the time
-    if (Math.random() < 0.05) {
-      throw new Error("This job failed!")
-    }
-
+    /*
     while (progress < 100) {
       await sleep(50);
       progress += 1;
       job.progress(progress)
     }
+    */
+//    const artist = await artist.insertSingleArtist();
+//    console.log('inserted single artist', artist);
 
     // A job can return values that will be stored in Redis as JSON
     // This return value is unused in this demo application.

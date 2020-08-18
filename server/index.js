@@ -26,8 +26,6 @@ app.use(cookieParser());
 const isDev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 5000;
 
-const db = require('./data/db.js');
-
 // Priority serve any static files.
 if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/public')));
@@ -61,7 +59,6 @@ passport.use(
     }
   )
 );
-
 /* AlbumView authentication ends here */
 
 /* OneDrive setup starts here */
@@ -78,8 +75,6 @@ app.use(
     unset: 'destroy',
   })
 );
-
-// Configure passport
 
 // In-memory storage of logged-in users (TODO: move to database)
 var users = {};
@@ -219,6 +214,7 @@ app.get('/node-env', (req, res) => {
 });
 
 app.get('/db-test', async (req, res) => {
+  const db = require('./data/db.js');
   const artist = await db('artist').first();
   res.json({ artist });
 });
