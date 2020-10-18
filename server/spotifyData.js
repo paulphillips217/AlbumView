@@ -1,6 +1,14 @@
 const axios = require('axios');
+const moment = require('moment');
 const spotifyTokens = require('./spotifyTokens');
-const isJson = require('./utilities');
+const utilities = require('./utilities');
+const artist = require('./data/artist');
+const album = require('./data/album');
+const user = require('./data/user');
+
+const Queue = require('bull');
+const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+let lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
 
 const getSpotifyUrl = (req) => {
   //console.log('getSpotifyUrl:', req.path);
@@ -77,9 +85,16 @@ const getSpotifyUrl = (req) => {
 };
 
 const talkToSpotify = async (req, res) => {
+  let accessToken;
+  const method = req.method;
+  const url = getSpotifyUrl(req);
+  console.log('talkToSpotify: ', req.path, url, method);
+
   try {
     console.log('talkToSpotify req.user', req.user);
-    const credentials = await spotifyTokens.getSpotifyCredentials(req.user.userId);
+    const credentials = await spotifyTokens.getSpotifyCredentials(
+      req.user.userId
+    );
 
     if (!credentials || !credentials.access_token) {
       console.log(
@@ -91,60 +106,118 @@ const talkToSpotify = async (req, res) => {
       return;
     }
 
-    const accessToken = credentials.access_token;
+    accessToken = credentials.access_token;
     console.log('talkToSpotify token: ', accessToken);
-    const url = getSpotifyUrl(req);
-    console.log('talkToSpotify: ', req.path, url, req.method);
+  } catch (err) {
+    console.error('talkToSpotify error getting credentials', err);
+    res.json({ empty: true });
+  }
 
-    axios({
+  const response = await chatWithSpotify(accessToken, url, method);
+  res.json(response);
+};
+
+const chatWithSpotify = async (accessToken, url, method) => {
+  try {
+    const response = await axios({
       url: url,
-      method: req.method,
+      method: method,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-    })
-      .then((response) => {
-        console.log('axios got response for ', url);
-        //if (response && response.data && isJson(response.data)) {
-        if (response && response.data) {
-          res.json(response.data);
-        } else {
-          console.log('axios got empty response');
-          /*
-          if (typeof response === 'undefined') {
-            console.log('axios response is undefined');
-          } else {
-            console.log('axios response object: ', response);
-          }
-           */
-          res.json({ emptyResponse: true });
-        }
-      })
-      .catch((err) => {
-        console.error('caught error in talkToSpotify: ', JSON.stringify(err));
-        res.json({ empty: true });
-      });
+    });
+    console.log('axios got response for ', url);
+    if (response && response.data) {
+      return response.data;
+    } else {
+      console.log('axios got empty response');
+      return { emptyResponse: true };
+    }
   } catch (err) {
-    console.error('talkToSpotify error getting credentials', err);
+    console.error('chatWithSpotify error', err);
+    return { emptyResponse: true };
   }
 };
 
-const initiateSavedAlbums = async (req, res) => {
-  // get the first page of saved albums from Spotify
+// this gets them from the database and sends them to the client
+const fetchSavedAlbums = async (req, res) => {
+  const userAlbums = await user.getUserAlbums(req.user.userId);
 
-  // kick off worker to get the rest of the saved albums
-
-  //
-
-};
-
-const getSavedAlbums = async (req, res) => {
+  // return album data to client
+  res.json(userAlbums);
 }
 
+// this gets them from Spotify
+const refreshSavedAlbums = async (req, res) => {
+  // get the first page of saved albums from Spotify
+  const totalCount = await getSavedAlbums(req.user.userId, 0);
+  console.log('refreshSavedAlbums total count is ', totalCount);
+
+  // kick off worker to get the rest of the saved albums
+  const job = await savedAlbumQueue.add({
+    userId: req.user.userId,
+    count: totalCount,
+  });
+  console.log('refreshSavedAlbums created savedAlbumQueue worker job', job.id);
+
+  // return album count to client
+  res.json({ count: totalCount });
+};
+
+const getSavedAlbums = async (userId, offset) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
+  if (!credentials || !credentials.access_token) {
+    return 0;
+  }
+  const response = await chatWithSpotify(
+    credentials.access_token,
+    `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`,
+    'GET'
+  );
+  //console.log('getSavedAlbums response album[0]', response.items);
+  if (!response || response.length === 0) {
+    return 0;
+  }
+
+  // add artists to database
+  const albums = [];
+  // we need to do the inserts in an array with await so we don't duplicate
+  for (let i = 0; i < response.items.length; i += 1) {
+    const theArtist = response.items[i].album.artists[0];
+    const theAlbum = response.items[i].album;
+    const result = await artist.insertSingleArtist({
+      spotifyId: theArtist.id,
+      name: theArtist.name,
+    });
+    // console.log('insertSingleArtist in getSavedAlbums returned ', result);
+    albums.push({
+      spotifyId: theAlbum.id,
+      name: theAlbum.name,
+      artistId: result[0],
+      imageUrl: theAlbum.images ? utilities.getImage(theAlbum.images) : '',
+      releaseDate: moment(theAlbum.release_date),
+    });
+  }
+  // console.log('albums: ', albums);
+
+  // add albums to database
+  for (let i = 0; i < albums.length; i += 1) {
+    let result = await album.insertSingleAlbum(albums[i]);
+    // console.log('insertSingleAlbum in getSavedAlbums returned ', result);
+
+    // associate album with user
+    result = await user.insertSingleUserAlbum({ userId, albumId: result[0] });
+  }
+
+  return response.total;
+};
+
 const aggregateSpotifyArtistData = async (req, res) => {
-  const credentials = await spotifyTokens.getSpotifyCredentials(req.user.userId);
+  const credentials = await spotifyTokens.getSpotifyCredentials(
+    req.user.userId
+  );
   const accessToken = credentials.access_token;
 
   let url = '';
@@ -175,7 +248,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
       //      'aggregateSpotifyArtistData raw: ',
       //      JSON.stringify(response.data)
       //    );
-      if (response && response.data && isJson(response.data)) {
+      if (response && response.data && utilities.isJson(response.data)) {
         artistTotal = +response.data.artists.total;
         response.data.artists.items.forEach((item) => {
           artistList.push({
@@ -196,7 +269,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
     if (albumTotal < 0 || offset < albumTotal) {
       url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${limit}`;
       console.log('aggregate second url', req.path, url, req.method);
-      response = await axios({
+      const response = await axios({
         url: url,
         method: req.method,
         headers: {
@@ -210,7 +283,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
       //  'aggregateSpotifyArtistData 2 raw: ',
       //  JSON.stringify(response.data)
       //);
-      if (response && response.data && isJson(response.data)) {
+      if (response && response.data && utilities.isJson(response.data)) {
         albumTotal = +response.data.total;
         response.data.items.forEach((item) => {
           if (!artistList.some((a) => a.id === item.album.artists[0].id)) {
@@ -233,7 +306,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
     if (trackTotal < 0 || offset < trackTotal) {
       url = `https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`;
       console.log('aggregate third url', req.path, url, req.method);
-      response = await axios({
+      const response = await axios({
         url: url,
         method: req.method,
         headers: {
@@ -247,7 +320,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
       //  'aggregateSpotifyArtistData 2 raw: ',
       //  JSON.stringify(response.data)
       //);
-      if (response && response.data && isJson(response.data)) {
+      if (response && response.data && utilities.isJson(response.data)) {
         trackTotal = +response.data.total;
         response.data.items.forEach((item) => {
           if (!artistList.some((a) => a.id === item.track.artists[0].id)) {
@@ -281,4 +354,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
 module.exports = {
   talkToSpotify,
   aggregateSpotifyArtistData,
+  refreshSavedAlbums,
+  getSavedAlbums,
+  fetchSavedAlbums,
 };

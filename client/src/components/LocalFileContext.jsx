@@ -86,7 +86,6 @@ const LocalFileContext = ({
 LocalFileContext.propTypes = {
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

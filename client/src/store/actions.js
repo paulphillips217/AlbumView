@@ -122,7 +122,6 @@ export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) 
   dispatch(
     setSavedAlbumData({
       spotifyCount: savedAlbumData.spotifyCount + 1,
-      offset: savedAlbumData.offset + 1,
       data: sortGridData(newData, contextSortType),
     })
   );
@@ -135,7 +134,6 @@ export const removeSavedAlbum = (albumId, savedAlbumData, dispatch) => {
     dispatch(
       setSavedAlbumData({
         spotifyCount: savedAlbumData.spotifyCount - 1,
-        offset: savedAlbumData.offset - 1,
         data: newData,
       })
     );

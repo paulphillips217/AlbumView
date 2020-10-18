@@ -26,7 +26,7 @@ const initialState = {
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
-  savedAlbumData: { spotifyCount: 0, offset: 0, data: [] },
+  savedAlbumData: { spotifyCount: -1, data: [] },
   contextGridData: { spotifyCount: 0, data: [] },
   contextListData: {
     spotifyCount: -1,

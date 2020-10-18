@@ -54,7 +54,7 @@ const ModalAlbum = ({
   const modalTrigger = () =>
     image ? (
       <Image
-        size={useMiniImage ? 'mini' : ''}
+        size={useMiniImage ? 'mini' : 'medium'}
         style={{ cursor: 'pointer' }}
         src={image}
         onClick={() => setModalOpen(true)}
@@ -130,7 +130,6 @@ ModalAlbum.propTypes = {
   useMiniImage: PropTypes.bool,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

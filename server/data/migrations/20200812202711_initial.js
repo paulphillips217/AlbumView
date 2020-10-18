@@ -1,14 +1,24 @@
-exports.up = (knex) => {
-  return knex.schema
-    .dropTableIfExists('credentials')
-    .createTable('artist', (artist) => {
+exports.up = async (knex) => {
+  let result;
+  let hasTable
+  result = await knex.schema.dropTableIfExists('credentials');
+  hasTable = await knex.schema.hasTable('artist');
+  if (hasTable) {
+    console.log('artist table already exists');
+  } else {
+    result = await knex.schema.createTable('artist', (artist) => {
       artist.increments('id').primary();
       artist.string('spotifyId', 64);
       artist.string('musicBrainzId', 64);
       artist.string('name', 128).notNullable();
       artist.string('imageUrl', 512);
     })
-    .createTable('album', (album) => {
+  }
+  hasTable = await knex.schema.hasTable('album');
+  if (hasTable) {
+    console.log('album table already exists');
+  } else {
+    result = await knex.schema.createTable('album', (album) => {
       album.increments('id').primary();
       album
         .integer('artistId')
@@ -20,8 +30,14 @@ exports.up = (knex) => {
       album.string('musicBrainzId', 64);
       album.string('name', 128).notNullable();
       album.string('imageUrl', 512);
+      album.datetime('releaseDate').notNullable();
     })
-    .createTable('track', (track) => {
+  }
+  hasTable = await knex.schema.hasTable('track');
+  if (hasTable) {
+    console.log('track table already exists');
+  } else {
+    result = await knex.schema.createTable('track', (track) => {
       track.increments('id').primary();
       track
         .integer('albumId')
@@ -35,55 +51,77 @@ exports.up = (knex) => {
       track.integer('trackNumber').notNullable();
       track.string('name', 128).notNullable();
     })
-    .createTable('genre', (genre) => {
+  }
+  hasTable = await knex.schema.hasTable('genre');
+  if (hasTable) {
+    console.log('genre table already exists');
+  } else {
+    result = await knex.schema.createTable('genre', (genre) => {
       genre.increments('id').primary();
       genre.string('name', 128).notNullable();
     })
-    .createTable('albumGenres', (albumGenre) => {
-      albumGenre
+  }
+  hasTable = await knex.schema.hasTable('albumGenres');
+  if (hasTable) {
+    console.log('albumGenres table already exists');
+  } else {
+    result = await knex.schema.createTable('albumGenres', (albumGenres) => {
+      albumGenres
         .integer('albumId')
         .references('id')
         .inTable('album')
         .notNull()
         .onDelete('cascade');
-      albumGenre
+      albumGenres
         .integer('genreId')
         .references('id')
         .inTable('genre')
         .notNull()
         .onDelete('cascade');
-      albumGenre.primary(['albumId', 'genreId']);
+      albumGenres.primary(['albumId', 'genreId']);
     })
-    .createTable('user', (user) => {
+  }
+  hasTable = await knex.schema.hasTable('user');
+  if (hasTable) {
+    console.log('user table already exists');
+  } else {
+    result = await knex.schema.createTable('user', (user) => {
       user.integer('id').primary();
       user.string('spotifyAuthToken', 512).notNullable();
       user.string('spotifyRefreshToken', 512).notNullable();
       user.datetime('spotifyExpiration').notNullable();
     })
-    .createTable('userAlbums', (albumGenre) => {
-      albumGenre
+  }
+  hasTable = await knex.schema.hasTable('userAlbums');
+  if (hasTable) {
+    console.log('userAlbums table already exists');
+  } else {
+    result = await knex.schema.createTable('userAlbums', (userAlbums) => {
+      userAlbums
         .integer('userId')
         .references('id')
         .inTable('user')
         .notNull()
         .onDelete('cascade');
-      albumGenre
+      userAlbums
         .integer('albumId')
         .references('id')
         .inTable('album')
         .notNull()
         .onDelete('cascade');
-      albumGenre.primary(['userId', 'albumId']);
+      userAlbums.primary(['userId', 'albumId']);
     });
+  }
 };
 
-exports.down = (knex) => {
-  return knex.schema
-    .dropTableIfExists('userAlbums')
-    .dropTableIfExists('user')
-    .dropTableIfExists('albumGenre')
-    .dropTableIfExists('genre')
-    .dropTableIfExists('track')
-    .dropTableIfExists('album')
-    .dropTableIfExists('artist');
+exports.down = async (knex) => {
+  let result;
+  result = await knex.schema.dropTableIfExists('userAlbums');
+  result = await knex.schema.dropTableIfExists('user');
+  result = await knex.schema.dropTableIfExists('albumGenres');
+  result = await knex.schema.dropTableIfExists('genre');
+  result = await knex.schema.dropTableIfExists('track');
+  result = await knex.schema.dropTableIfExists('album');
+  result = await knex.schema.dropTableIfExists('artist');
+  return result;
 };

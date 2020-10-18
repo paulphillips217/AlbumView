@@ -40,6 +40,7 @@ passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: (req) => {
+        console.log('getting JWT from request - url', req.url);
         console.log('getting JWT from request - cookies', req.cookies);
         return req.cookies ? req.cookies.jwt : '';
       },
@@ -156,13 +157,10 @@ app.use(passport.session());
 /* this is the end of the OneDrive setup */
 
 /* start bull & redis queue setup */
-let Queue = require('bull');
+const Queue = require('bull');
 
-// Connect to a local redis instance locally, and the Heroku-provided URL in production
-let REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-
-// Create / Connect to a named work queue
-let workQueue = new Queue('work', REDIS_URL);
+// create / connect to a named work queue
+const testQueue = new Queue('test', process.env.REDIS_URL);
 
 // Kick off a new job by adding it to the work queue
 app.get('/job', async (req, res) => {
@@ -170,28 +168,29 @@ app.get('/job', async (req, res) => {
   // This would be where you could pass arguments to the job
   // Ex: workQueue.add({ url: 'https://www.heroku.com' })
   // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
-  let job = await workQueue.add();
+  const job = await testQueue.add({myData: "this is test data"});
+  console.log('this is after the await for the add');
   res.json({ id: job.id });
 });
 
 // Allows the client to query the state of a background job
 app.get('/job/:id', async (req, res) => {
-  let id = req.params.id;
-  let job = await workQueue.getJob(id);
+  const id = req.params.id;
+  const job = await testQueue.getJob(id);
 
   if (job === null) {
     res.status(404).end();
   } else {
-    let state = await job.getState();
-    let progress = job._progress;
-    let reason = job.failedReason;
+    const state = await job.getState();
+    const progress = job._progress;
+    const reason = job.failedReason;
     res.json({ id, state, progress, reason });
   }
 });
 
 // You can listen to global events to get notified when jobs are processed
-workQueue.on('global:completed', (jobId, result) => {
-  console.log(`Job completed with result ${result}`);
+testQueue.on('global:completed', (jobId, result) => {
+  console.log(`Global testQueue Listener: Job completed with result ${result}`);
 });
 
 /* end bull & redis queue setup */

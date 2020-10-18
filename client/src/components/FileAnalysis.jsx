@@ -45,7 +45,6 @@ const FileAnalysis = ({
         albumFileIdProp,
         savedAlbumData,
         savedAlbumData.spotifyCount,
-        savedAlbumData.offset,
         contextSortType,
         setAlbumData
       );
@@ -196,7 +195,6 @@ FileAnalysis.propTypes = {
   albumFileIdProp: PropTypes.string.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         albumId: PropTypes.string,

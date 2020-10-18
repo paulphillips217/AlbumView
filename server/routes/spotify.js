@@ -12,7 +12,7 @@ const user = require('../data/user');
 // https://blog.usejournal.com/sessionless-authentication-withe-jwts-with-node-express-passport-js-69b059e4b22c
 
 const setSessionJwt = async (req, res) => {
-  console.log('setSessionJwt');
+  console.log('setSessionJwt entry point -- ', req.url);
 
   const userId = await user.initializeUser(req.credentials);
   console.log('setSessionJwt initialized user', userId);
@@ -78,9 +78,14 @@ router.get(
   spotifyData.talkToSpotify
 );
 router.get(
-  '/album-list/:offset/:limit',
+  '/album-list-refresh',
   passport.authenticate('jwt', { session: false }),
-  spotifyData.talkToSpotify
+  spotifyData.refreshSavedAlbums
+);
+router.get(
+  '/album-list-fetch',
+  passport.authenticate('jwt', { session: false }),
+  spotifyData.fetchSavedAlbums
 );
 router.get(
   '/albums/contains/:ids',

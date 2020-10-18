@@ -22,7 +22,12 @@ export const sortGridData = (data, sortType) => {
 };
 
 export const stripLeadingArticle = (string) => {
-  return string ? string.replace(/^(an?|the)\s/i, '') : '';
+  if (typeof string === 'string' || string instanceof String) {
+    return string ? string.replace(/^(an?|the)\s/i, '') : '';
+  } else {
+    console.log('stripLeadingArticle -- string is not a string', string);
+    return string;
+  }
 };
 
 export const cleanTitle = (title) => {
@@ -64,6 +69,9 @@ export const sortByArtistThenAlbumDate = (a, b) => {
     const albumDate1 = stripLeadingArticle(a.releaseDate).toLowerCase();
     const albumDate2 = stripLeadingArticle(b.releaseDate).toLowerCase();
     if (albumDate1 === albumDate2) {
+      if (!a.trackName || !b.trackName) {
+        return 0;
+      }
       const trackName1 = stripLeadingArticle(a.trackName).toLowerCase();
       const trackName2 = stripLeadingArticle(b.trackName).toLowerCase();
       if (trackName1 === trackName2) {

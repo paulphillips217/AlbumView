@@ -15,7 +15,7 @@ const initializeUser = async (credentials) => {
     const userId = await trx
       .select('id')
       .from('user')
-      .where({ spotifyAuthToken: access_token })
+      .where({ spotifyAuthToken: access_token });
     console.log('initializeUser current user result: ', userId);
     if (userId && userId.length > 0) {
       console.log('initializeUser found current user', userId);
@@ -27,14 +27,20 @@ const initializeUser = async (credentials) => {
     let newId;
     const minResult = await trx('user').min('id');
     console.log('initializeUser min user result: ', minResult);
-    const minId = minResult && minResult.length > 0 && minResult[0].min ? minResult[0].min : 0;
+    const minId =
+      minResult && minResult.length > 0 && minResult[0].min
+        ? minResult[0].min
+        : 0;
     console.log('initializeUser min id', minId);
     if (minId > 1) {
       newId = minId - 1;
     } else {
       const maxResult = await trx('user').max('id');
       console.log('initializeUser max user result: ', maxResult);
-      const maxId = maxResult && maxResult.length > 0 && maxResult[0].max ? maxResult[0].max : 0;
+      const maxId =
+        maxResult && maxResult.length > 0 && maxResult[0].max
+          ? maxResult[0].max
+          : 0;
       console.log('initializeUser max id', maxId);
       newId = maxId + 1;
     }
@@ -84,13 +90,51 @@ const clearOutOldUsers = () => {
     'clearOutOldUsers threshold: ',
     threshold.format('YYYY-MM-DDThh:mm:ssZ')
   );
-  return db("user")
-    .where('spotifyExpiration', '<', threshold)
-    .del();
+  return db('user').where('spotifyExpiration', '<', threshold).del();
+};
+
+const insertSingleUserAlbum = (userAlbum) => {
+  return db('userAlbums')
+    .select()
+    .where({
+      userId: userAlbum.userId,
+      albumId: userAlbum.albumId,
+    })
+    .then((rows) => {
+      if (rows.length === 0) {
+        // no matching records found
+        return db('userAlbums').insert(userAlbum);
+      } else {
+        // duplicate spotifyId found
+        // console.log('insertSingleUserAlbum duplicate found: ', userAlbum);
+        return userAlbum;
+      }
+    })
+    .catch((err) => {
+      console.log('insertSingleUserAlbum error: ', err);
+      return null;
+    });
+};
+
+const getUserAlbums = (userId) => {
+  return db
+    .from('userAlbums')
+    .innerJoin('album', 'userAlbums.albumId', 'album.id')
+    .innerJoin('artist', 'album.artistId', 'artist.id')
+    .select(
+      { spotifyId: 'album.spotifyId' },
+      { albumName: 'album.name' },
+      { artistName: 'artist.name' },
+      { imageUrl: 'album.imageUrl' },
+      { releaseDate: 'album.releaseDate' }
+    )
+    .where('userAlbums.userId', userId);
 };
 
 module.exports = {
   initializeUser,
   getCredentials,
   updateSpotifyTokens,
+  insertSingleUserAlbum,
+  getUserAlbums,
 };

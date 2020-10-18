@@ -36,10 +36,10 @@ export const blendAlbumLists = (
   mergeListIdProp,
   savedAlbumData,
   spotifyCount,
-  offset,
   contextSortType,
   setAlbumData
 ) => {
+  console.log('blend starting');
   // start with the spotify list and add any file albums to it
   const blendedList = savedAlbumData.data.slice();
 
@@ -80,10 +80,13 @@ export const blendAlbumLists = (
       }
     });
   }
-  // console.log('blended album list: ', blendedList);
+  // console.log('in blendAlbumLists, setAlbumData saving blended album list: ', spotifyCount, blendedList);
+  console.log('sorting data');
+  const sortedData = sortGridData(blendedList, contextSortType);
+  console.log('saving data');
   setAlbumData({
     spotifyCount,
-    offset,
-    data: sortGridData(blendedList, contextSortType),
+    data: sortedData,
   });
+  console.log('blend finished');
 };
