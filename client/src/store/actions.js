@@ -16,6 +16,7 @@ import {
   LOCAL_FILE_DATA,
   ONE_DRIVE_ROOT,
   SPOTIFY_IS_AUTHENTICATED,
+  SELECTED_GENRE, SELECTED_ALBUM
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
@@ -114,6 +115,16 @@ export const setLocalFileData = (data) => ({
 export const setOneDriveRoot = (root) => ({
   type: ONE_DRIVE_ROOT,
   payload: root,
+});
+
+export const setSelectedGenre = (id) => ({
+  type: SELECTED_GENRE,
+  payload: id,
+});
+
+export const setSelectedAlbum = (id) => ({
+  type: SELECTED_ALBUM,
+  payload: id,
 });
 
 export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) => {

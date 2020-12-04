@@ -90,7 +90,7 @@ AlbumGridColumn.propTypes = {
       duration_ms: PropTypes.number,
     })
   ).isRequired,
-  trackHearts: PropTypes.arrayOf(PropTypes.string).isRequired,
+  trackHearts: PropTypes.arrayOf(PropTypes.bool).isRequired,
   trackIndexOffset: PropTypes.number.isRequired,
   handleTrackHeartClick: PropTypes.func.isRequired,
   handleTrackPlayClick: PropTypes.func.isRequired,

@@ -103,11 +103,44 @@ const insertSingleUserAlbum = (userAlbum) => {
     .then((rows) => {
       if (rows.length === 0) {
         // no matching records found
-        return db('userAlbums').insert(userAlbum);
+        return db('userAlbums')
+          .returning(['userId', 'albumId'])
+          .insert(userAlbum)
+          .then((rows) => {
+            if (rows.length > 0) {
+              return rows[0];
+            } else {
+              console.log('insertSingleUserAlbum added row but got no results');
+              return null;
+            }
+          })
+          .catch((err) =>
+            console.log('insertSingleUserAlbum insert error', err)
+          );
       } else {
-        // duplicate spotifyId found
+        // duplicate spotifyId found, update the record with localId and oneDriveId
         // console.log('insertSingleUserAlbum duplicate found: ', userAlbum);
-        return userAlbum;
+        return db('userAlbums')
+          .where({
+            userId: userAlbum.userId,
+            albumId: userAlbum.albumId,
+          })
+          .update(
+            { localId: userAlbum.localId, oneDriveId: userAlbum.oneDriveId },
+            ['userId', 'albumId']
+          )
+          .then((rows) => {
+            if (rows.length > 0) {
+              return rows[0];
+            } else {
+              console.log('insertSingleUserAlbum added row but got no results');
+              return null;
+            }
+          })
+          .catch((err) =>
+            console.log('insertSingleUserAlbum update error', err)
+          );
+        // return userAlbum;
       }
     })
     .catch((err) => {
@@ -116,19 +149,43 @@ const insertSingleUserAlbum = (userAlbum) => {
     });
 };
 
-const getUserAlbums = (userId) => {
-  return db
-    .from('userAlbums')
-    .innerJoin('album', 'userAlbums.albumId', 'album.id')
-    .innerJoin('artist', 'album.artistId', 'artist.id')
-    .select(
-      { spotifyId: 'album.spotifyId' },
-      { albumName: 'album.name' },
-      { artistName: 'artist.name' },
-      { imageUrl: 'album.imageUrl' },
-      { releaseDate: 'album.releaseDate' }
-    )
-    .where('userAlbums.userId', userId);
+const getUserAlbums = (userId, genreId = 0) => {
+  console.log('getUserAlbums genre: ', genreId);
+  if (genreId > 0) {
+    return db
+      .from('userAlbums')
+      .innerJoin('album', 'userAlbums.albumId', 'album.id')
+      .innerJoin('artist', 'album.artistId', 'artist.id')
+      .innerJoin('albumGenres', 'album.id', 'albumGenres.albumId')
+      .select(
+        { albumId: 'album.id' },
+        { localId: 'userAlbums.localId' },
+        { oneDriveId: 'userAlbums.oneDriveId' },
+        { spotifyId: 'album.spotifyId' },
+        { albumName: 'album.name' },
+        { artistName: 'artist.name' },
+        { imageUrl: 'album.imageUrl' },
+        { releaseDate: 'album.releaseDate' }
+      )
+      .where('userAlbums.userId', userId)
+      .andWhere('albumGenres.genreId', genreId);
+  } else {
+    return db
+      .from('userAlbums')
+      .innerJoin('album', 'userAlbums.albumId', 'album.id')
+      .innerJoin('artist', 'album.artistId', 'artist.id')
+      .select(
+        { albumId: 'album.id' },
+        { localId: 'userAlbums.localId' },
+        { oneDriveId: 'userAlbums.oneDriveId' },
+        { spotifyId: 'album.spotifyId' },
+        { albumName: 'album.name' },
+        { artistName: 'artist.name' },
+        { imageUrl: 'album.imageUrl' },
+        { releaseDate: 'album.releaseDate' }
+      )
+      .where('userAlbums.userId', userId);
+  }
 };
 
 module.exports = {

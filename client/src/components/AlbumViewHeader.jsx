@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Card, Dropdown, Grid, Segment } from 'semantic-ui-react';
@@ -12,22 +12,40 @@ import {
   setContextItem,
   setRelatedToArtist,
   setDataLoading,
+  setSelectedGenre,
 } from '../store/actions';
-import { getContextType, getDataLoading } from '../store/selectors';
+import {
+  getContextType,
+  getDataLoading,
+  getSelectedGenre,
+  getSpotifyIsAuthenticated,
+} from '../store/selectors';
 import ModalConfig from './ModalConfig';
+import HttpService from '../util/httpUtils';
 
 const AlbumViewHeader = ({
+  isSpotifyAuthenticated,
   contextType,
   contextData,
   dataLoading,
+  genre,
   setItem,
   setLoading,
   setType,
   setRelatedTo,
   setGridData,
   resetListData,
+  setGenre,
+  httpService,
 }) => {
   const theme = useTheme();
+  const [genreOptions, setGenreOptions] = useState([
+    {
+      key: 0,
+      text: 'All Genres',
+      value: 0,
+    },
+  ]);
 
   const listOptions = [
     {
@@ -67,7 +85,37 @@ const AlbumViewHeader = ({
     },
   ];
 
-  const handleDropdownChange = (e, { value }) => {
+  useEffect(() => {
+    const getGenreList = () => {
+      if (!isSpotifyAuthenticated) {
+        return;
+      }
+      httpService
+        .get(`/album-view/genre-list`)
+        .then((rawData) => {
+          // console.log('genre list raw data: ', rawData);
+          // .filter((item) => item.albumCount >= 200)
+          const data = rawData.map((item) => ({
+            key: item.genreId,
+            text: item.genreName,
+            value: item.genreId,
+          }));
+          setGenreOptions([
+            {
+              key: 0,
+              text: 'All Genres',
+              value: 0,
+            },
+            ...data,
+          ]);
+          //console.log('genre list processed:', genreOptions);
+        })
+        .catch((error) => console.log(error));
+    };
+    getGenreList();
+  }, [isSpotifyAuthenticated, httpService]);
+
+  const handleContextChange = (e, { value }) => {
     setGridData({ spotifyCount: 0, offset: 0, data: [] });
     resetListData();
     setType(value);
@@ -75,6 +123,10 @@ const AlbumViewHeader = ({
     setRelatedTo('');
     setLoading(true);
     console.log('handle dropdown change', value);
+  };
+
+  const handleGenreChange = (e, { value }) => {
+    setGenre(value);
   };
 
   const handleCancelLoading = () => {
@@ -99,13 +151,21 @@ const AlbumViewHeader = ({
               inline
               options={listOptions}
               value={contextType}
-              onChange={handleDropdownChange}
+              onChange={handleContextChange}
             />
           </Segment>
         </Grid.Column>
         <Grid.Column>
           <Segment basic textAlign="center">
-            {' '}
+            {contextType === ContextType.Albums && (
+              <Dropdown
+                inline
+                scrolling
+                options={genreOptions}
+                value={genre}
+                onChange={handleGenreChange}
+              />
+            )}
           </Segment>
         </Grid.Column>
         <Grid.Column width={7}>
@@ -142,6 +202,7 @@ const AlbumViewHeader = ({
 };
 
 AlbumViewHeader.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
   contextType: PropTypes.string.isRequired,
   contextData: PropTypes.shape({
     name: PropTypes.string,
@@ -150,17 +211,22 @@ AlbumViewHeader.propTypes = {
     loadingCount: PropTypes.number,
   }).isRequired,
   dataLoading: PropTypes.bool.isRequired,
+  genre: PropTypes.number.isRequired,
   setType: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
   setRelatedTo: PropTypes.func.isRequired,
   setGridData: PropTypes.func.isRequired,
   resetListData: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
+  setGenre: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   contextType: getContextType(state),
   dataLoading: getDataLoading(state),
+  genre: getSelectedGenre(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -170,6 +236,7 @@ const mapDispatchToProps = (dispatch) => ({
   setGridData: (data) => dispatch(setContextGridData(data)),
   resetListData: () => dispatch(resetContextListData()),
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setGenre: (id) => dispatch(setSelectedGenre(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumViewHeader);

@@ -143,11 +143,19 @@ const chatWithSpotify = async (accessToken, url, method) => {
 
 // this gets them from the database and sends them to the client
 const fetchSavedAlbums = async (req, res) => {
-  const userAlbums = await user.getUserAlbums(req.user.userId);
+  const userAlbums = await user.getUserAlbums(
+    req.user.userId,
+    req.params.genreId
+  );
+  console.log(
+    'fetchSavedAlbums - genre & count:',
+    req.params.genreId,
+    userAlbums.length
+  );
 
   // return album data to client
   res.json(userAlbums);
-}
+};
 
 // this gets them from Spotify
 const refreshSavedAlbums = async (req, res) => {
@@ -187,15 +195,15 @@ const getSavedAlbums = async (userId, offset) => {
   for (let i = 0; i < response.items.length; i += 1) {
     const theArtist = response.items[i].album.artists[0];
     const theAlbum = response.items[i].album;
-    const result = await artist.insertSingleArtist({
+    const artistId = await artist.insertSingleArtist({
       spotifyId: theArtist.id,
       name: theArtist.name,
     });
-    // console.log('insertSingleArtist in getSavedAlbums returned ', result);
+    // console.log('insertSingleArtist in getSavedAlbums returned ', artistId);
     albums.push({
       spotifyId: theAlbum.id,
       name: theAlbum.name,
-      artistId: result[0],
+      artistId: artistId,
       imageUrl: theAlbum.images ? utilities.getImage(theAlbum.images) : '',
       releaseDate: moment(theAlbum.release_date),
     });
@@ -204,11 +212,11 @@ const getSavedAlbums = async (userId, offset) => {
 
   // add albums to database
   for (let i = 0; i < albums.length; i += 1) {
-    let result = await album.insertSingleAlbum(albums[i]);
+    const albumId = await album.insertSingleAlbum(albums[i]);
     // console.log('insertSingleAlbum in getSavedAlbums returned ', result);
 
     // associate album with user
-    result = await user.insertSingleUserAlbum({ userId, albumId: result[0] });
+    const result = await user.insertSingleUserAlbum({ userId, albumId: albumId });
   }
 
   return response.total;

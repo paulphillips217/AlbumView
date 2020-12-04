@@ -57,7 +57,7 @@ const ArtistContext = ({
               albumName: e.name,
               artist: e.artists[0].name,
               image: getImage(e.images),
-              releaseDate: e.release_date,
+              releaseDate: e.release_date ? e.release_date : Date.now(),
               albumGroup: e.album_group,
               albumType: e.album_type,
             }));
@@ -210,7 +210,7 @@ ArtistContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
@@ -227,7 +227,7 @@ ArtistContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,

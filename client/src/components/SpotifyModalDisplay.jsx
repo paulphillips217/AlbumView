@@ -11,6 +11,7 @@ import {
   Header,
   Modal,
   Icon,
+  Button,
 } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import { getImage } from '../util/utilities';
@@ -188,7 +189,7 @@ const SpotifyModalDisplay = ({
               albumName: albumData.name,
               artist: albumData.artists[0] ? albumData.artists[0].name : 'unknown artist',
               image: getImage(albumData.images),
-              releaseDate: albumData.release_date,
+              releaseDate: albumData.release_date ? albumData.release_date : Date.now(),
             },
             savedAlbumData,
             contextSortType
@@ -251,13 +252,16 @@ const SpotifyModalDisplay = ({
     }
   };
 
+  const handleMoreClick = () => {
+    //    setItem(albumId);
+    //    setType(ContextType.SingleAlbum);
+  };
+
   const DiscBlock = (discNumber, trackIndexOffset) => (
     <Grid columns={2}>
       {discTracks.length > 1 && (
         <Header size="small" className="disc-number-header" style={theme}>
-          Disc 
-          {' '}
-          {discNumber + 1}
+          Disc {discNumber + 1}
         </Header>
       )}
       <Grid.Row>
@@ -298,6 +302,9 @@ const SpotifyModalDisplay = ({
         />
         <Icon name="play" size="small" color="green" onClick={() => handlePlayAlbum()} />
         {playerInactive && <span style={{ float: 'right' }}>Player is inactive</span>}
+        <span style={{ float: 'right' }}>
+          <Button onClick={handleMoreClick}>...</Button>
+        </span>
       </Modal.Header>
       <Modal.Content image style={theme}>
         <Image wrapped src={albumData.images && getImage(albumData.images)} />
@@ -367,7 +374,7 @@ SpotifyModalDisplay.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
       })

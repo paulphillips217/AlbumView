@@ -16,10 +16,11 @@ const passport = require('passport');
 
 const spotifyRoutes = require('./routes/spotify');
 const lastFmRoutes = require('./routes/last-fm');
+const albumViewRoutes = require('./routes/album-view');
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -198,6 +199,7 @@ testQueue.on('global:completed', (jobId, result) => {
 app.use('/spotify', spotifyRoutes);
 app.use('/one-drive', oneDriveRoutes);
 app.use('/last-fm', lastFmRoutes);
+app.use('/album-view', albumViewRoutes);
 
 // test endpoint to see if the server is running
 app.get('/ping', (req, res) => {

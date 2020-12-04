@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
@@ -12,39 +12,32 @@ import {
   getContextSortType,
   getDataLoading,
   getSpotifyIsAuthenticated,
+  getSelectedGenre,
 } from '../store/selectors';
 import { setSavedAlbumData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
 import { blendAlbumLists } from '../util/localFileUtils';
-import { useInterval } from '../util/useInterval';
 
 const AlbumContext = ({
   isSpotifyAuthenticated,
   dataLoading,
   savedAlbumData,
   contextSortType,
+  genre,
   setAlbumData,
   setLoading,
   httpService,
 }) => {
   const theme = useTheme();
 
-  const getGridData = async () => {
+  const getGridData = useCallback(async () => {
     let spotifyCount = savedAlbumData.spotifyCount;
     if (!isSpotifyAuthenticated) {
       console.log('albumContext getGridData - not logged in');
       setLoading(false);
       return;
     }
-    if (savedAlbumData.data.length === spotifyCount) {
-      console.log('albumContext getGridData - data count matches spotify count');
-      return;
-    }
-    // if (!dataLoading) {
-    //   console.log('albumContext getGridData - dataLoading is false');
-    //   return;
-    // }
     if (spotifyCount < 0) {
       console.log('albumContext getGridData - refreshing saved album data');
       const data = await httpService.get(`/spotify/album-list-refresh`);
@@ -53,14 +46,14 @@ const AlbumContext = ({
     }
     console.log('albumContext getGridData - fetching data');
     try {
-      const rawData = await httpService.get(`/spotify/album-list-fetch`);
+      const rawData = await httpService.get(`/spotify/album-list-fetch/${genre}`);
       // console.log('albumContext saved album data', rawData);
       const data = rawData.map((item) => ({
         albumId: item.spotifyId,
         albumName: item.albumName ? item.albumName : 'unknown album',
         artist: item.artistName ? item.artistName : 'unknown artist',
         image: item.imageUrl,
-        releaseDate: item.releaseDate,
+        releaseDate: item.releaseDate ? item.releaseDate : Date.now(),
         localId: 0,
         oneDriveId: '',
       }));
@@ -72,7 +65,7 @@ const AlbumContext = ({
         );
         setLoading(false);
       }
-      // console.log('albumContext just before blending', data);
+      console.log('albumContext just before blending', data);
       blendAlbumLists(
         data,
         'albumId',
@@ -84,12 +77,18 @@ const AlbumContext = ({
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [
+    contextSortType,
+    genre,
+    httpService,
+    isSpotifyAuthenticated,
+    setAlbumData,
+    setLoading,
+  ]);
 
-  useInterval(async () => {
-    console.log('useInterval is running', savedAlbumData.spotifyCount);
-    await getGridData();
-  }, 3000);
+  useEffect(() => {
+    getGridData();
+  }, [genre, getGridData]);
 
   const contextData = {
     name: 'Your Saved Albums',
@@ -130,13 +129,14 @@ AlbumContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
       })
     ),
   }).isRequired,
   contextSortType: PropTypes.string.isRequired,
+  genre: PropTypes.number.isRequired,
   setAlbumData: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
@@ -147,6 +147,7 @@ const mapStateToProps = (state) => ({
   dataLoading: getDataLoading(state),
   savedAlbumData: getSavedAlbumData(state),
   contextSortType: getContextSortType(state),
+  genre: getSelectedGenre(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

@@ -10,6 +10,7 @@ exports.up = async (knex) => {
       artist.increments('id').primary();
       artist.string('spotifyId', 64);
       artist.string('musicBrainzId', 64);
+      artist.string('tadbId', 64);
       artist.string('name', 128).notNullable();
       artist.string('imageUrl', 512);
     })
@@ -28,9 +29,10 @@ exports.up = async (knex) => {
         .onDelete('cascade');
       album.string('spotifyId', 64);
       album.string('musicBrainzId', 64);
+      album.string('tadbId', 64);
       album.string('name', 128).notNullable();
       album.string('imageUrl', 512);
-      album.datetime('releaseDate').notNullable();
+      album.datetime('releaseDate');
     })
   }
   hasTable = await knex.schema.hasTable('track');
@@ -47,6 +49,7 @@ exports.up = async (knex) => {
         .onDelete('cascade');
       track.string('spotifyId', 64);
       track.string('musicBrainzId', 64);
+      track.string('tadbId', 64);
       track.integer('cdNumber').notNullable();
       track.integer('trackNumber').notNullable();
       track.string('name', 128).notNullable();
@@ -109,6 +112,8 @@ exports.up = async (knex) => {
         .inTable('album')
         .notNull()
         .onDelete('cascade');
+      userAlbums.integer('localId', 64);
+      userAlbums.string('oneDriveId', 64);
       userAlbums.primary(['userId', 'albumId']);
     });
   }

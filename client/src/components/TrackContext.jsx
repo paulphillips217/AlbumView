@@ -49,7 +49,7 @@ const TrackContext = ({
               ? e.track.album.artists[0].name
               : 'unknown artist',
             image: getImage(e.track.album.images),
-            releaseDate: e.track.album.release_date,
+            releaseDate: e.track.album.release_date ? e.track.album.release_date : Date.now(),
           }));
           const newData = contextGridData.data.concat(data);
           setGridData({
@@ -108,7 +108,7 @@ TrackContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,

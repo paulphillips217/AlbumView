@@ -2,11 +2,20 @@ import { trimTrackFileName } from './utilities';
 import { cleanTitle, sortGridData } from './sortUtils';
 
 export const createLocalTracks = (album) => {
-  console.log('createLocalTracks');
-  return album.localFileObjects.map((track) => ({
-    name: trimTrackFileName(track.name),
-    url: URL.createObjectURL(track),
-  }));
+  console.log('createLocalTracks', album);
+  if (album?.localFileObjects) {
+    return album.localFileObjects.map((track) => ({
+      name: trimTrackFileName(track.name),
+      url: URL.createObjectURL(track),
+    }));
+  }
+  if (album?.tracks) {
+    return album.tracks.map((track) => ({
+      name: trimTrackFileName(track.name),
+      url: URL.createObjectURL(track),
+    }));
+  }
+  return [];
 };
 
 export const tearDownLocalTracks = (albumTrackList) => {
@@ -39,7 +48,8 @@ export const blendAlbumLists = (
   contextSortType,
   setAlbumData
 ) => {
-  console.log('blend starting');
+  console.log('blend starting', mergeList.length, savedAlbumData);
+
   // start with the spotify list and add any file albums to it
   const blendedList = savedAlbumData.data.slice();
 
@@ -62,17 +72,17 @@ export const blendAlbumLists = (
         // add the merge list id and the tracks array to the master list
         blendedList[matchIndex][mergeListIdProp] = item[mergeListIdProp];
         if (item.tracks && item.tracks.length > 0) {
-          blendedList.localFileObjects = item.tracks;
+          blendedList[matchIndex].localFileObjects = item.tracks;
         }
       } else {
         // the album isn't in the master list, so add it
         const album = {
           albumId: item.albumId ? item.albumId : null,
           [mergeListIdProp]: item[mergeListIdProp] ? item[mergeListIdProp] : null,
-          albumName: item.albumName,
-          artist: item.artist,
+          albumName: item.albumName ? item.albumName : 'empty album name',
+          artist: item.artist ? item.artist : 'empty artist name',
           image: item.image ? item.image : '',
-          releaseDate: item.releaseDate ? item.releaseDate : '',
+          releaseDate: item.releaseDate ? item.releaseDate : Date.now(),
           localFileObjects: item.tracks && item.tracks.length > 0 ? item.tracks : null,
         };
         blendedList.push(album);

@@ -26,7 +26,7 @@ export const stripLeadingArticle = (string) => {
     return string ? string.replace(/^(an?|the)\s/i, '') : '';
   } else {
     console.log('stripLeadingArticle -- string is not a string', string);
-    return string;
+    return 'xxxxxxxxxx';
   }
 };
 
@@ -66,8 +66,8 @@ export const sortByArtistThenAlbumDate = (a, b) => {
   const artist2 = stripLeadingArticle(b.artist).toLowerCase();
   // if the artists are the same, sort by the album date
   if (artist1 === artist2) {
-    const albumDate1 = stripLeadingArticle(a.releaseDate).toLowerCase();
-    const albumDate2 = stripLeadingArticle(b.releaseDate).toLowerCase();
+    const albumDate1 = a.releaseDate ? a.releaseDate : Date.now();
+    const albumDate2 = b.releaseDate ? b.releaseDate : Date.now();
     if (albumDate1 === albumDate2) {
       if (!a.trackName || !b.trackName) {
         return 0;

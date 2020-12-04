@@ -51,18 +51,45 @@ const chatWithLastFm = async (url, method) => {
     console.error('chatWithLastFm error', err);
     return { emptyResponse: true };
   }
-}
+};
 
 const getMusicBrainzId = async (artist, album) => {
   const apiKey = process.env.LAST_FM_API_KEY;
-  const url = `http://ws.audioscrobbler.com/2.0?method=album.getinfo&api_key=${apiKey}&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}&format=json&autocorrect=1`;
+  const url = `http://ws.audioscrobbler.com/2.0?method=album.getinfo&api_key=${apiKey}&artist=${encodeURIComponent(
+    artist
+  )}&album=${encodeURIComponent(album)}&format=json&autocorrect=1`;
   //console.log('getMusicBrainzId url', url);
   const response = await chatWithLastFm(url, 'GET');
   //console.log('getMusicBrainzId response', response);
-  return response.album.mbid;
-}
+  if (response && response.album) {
+    return response.album.mbid;
+  }
+  if (response.error) {
+    console.error('getMusicBrainzId error: ', response.message);
+  }
+  return 'NOT-FOUND';
+};
+
+const getAlbumGenres = async (musicBrainzId, artist, album) => {
+  const apiKey = process.env.LAST_FM_API_KEY;
+  let url = `http://ws.audioscrobbler.com/2.0?method=album.gettoptags&api_key=${apiKey}&format=json&artist=${encodeURIComponent(
+    artist
+  )}&album=${encodeURIComponent(album)}&autocorrect=1`;
+  if (musicBrainzId && musicBrainzId !== '' && musicBrainzId !== 'NOT-FOUND') {
+    url += `&mbid=${musicBrainzId}`;
+  }
+  console.log('getAlbumGenres url', url);
+  const response = await chatWithLastFm(url, 'GET');
+  //console.log('getAlbumGenres response', response);
+  if (response && response.toptags) {
+    return response.toptags.tag;
+  }
+  console.log('getAlbumGenres error response', response);
+  return [];
+};
 
 module.exports = {
   talkToLastFm,
-  getMusicBrainzId
+  getMusicBrainzId,
+  getAlbumGenres,
 };

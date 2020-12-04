@@ -99,7 +99,7 @@ OneDriveFileContext.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
       })

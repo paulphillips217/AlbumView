@@ -17,21 +17,23 @@ let Queue = require('bull');
 
 const album = require('./data/album');
 const artist = require('./data/artist');
+const genre = require('./data/genre');
 const spotifyData = require('./spotifyData');
 const lastFmData = require('./lastFmData');
+const theAudioDbData = require('./theAudioDbData');
 
 // Spin up multiple processes to handle jobs to take advantage of more CPU cores
 // See: https://devcenter.heroku.com/articles/node-concurrency for more info
 let workers = +process.env.WEB_CONCURRENCY || 1;
 
 // The maximum number of jobs each worker should process at once. This will need
-// to be tuned for your application. If each job is mostly waiting on network 
+// to be tuned for your application. If each job is mostly waiting on network
 // responses it can be much higher. If each job is CPU-intensive, it might need
 // to be much lower.
 let maxJobsPerWorker = +process.env.MAX_JOBS_PER_WORKER || 50;
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const start = async () => {
@@ -39,6 +41,7 @@ const start = async () => {
   let testQueue = new Queue('test', process.env.REDIS_URL);
   let savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
   let lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
+  let audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
 
   console.log('starting worker process');
 
@@ -54,12 +57,12 @@ const start = async () => {
       job.progress(progress)
     }
     */
-//    const artist = await artist.insertSingleArtist();
-//    console.log('inserted single artist', artist);
+    //    const artist = await artist.insertSingleArtist();
+    //    console.log('inserted single artist', artist);
 
     // A job can return values that will be stored in Redis as JSON
     // This return value is unused in this demo application.
-    return { value: "This will be stored" };
+    return { value: 'This will be stored' };
   });
 
   // gets the user's saved albums from Spotify
@@ -83,25 +86,163 @@ const start = async () => {
     job.progress(count);
     console.log('savedAlbumQueue processing completed');
 
-    await lastAlbumQueue.add();
-    console.log('savedAlbumQueue started last album queue');
+    // await lastAlbumQueue.add();
+    await audioDbAlbumQueue.add();
+    console.log('savedAlbumQueue started the audio db queue');
   });
 
   // gets information for albums from Last.fm
   lastAlbumQueue.process(maxJobsPerWorker, async (job) => {
     console.log('lastAlbumQueue starting');
     const albums = await album.getAlbumsWithNoMbid();
-    console.log('lastAlbumQueue album count', albums.count);
+    console.log('getAlbumsWithNoMbid album count', albums.length);
 
     if (albums) {
       for (let i = 0; i < albums.length; i++) {
         await sleep(process.env.LAST_FM_INTERVAL);
-        let musicBrainzId = await lastFmData.getMusicBrainzId(albums[i].artistName, albums[i].albumName);
+        let musicBrainzId = await lastFmData.getMusicBrainzId(
+          albums[i].artistName,
+          albums[i].albumName
+        );
         console.log('lastAlbumQueue musicBrainzId', musicBrainzId);
         if (!musicBrainzId) {
           musicBrainzId = 'NOT-FOUND';
         }
         await album.addMusicBrainzId(albums[i].albumId, musicBrainzId);
+      }
+    }
+
+    const genrelessAlbums = await album.getAlbumsWithNoGenres();
+    console.log('getAlbumsWithNoGenres album count', genrelessAlbums.length);
+    if (genrelessAlbums) {
+      for (let i = 0; i < genrelessAlbums.length; i++) {
+        // for now, skip albums whose musicBrainzId is NOT-FOUND
+        if (genrelessAlbums[i].musicBrainzId === 'NOT-FOUND') {
+          continue;
+        }
+        await sleep(process.env.LAST_FM_INTERVAL);
+        let genres = await lastFmData.getAlbumGenres(
+          genrelessAlbums[i].musicBrainzId,
+          genrelessAlbums[i].artistName,
+          genrelessAlbums[i].albumName
+        );
+
+        if (genres) {
+          for (let j = 0; j < genres.length; j++) {
+            console.log('lastAlbumQueue album genre', genres[j]);
+            const { count, name } = genres[j];
+            if (count >= 10) {
+              const genreRecord = await genre.addGenre(name);
+              const albumGenre = await album.addAlbumGenre(
+                genrelessAlbums[i].albumId,
+                genreRecord.id
+              );
+              console.log(
+                'lastAlbumQueue albumGenreRecord',
+                genrelessAlbums[i].albumId,
+                genreRecord.id
+              );
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // gets information for albums from theAudioDb.com
+  audioDbAlbumQueue.process(maxJobsPerWorker, async (job) => {
+    console.log('audioDbAlbumQueue starting');
+    const albums = await album.getAlbumsWithNoTadbId();
+    console.log('getAlbumsWithNoTadbId album count', albums.length);
+
+    if (albums) {
+      let tadbId;
+      for (let i = 0; i < albums.length; i++) {
+        await sleep(process.env.THE_AUDIO_DB_INTERVAL);
+        let albumData = await theAudioDbData.getAlbumData(
+          albums[i].artistName,
+          albums[i].albumName
+        );
+        // if we didn't get a result, try removing everything between parentheses
+        if (
+          (!albumData || !albumData.idAlbum) &&
+          (albums[i].albumName.includes('&') ||
+            albums[i].albumName.includes('(') ||
+            albums[i].albumName.includes('/'))
+        ) {
+          const albumName = albums[i].albumName
+            .replace(/\(.+\)/g, '')
+            .replace(/&/g, 'and')
+            .replace(/ \/ /g, '/');
+          console.log(
+            `trying to search for ${albumName} instead of ${albums[i].albumName}`
+          );
+          await sleep(process.env.THE_AUDIO_DB_INTERVAL);
+          albumData = await theAudioDbData.getAlbumData(
+            albums[i].artistName,
+            albumName
+          );
+        }
+        //console.log('audioDbAlbumQueue albumData', albumData);
+        if (albumData && albumData.idAlbum) {
+          tadbId = albumData.idAlbum;
+        } else {
+          tadbId = 'NOT-FOUND';
+        }
+        await album.addTadbId(albums[i].albumId, tadbId);
+        if (albumData) {
+          if (albumData.strStyle) {
+            const genreRecord = await genre.addGenre(albumData.strStyle);
+            if (genreRecord && genreRecord.id) {
+              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
+              console.log(
+                'audioDbAlbumQueue albumGenreRecord',
+                albums[i].albumId,
+                genreRecord.id
+              );
+            } else {
+              console.log(
+                'audioDbAlbumQueue no albumData.strStyle',
+                albums[i].albumId,
+                albumData.strStyle
+              );
+            }
+          }
+          if (albumData.strGenre) {
+            const genreRecord = await genre.addGenre(albumData.strGenre);
+            if (genreRecord && genreRecord.id) {
+              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
+              console.log(
+                'audioDbAlbumQueue albumGenreRecord',
+                albums[i].albumId,
+                genreRecord.id
+              );
+            } else {
+              console.log(
+                'audioDbAlbumQueue no albumData.strGenre',
+                albums[i].albumId,
+                albumData.strGenre
+              );
+            }
+          }
+          if (albumData.strMood) {
+            const genreRecord = await genre.addGenre(albumData.strMood);
+            if (genreRecord && genreRecord.id) {
+              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
+              console.log(
+                'audioDbAlbumQueue albumGenreRecord',
+                albums[i].albumId,
+                genreRecord.id
+              );
+            } else {
+              console.log(
+                'audioDbAlbumQueue no albumData.strMood',
+                albums[i].albumId,
+                albumData.strMood
+              );
+            }
+          }
+        }
       }
     }
   });

@@ -19,6 +19,8 @@ import {
   LOCAL_FILE_DATA,
   ONE_DRIVE_ROOT,
   SPOTIFY_IS_AUTHENTICATED,
+  SELECTED_GENRE,
+  SELECTED_ALBUM,
 } from './types';
 
 const initialState = {
@@ -46,6 +48,8 @@ const initialState = {
   oneDriveLoggedIn: false,
   localFileData: [],
   oneDriveRoot: '',
+  selectedGenre: 0,
+  selectedAlbum: '',
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -141,6 +145,16 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting oneDriveRoot', action.payload);
       return Object.assign({}, state, {
         oneDriveRoot: action.payload,
+      });
+    case SELECTED_GENRE:
+      console.log('setting selectedGenre', action.payload);
+      return Object.assign({}, state, {
+        selectedGenre: action.payload,
+      });
+    case SELECTED_ALBUM:
+      console.log('setting selectedAlbum', action.payload);
+      return Object.assign({}, state, {
+        selectedAlbum: action.payload,
       });
     default:
       return state;

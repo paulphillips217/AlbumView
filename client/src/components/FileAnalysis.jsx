@@ -12,11 +12,10 @@ import {
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
 import { sortGridData } from '../util/sortUtils';
-import ModalAlbum from './ModalAlbum';
+import ModalAlbumDeprecated from './ModalAlbumDeprecated';
 import ModalFileAlbum from './ModalFileAlbum';
 import HttpService from '../util/httpUtils';
 import { setSavedAlbumData } from '../store/actions';
-import { blendAlbumLists } from '../util/localFileUtils';
 
 const FileAnalysis = ({
   isSpotifyAuthenticated,
@@ -39,15 +38,44 @@ const FileAnalysis = ({
   const handleRead = async () => {
     if (localFileData && localFileData.length > 0) {
       const theAlbumArray = await readAlbumArray(localFileData);
-      console.log('handleRead got theAlbumArray', theAlbumArray);
-      blendAlbumLists(
-        theAlbumArray,
-        albumFileIdProp,
-        savedAlbumData,
-        savedAlbumData.spotifyCount,
-        contextSortType,
-        setAlbumData
-      );
+      // console.log('handleRead got theAlbumArray', theAlbumArray);
+      const sendArray = theAlbumArray.map((item) => ({
+        localId: item.localId ? item.localId : -1,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+        artist: item.artist,
+        albumName: item.albumName,
+      }));
+      // console.log('handleRead sendArray', sendArray);
+      const rawData = await httpService.post(`/album-view/user-owned-albums`, {
+        albums: sendArray,
+      });
+      // console.log('user owned albums return rawData', rawData);
+      const data = rawData.map((item) => ({
+        albumId: item.spotifyId,
+        albumName: item.albumName ? item.albumName : 'unknown album',
+        artist: item.artistName ? item.artistName : 'unknown artist',
+        image: item.imageUrl,
+        releaseDate: item.releaseDate ? item.releaseDate : Date.now(),
+        localId: item.localId ? item.localId : null,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+        tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
+      }));
+      // console.log('user owned albums return data', data);
+      const sortedData = sortGridData(data, contextSortType);
+      console.log('saving data');
+      setAlbumData({
+        spotifyCount: savedAlbumData.spotifyCount,
+        data: sortedData,
+      });
+
+      // blendAlbumLists(
+      //   theAlbumArray,
+      //   albumFileIdProp,
+      //   savedAlbumData,
+      //   savedAlbumData.spotifyCount,
+      //   contextSortType,
+      //   setAlbumData
+      // );
     } else {
       console.log('file import data is empty');
     }
@@ -85,6 +113,7 @@ const FileAnalysis = ({
     const album = savedAlbumData.data.find(
       (item) => item[albumFileIdProp] === albumFileId
     );
+    console.log('FileAnalysis.setUpTracks album: ', albumFileIdProp, albumFileId, album);
     return createTracks(album, httpService);
   };
 
@@ -101,7 +130,7 @@ const FileAnalysis = ({
       .map((result) =>
         result.albumId ? (
           <div>
-            <ModalAlbum
+            <ModalAlbumDeprecated
               albumId={result.albumId}
               artistName={result.artist}
               albumName={result.albumName}
@@ -201,7 +230,7 @@ FileAnalysis.propTypes = {
         albumName: PropTypes.string,
         artist: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
       })

@@ -83,7 +83,7 @@ router.get(
   spotifyData.refreshSavedAlbums
 );
 router.get(
-  '/album-list-fetch',
+  '/album-list-fetch/:genreId',
   passport.authenticate('jwt', { session: false }),
   spotifyData.fetchSavedAlbums
 );
