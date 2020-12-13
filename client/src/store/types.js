@@ -17,7 +17,8 @@ export const ONE_DRIVE_LOGGED_IN = 'ONE_DRIVE_LOGGED_IN';
 export const LOCAL_FILE_DATA = 'LOCAL_FILE_DATA';
 export const ONE_DRIVE_ROOT = 'ONE_DRIVE_ROOT';
 export const SELECTED_GENRE = 'SELECTED_GENRE';
-export const SELECTED_ALBUM = 'SELECTED_ALBUM';
+export const SELECTED_ALBUM_ID = 'SELECTED_ALBUM_ID';
+export const SELECTED_SPOTIFY_ALBUM_ID = 'SELECTED_SPOTIFY_ALBUM_ID';
 
 export const ContextType = {
   Playlists: 'playlists',

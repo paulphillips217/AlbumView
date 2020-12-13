@@ -10,7 +10,7 @@ import { ModalDisplayTypes } from '../store/types';
 
 const LocalModalDisplay = ({
   albumFileId,
-  albumId,
+  spotifyAlbumId,
   localId,
   oneDriveId,
   artistName,
@@ -82,7 +82,7 @@ const LocalModalDisplay = ({
     console.log('setModalDisplayType IS NULL');
   }
 
-  let typeCount = albumId ? 1 : 0;
+  let typeCount = spotifyAlbumId ? 1 : 0;
   typeCount += localId ? 1 : 0;
   typeCount += oneDriveId ? 1 : 0;
 
@@ -110,7 +110,7 @@ const LocalModalDisplay = ({
               <Grid.Column floated="right" style={{ padding: '0' }}>
                 {typeCount > 1 && setModalDisplayType !== null && (
                   <Menu compact floated="right">
-                    {albumId && (
+                    {spotifyAlbumId && (
                       <Menu.Item
                         name="Spotify"
                         onClick={() => setModalDisplayType(ModalDisplayTypes.Spotify)}
@@ -140,6 +140,19 @@ const LocalModalDisplay = ({
                 )}
               </Grid.Column>
             </Grid>
+            {albumTrackList.length === 0 && (
+              <Header
+                color={'red'}
+                style={{
+                  ...theme,
+                  paddingLeft: '10px',
+                  paddingTop: '10px',
+                  paddingBottom: '20px',
+                }}
+              >
+                Local files not found -- please refresh source location
+              </Header>
+            )}
             <ol>
               {albumTrackList.length > 0 &&
                 albumTrackList.map((item, index) => (
@@ -178,7 +191,7 @@ const LocalModalDisplay = ({
 
 LocalModalDisplay.propTypes = {
   albumFileId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  albumId: PropTypes.string,
+  spotifyAlbumId: PropTypes.string,
   localId: PropTypes.number,
   oneDriveId: PropTypes.string,
   artistName: PropTypes.string.isRequired,
@@ -191,7 +204,7 @@ LocalModalDisplay.propTypes = {
 
 LocalModalDisplay.defaultProps = {
   setModalDisplayType: null,
-  albumId: null,
+  spotifyAlbumId: null,
   localId: null,
   oneDriveId: null,
 };

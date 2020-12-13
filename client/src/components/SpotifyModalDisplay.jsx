@@ -31,7 +31,7 @@ import HttpService from '../util/httpUtils';
 import { getContextSortType, getSavedAlbumData } from '../store/selectors';
 
 const SpotifyModalDisplay = ({
-  albumId,
+  spotifyAlbumId,
   savedAlbumData,
   contextSortType,
   setType,
@@ -56,9 +56,9 @@ const SpotifyModalDisplay = ({
 
   useEffect(() => {
     const getAlbumData = () => {
-      if (albumId) {
+      if (spotifyAlbumId) {
         httpService
-          .get(`/spotify/album-data/${albumId}`)
+          .get(`/spotify/album-data/${spotifyAlbumId}`)
           .then((data) => {
             setAlbumData(data);
             console.log('opening modal album with data: ', data);
@@ -67,13 +67,13 @@ const SpotifyModalDisplay = ({
       }
     };
     getAlbumData();
-  }, [albumId, httpService]);
+  }, [spotifyAlbumId, httpService]);
 
   useEffect(() => {
     const getAlbumHeartSettings = () => {
-      if (albumId) {
+      if (spotifyAlbumId) {
         httpService
-          .get(`/spotify/albums/contains/${albumId}`)
+          .get(`/spotify/albums/contains/${spotifyAlbumId}`)
           .then((data) => {
             setAlbumHeart(data[0]);
           })
@@ -81,7 +81,7 @@ const SpotifyModalDisplay = ({
       }
     };
     getAlbumHeartSettings();
-  }, [albumId, httpService]);
+  }, [spotifyAlbumId, httpService]);
 
   useEffect(() => {
     const getTrackHeartSettings = () => {
@@ -129,8 +129,8 @@ const SpotifyModalDisplay = ({
     );
   }
 
-  let typeCount = albumId ? 1 : 0;
-  const albumObject = savedAlbumData.data.find((item) => item.albumId === albumId);
+  let typeCount = spotifyAlbumId ? 1 : 0;
+  const albumObject = savedAlbumData.data.find((item) => item.spotifyAlbumId === spotifyAlbumId);
   if (albumObject) {
     typeCount += albumObject.localId ? 1 : 0;
     typeCount += albumObject.oneDriveId ? 1 : 0;
@@ -171,25 +171,25 @@ const SpotifyModalDisplay = ({
     setShowLoader(true);
     if (remove) {
       httpService
-        .delete(`/spotify/delete-albums/${albumId}`)
+        .delete(`/spotify/delete-albums/${spotifyAlbumId}`)
         .then(() => {
           console.log('handleAlbumHeartClick delete response');
-          removeAlbum(albumId, savedAlbumData);
+          removeAlbum(spotifyAlbumId, savedAlbumData);
           setShowLoader(false);
         })
         .catch((error) => console.error(error));
     } else {
       httpService
-        .put(`/spotify/save-albums/${albumId}`)
+        .put(`/spotify/save-albums/${spotifyAlbumId}`)
         .then(() => {
           console.log('handleAlbumHeartClick save response');
           addAlbum(
             {
-              albumId: albumData.id,
+              spotifyAlbumId: albumData.id,
               albumName: albumData.name,
-              artist: albumData.artists[0] ? albumData.artists[0].name : 'unknown artist',
+              artistName: albumData.artists[0] ? albumData.artists[0].name : 'unknown artist',
               image: getImage(albumData.images),
-              releaseDate: albumData.release_date ? albumData.release_date : Date.now(),
+              releaseDate: albumData.release_date ? moment(albumData.release_date).valueOf()  : Date.now(),
             },
             savedAlbumData,
             contextSortType
@@ -359,7 +359,7 @@ const SpotifyModalDisplay = ({
 };
 
 SpotifyModalDisplay.propTypes = {
-  albumId: PropTypes.string.isRequired,
+  spotifyAlbumId: PropTypes.string.isRequired,
   setType: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
@@ -370,13 +370,14 @@ SpotifyModalDisplay.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.number,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
@@ -401,8 +402,8 @@ const mapDispatchToProps = (dispatch) => ({
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
   addAlbum: (album, savedAlbumData, contextSortType) =>
     addSavedAlbum(album, savedAlbumData, contextSortType, dispatch),
-  removeAlbum: (savedAlbumData, albumId) =>
-    removeSavedAlbum(savedAlbumData, albumId, dispatch),
+  removeAlbum: (savedAlbumData, spotifyAlbumId) =>
+    removeSavedAlbum(savedAlbumData, spotifyAlbumId, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SpotifyModalDisplay);

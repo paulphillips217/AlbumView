@@ -56,11 +56,11 @@ export const blendAlbumLists = (
   if (mergeList && mergeList.length > 0) {
     // loop through the file system albums
     mergeList.forEach((item) => {
-      // match on artist & album name, but don't match if there are different valid id's
+      // match on artist name & album name, but don't match if there are different valid id's
       // because there are multiple spotify album versions
       const matchIndex = blendedList.findIndex(
         (a) =>
-          cleanTitle(a.artist) === cleanTitle(item.artist) &&
+          cleanTitle(a.artistName) === cleanTitle(item.artistName) &&
           cleanTitle(a.albumName) === cleanTitle(item.albumName) &&
           (a[mergeListIdProp] === item[mergeListIdProp] ||
             !a[mergeListIdProp] ||
@@ -78,9 +78,11 @@ export const blendAlbumLists = (
         // the album isn't in the master list, so add it
         const album = {
           albumId: item.albumId ? item.albumId : null,
-          [mergeListIdProp]: item[mergeListIdProp] ? item[mergeListIdProp] : null,
+          spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
+          localId: item.localId ? item.localId : 0,
+          oneDriveId: item.oneDriveId ? item.oneDriveId : '',
           albumName: item.albumName ? item.albumName : 'empty album name',
-          artist: item.artist ? item.artist : 'empty artist name',
+          artistName: item.artistName ? item.artistName : 'empty artist name',
           image: item.image ? item.image : '',
           releaseDate: item.releaseDate ? item.releaseDate : Date.now(),
           localFileObjects: item.tracks && item.tracks.length > 0 ? item.tracks : null,

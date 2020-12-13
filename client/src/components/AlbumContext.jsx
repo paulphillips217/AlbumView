@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import '../styles/splitPane.css';
@@ -49,13 +50,14 @@ const AlbumContext = ({
       const rawData = await httpService.get(`/spotify/album-list-fetch/${genre}`);
       // console.log('albumContext saved album data', rawData);
       const data = rawData.map((item) => ({
-        albumId: item.spotifyId,
+        albumId: item.albumId,
+        spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
+        localId: item.localId ? item.localId : 0,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
         albumName: item.albumName ? item.albumName : 'unknown album',
-        artist: item.artistName ? item.artistName : 'unknown artist',
+        artistName: item.artistName ? item.artistName : 'unknown artist',
         image: item.imageUrl,
-        releaseDate: item.releaseDate ? item.releaseDate : Date.now(),
-        localId: 0,
-        oneDriveId: '',
+        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf()  : Date.now(),
       }));
       if (data.length >= spotifyCount) {
         console.log(
@@ -125,13 +127,14 @@ AlbumContext.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.number,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,

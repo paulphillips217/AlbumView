@@ -21,11 +21,11 @@ import {
   createLocalTracks,
   createOneDriveTracks,
   tearDownLocalTracks,
-  tearDownOneDriveTracks
+  tearDownOneDriveTracks,
 } from '../util/localFileUtils';
 
 const ModalAlbumDeprecated = ({
-  albumId,
+  spotifyAlbumId,
   artistName,
   albumName,
   image,
@@ -36,7 +36,7 @@ const ModalAlbumDeprecated = ({
   httpService,
 }) => {
   const getInitialDisplayType = () => {
-    if (albumId) {
+    if (spotifyAlbumId) {
       return ModalDisplayTypes.Spotify;
     }
     if (localId) {
@@ -46,7 +46,7 @@ const ModalAlbumDeprecated = ({
       return ModalDisplayTypes.OneDrive;
     }
     return '';
-  }
+  };
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDisplayType, setModalDisplayType] = useState(getInitialDisplayType());
@@ -81,9 +81,9 @@ const ModalAlbumDeprecated = ({
   // render child component conditional on modalOpen so that the data is queried on initial render
   return (
     <Modal trigger={modalTrigger()} open={modalOpen} onClose={() => setModalOpen(false)}>
-      {modalOpen && albumId && modalDisplayType === ModalDisplayTypes.Spotify && (
+      {modalOpen && spotifyAlbumId && modalDisplayType === ModalDisplayTypes.Spotify && (
         <SpotifyModalDisplay
-          albumId={albumId}
+          spotifyAlbumId={spotifyAlbumId}
           setModalDisplayType={setModalDisplayType}
           httpService={httpService}
         />
@@ -91,7 +91,7 @@ const ModalAlbumDeprecated = ({
       {modalOpen && localId > 0 && modalDisplayType === ModalDisplayTypes.Local && (
         <LocalModalDisplay
           albumFileId={localId}
-          albumId={albumId}
+          spotifyAlbumId={spotifyAlbumId}
           localId={localId}
           oneDriveId={oneDriveId}
           artistName={artistName}
@@ -105,7 +105,7 @@ const ModalAlbumDeprecated = ({
       {modalOpen && oneDriveId && modalDisplayType === ModalDisplayTypes.OneDrive && (
         <LocalModalDisplay
           albumFileId={oneDriveId}
-          albumId={albumId}
+          spotifyAlbumId={spotifyAlbumId}
           localId={localId}
           oneDriveId={oneDriveId}
           artistName={artistName}
@@ -121,7 +121,7 @@ const ModalAlbumDeprecated = ({
 };
 
 ModalAlbumDeprecated.propTypes = {
-  albumId: PropTypes.string,
+  spotifyAlbumId: PropTypes.string,
   artistName: PropTypes.string.isRequired,
   albumName: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
@@ -132,13 +132,14 @@ ModalAlbumDeprecated.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.number,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
@@ -146,7 +147,7 @@ ModalAlbumDeprecated.propTypes = {
 };
 
 ModalAlbumDeprecated.defaultProps = {
-  albumId: null,
+  spotifyAlbumId: null,
   localId: 0,
   oneDriveId: '',
   useMiniImage: false,
@@ -166,8 +167,8 @@ const mapDispatchToProps = (dispatch) => ({
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
   addAlbum: (album, savedAlbumData, contextSortType) =>
     addSavedAlbum(album, savedAlbumData, contextSortType, dispatch),
-  removeAlbum: (savedAlbumData, albumId) =>
-    removeSavedAlbum(savedAlbumData, albumId, dispatch),
+  removeAlbum: (savedAlbumData, spotifyAlbumId) =>
+    removeSavedAlbum(savedAlbumData, spotifyAlbumId, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalAlbumDeprecated);

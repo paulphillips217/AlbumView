@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import SplitPane from 'react-split-pane';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -56,11 +57,12 @@ const RelatedArtistContext = ({
           .then((rawData) => {
             console.log('artist album data', rawData);
             const data = rawData.items.map((e) => ({
-              albumId: e.id,
+              albumId: 0,
+              spotifyAlbumId: e.id,
               albumName: e.name,
-              artist: e.artists[0].name,
+              artistName: e.artists[0].name,
               image: getImage(e.images),
-              releaseDate: e.release_date ? e.release_date : Date.now(),
+              releaseDate: e.release_date ? moment(e.release_date).valueOf()  : Date.now(),
               albumGroup: e.album_group,
               albumType: e.album_type,
             }));
@@ -227,9 +229,10 @@ RelatedArtistContext.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         albumName: PropTypes.string,
-        artist: PropTypes.string,
+        artistName: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.number,
       })
@@ -244,9 +247,9 @@ RelatedArtistContext.propTypes = {
     trackTotal: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
+        spotifyAlbumId: PropTypes.string,
         albumName: PropTypes.string,
-        artist: PropTypes.string,
+        artistName: PropTypes.string,
         image: PropTypes.string,
         releaseDate: PropTypes.number,
       })

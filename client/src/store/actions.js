@@ -16,7 +16,9 @@ import {
   LOCAL_FILE_DATA,
   ONE_DRIVE_ROOT,
   SPOTIFY_IS_AUTHENTICATED,
-  SELECTED_GENRE, SELECTED_ALBUM
+  SELECTED_GENRE,
+  SELECTED_ALBUM_ID,
+  SELECTED_SPOTIFY_ALBUM_ID,
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
@@ -122,8 +124,13 @@ export const setSelectedGenre = (id) => ({
   payload: id,
 });
 
-export const setSelectedAlbum = (id) => ({
-  type: SELECTED_ALBUM,
+export const setSelectedAlbumId = (id) => ({
+  type: SELECTED_ALBUM_ID,
+  payload: id,
+});
+
+export const setSelectedSpotifyAlbumId = (id) => ({
+  type: SELECTED_SPOTIFY_ALBUM_ID,
   payload: id,
 });
 
@@ -138,9 +145,11 @@ export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) 
   );
 };
 
-export const removeSavedAlbum = (albumId, savedAlbumData, dispatch) => {
-  if (savedAlbumData.data.some((item) => item.albumId === albumId)) {
-    const newData = savedAlbumData.data.filter((item) => item.albumId !== albumId);
+export const removeSavedAlbum = (spotifyAlbumId, savedAlbumData, dispatch) => {
+  if (savedAlbumData.data.some((item) => item.spotifyAlbumId === spotifyAlbumId)) {
+    const newData = savedAlbumData.data.filter(
+      (item) => item.spotifyAlbumId !== spotifyAlbumId
+    );
     // for simplification we assume it's only one we're removing
     dispatch(
       setSavedAlbumData({

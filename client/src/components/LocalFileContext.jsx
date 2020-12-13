@@ -32,17 +32,17 @@ const LocalFileContext = ({
         return;
       }
       const splitPath = item.webkitRelativePath.split('/');
-      const artist = splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
+      const artistName = splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
       const albumName =
         splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
       const fileIndex = theAlbumArray.findIndex(
-        (a) => a.artist && a.artist === artist && a.albumName && a.albumName === albumName
+        (a) => a.artistName && a.artistName === artistName && a.albumName && a.albumName === albumName
       );
       if (fileIndex >= 0) {
         theAlbumArray[fileIndex].tracks.push(item);
       } else {
         theAlbumArray.push({
-          artist,
+          artistName,
           albumName,
           localId: index + 1,
           tracks: [item],
@@ -88,13 +88,14 @@ LocalFileContext.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.number,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
