@@ -32,11 +32,13 @@ export const stripLeadingArticle = (string) => {
 
 export const cleanTitle = (title) => {
   // remove all articles
-  let cleanedTitle = title.toLowerCase().replaceAll('the ', '');
+  let cleanedTitle = title.normalize().toLowerCase().replaceAll('the ', '');
   cleanedTitle = cleanedTitle.replaceAll('a ', '');
   cleanedTitle = cleanedTitle.replaceAll('an ', '');
+  cleanedTitle = cleanedTitle.replaceAll('&', 'and');
+  cleanedTitle = cleanedTitle.replaceAll(' + ', ' and ');
   // remove special characters
-  cleanedTitle = cleanedTitle.replaceAll(/[\\/:*?"'<>| ._]/g, '');
+  cleanedTitle = cleanedTitle.replaceAll(/[\\/:,*+?!"'<>| ._-]/g, '');
   // remove anything within parentheses
   return cleanedTitle.replace(/ *\([^)]*\) */g, '');
 };

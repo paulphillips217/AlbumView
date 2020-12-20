@@ -15,7 +15,7 @@ const talkToTheAudioDb = async (req, res) => {
     },
   })
     .then((response) => {
-      console.log('axios got response for ', url);
+      // console.log('axios got response for ', url);
       if (response && response.data) {
         //console.log('last.fm response', response.data);
         res.json(response.data);
@@ -40,7 +40,7 @@ const chatWithTheAudioDb = async (url, method) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log('axios got response for ', url);
+    // console.log('axios got response for ', url);
     if (response && response.data) {
       return response.data;
     } else {
@@ -55,7 +55,9 @@ const chatWithTheAudioDb = async (url, method) => {
 
 const getAlbumData = async (artist, album) => {
   const apiKey = process.env.THE_AUDIO_DB_API_KEY;
-  const url = `https://theaudiodb.com/api/v1/json/${apiKey}/searchalbum.php?s=${artist}&a=${album}`;
+  const encodedArtist = encodeURIComponent(artist);
+  const encodedAlbum = encodeURIComponent(album);
+  const url = `https://theaudiodb.com/api/v1/json/${apiKey}/searchalbum.php?s=${encodedArtist}&a=${encodedAlbum}`;
   console.log('getAlbumData url', url);
   const response = await chatWithTheAudioDb(url, 'GET');
   //console.log('getAlbumData response', response);

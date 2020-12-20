@@ -1,45 +1,88 @@
 const db = require('./db.js');
+const utilities = require('../utilities');
 
 const insertSingleAlbum = (album) => {
-  if (album.spotifyId) {
-    return db('album')
-      .select()
-      .where('spotifyId', album.spotifyId)
-      .then((rows) => returnOrInsertAlbum(rows, album))
-      .catch((err) => {
-        console.log('insertSingleAlbum error: ', err);
-        return null;
-      });
-  } else {
-    return db('album')
-      .select()
-      .where('name', album.name)
-      .then((rows) => returnOrInsertAlbum(rows, album))
-      .catch((err) => {
-        console.log('insertSingleAlbum error: ', err);
-        return null;
-      });
-  }
+  album.matchName = utilities.makeMatchName(album.name);
+  return db
+    .transaction((trx) => {
+      if (album.spotifyId) {
+        return trx('album')
+          .select()
+          .where('spotifyId', album.spotifyId)
+          .then((rows) => {
+            if (rows && rows.length > 0) {
+              return returnOrInsertAlbum(trx, rows, album);
+            } else {
+              // if spotify id not found, it still may be in database without an id
+              return trx('album')
+                .select()
+                .where('matchName', album.matchName)
+                .then((rows) => returnOrInsertAlbum(trx, rows, album))
+                .catch((err) => {
+                  console.log('insertSingleAlbum select error: ', err, album);
+                  return null;
+                });
+            }
+          })
+          .catch((err) => {
+            console.log('insertSingleAlbum select error: ', err, album);
+            return null;
+          });
+      } else {
+        return trx('album')
+          .select()
+          .where('matchName', album.matchName)
+          .then((rows) => returnOrInsertAlbum(trx, rows, album))
+          .catch((err) => {
+            console.log('insertSingleAlbum select error: ', err, album);
+            return null;
+          });
+      }
+    })
+    .then((result) => {
+      // console.log('insertSingleAlbum transaction result: ', result);
+      return result;
+    })
+    .catch((err) => {
+      console.log('insertSingleAlbum transaction error: ', err, album);
+      return null;
+    });
 };
 
-const returnOrInsertAlbum = (rows, album) => {
+const returnOrInsertAlbum = (trx, rows, album) => {
   if (rows && rows.length > 0) {
     // duplicate spotifyId found
     // console.log('insertSingleAlbum duplicate found: ', rows);
+    if (album.spotifyId && !(rows[0].spotifyId)) {
+      // updating album record to include spotifyId
+      trx('album')
+        .where('id', rows[0].id)
+        .update({ spotifyId: album.spotifyId, name: album.name, imageUrl: album.imageUrl, releaseDate: album.releaseDate })
+        .then((result) => {
+          console.log('insertSingleAlbum update result: ', result);
+        })
+        .catch((err) => {
+          console.log('insertSingleAlbum update error: ', err, album);
+        });
+    }
     return rows[0].id;
   } else {
     // no matching records found
-    return db('album')
+    return trx('album')
       .returning('id')
       .insert(album)
       .then((rows) => {
-        if (rows.length > 0) {
+        if (rows && rows.length > 0) {
           // console.log('insertSingleAlbum inserted: ', rows);
           return rows[0];
         } else {
           console.log('insertSingleAlbum added row but got no results');
           return null;
         }
+      })
+      .catch((err) => {
+        console.log('insertSingleAlbum insert error: ', err, album);
+        return null;
       });
   }
 };
@@ -59,7 +102,7 @@ const getAlbumsWithNoMbid = () => {
 };
 
 const getAlbumsWithNoTadbId = () => {
-  console.log('getAlbumsWithNoTadbId');
+  // console.log('getAlbumsWithNoTadbId');
   return db
     .from('album')
     .innerJoin('artist', 'album.artistId', 'artist.id')
@@ -81,7 +124,7 @@ const addMusicBrainzId = (albumId, musicBrainzId) => {
 };
 
 const addTadbId = (albumId, tadbId) => {
-  console.log('addTadbId ', albumId, tadbId);
+  // console.log('addTadbId ', albumId, tadbId);
   db('album')
     .where({ id: albumId })
     .update('tadbId', tadbId)
@@ -104,39 +147,66 @@ const getAlbumsWithNoGenres = () => {
     .catch((err) => console.log('getAlbumsWithNoGenres error', err));
 };
 
-const addAlbumGenre = (albumId, genreId) => {
-  return db('albumGenres')
-    .select()
-    .where({
-      albumId: albumId,
-      genreId: genreId,
+const insertAlbumGenre = (albumId, genreId) => {
+  return db
+    .transaction((trx) => {
+      return trx('albumGenres')
+        .select('albumId', 'genreId')
+        .where({
+          albumId: albumId,
+          genreId: genreId,
+        })
+        .then((rows) => {
+          // console.log('insertAlbumGenre select result: ', rows);
+          if (rows && rows.length > 0) {
+            // duplicate albumGenres found
+            // console.log('insertAlbumGenre duplicate found: ', albumId, genreId);
+            return rows[0];
+          } else {
+            // no matching records found
+            return trx('albumGenres')
+              .insert({
+                albumId: albumId,
+                genreId: genreId,
+              })
+              .returning(['albumId', 'genreId'])
+              .then((rows) => {
+                if (rows && rows.length > 0) {
+                  return rows[0];
+                } else {
+                  console.log(
+                    'insertAlbumGenre added row but got no results',
+                    albumId,
+                    genreId
+                  );
+                  return null;
+                }
+              })
+              .catch((err) => {
+                console.log(
+                  'insertAlbumGenre insert error (albumId, genreId): ',
+                  err,
+                  albumId,
+                  genreId
+                );
+                return null;
+              });
+          }
+        })
+        .catch((err) => {
+          console.log(
+            'insertAlbumGenre select error (albumId, genreId): ',
+            err,
+            albumId,
+            genreId
+          );
+          return null;
+        });
     })
-    .then((rows) => {
-      if (rows.length === 0) {
-        // no matching records found
-        return db('albumGenres')
-          .insert({
-            albumId: albumId,
-            genreId: genreId,
-          })
-          .returning(['albumId', 'genreId'])
-          .then((rows) => {
-            if (rows.length > 0) {
-              return rows[0];
-            } else {
-              console.log('addAlbumGenre added row but got no results');
-              return null;
-            }
-          });
-      } else {
-        // duplicate albumGenres found
-        console.log('addAlbumGenre duplicate found: ', albumId, genreId);
-        return rows[0];
-      }
-    })
+    .then((result) => result)
     .catch((err) => {
       console.log(
-        'addAlbumGenre error (albumId, genreId): ',
+        'insertAlbumGenre transaction error (albumId, genreId): ',
         err,
         albumId,
         genreId
@@ -161,6 +231,6 @@ module.exports = {
   addMusicBrainzId,
   addTadbId,
   getAlbumsWithNoGenres,
-  addAlbumGenre,
+  insertAlbumGenre,
   getAlbumGenres,
 };

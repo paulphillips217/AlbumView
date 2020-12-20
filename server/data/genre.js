@@ -1,31 +1,46 @@
 const db = require('./db.js');
 
-const addGenre = (name) => {
-  return db('genre')
-    .select()
-    .where('name', name)
-    .then((rows) => {
-      if (rows.length === 0) {
-        // no matching records found
-        return db('genre')
-          .returning(['id', 'name'])
-          .insert({ name: name })
-          .then((rows) => {
-            if (rows.length > 0) {
-              return rows[0];
-            } else {
-              console.log('addGenre added row but got no results');
-              return null;
-            }
-          });
-      } else {
-        // duplicate genre found
-        console.log('addGenre duplicate found: ', name);
-        return rows[0];
-      }
+const insertGenre = (name) => {
+  return db
+    .transaction((trx) => {
+      return trx('genre')
+        .select()
+        .where('name', name)
+        .then((rows) => {
+          if (rows.length === 0) {
+            // no matching records found
+            return trx('genre')
+              .returning(['id', 'name'])
+              .insert({ name: name })
+              .then((rows) => {
+                if (rows.length > 0) {
+                  return rows[0];
+                } else {
+                  console.log('insertGenre added row but got no results', name);
+                  return null;
+                }
+              })
+              .catch((err) => {
+                console.log('insertGenre insert error: ', err, name);
+                return null;
+              });
+          } else {
+            // duplicate genre found
+            // console.log('insertGenre duplicate found: ', name);
+            return rows[0];
+          }
+        })
+        .catch((err) => {
+          console.log('insertGenre select error: ', err, name);
+          return null;
+        });
+    })
+    .then((result) => {
+      // console.log('insertGenre transaction result: ', result);
+      return result;
     })
     .catch((err) => {
-      console.log('addGenre error: ', err);
+      console.log('insertGenre transaction error: ', err, name);
       return null;
     });
 };
@@ -70,7 +85,7 @@ const getGenreAlbums = (userId, genreId) => {
 };
 
 module.exports = {
-  addGenre,
+  insertGenre,
   getGenres,
   getGenreAlbums,
 };

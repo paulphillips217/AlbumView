@@ -94,57 +94,78 @@ const clearOutOldUsers = () => {
 };
 
 const insertSingleUserAlbum = (userAlbum) => {
-  return db('userAlbums')
-    .select()
-    .where({
-      userId: userAlbum.userId,
-      albumId: userAlbum.albumId,
-    })
-    .then((rows) => {
-      if (rows.length === 0) {
-        // no matching records found
-        return db('userAlbums')
-          .returning(['userId', 'albumId'])
-          .insert(userAlbum)
-          .then((rows) => {
-            if (rows.length > 0) {
-              return rows[0];
-            } else {
-              console.log('insertSingleUserAlbum added row but got no results');
-              return null;
-            }
-          })
-          .catch((err) =>
-            console.log('insertSingleUserAlbum insert error', err)
-          );
-      } else {
-        // duplicate spotifyId found, update the record with localId and oneDriveId
-        // console.log('insertSingleUserAlbum duplicate found: ', userAlbum);
-        return db('userAlbums')
-          .where({
-            userId: userAlbum.userId,
-            albumId: userAlbum.albumId,
-          })
-          .update(
-            { localId: userAlbum.localId, oneDriveId: userAlbum.oneDriveId },
-            ['userId', 'albumId']
-          )
-          .then((rows) => {
-            if (rows.length > 0) {
-              return rows[0];
-            } else {
-              console.log('insertSingleUserAlbum added row but got no results');
-              return null;
-            }
-          })
-          .catch((err) =>
-            console.log('insertSingleUserAlbum update error', err)
-          );
-        // return userAlbum;
-      }
+  return db.transaction(trx => {
+    return trx('userAlbums')
+      .select()
+      .where({
+        userId: userAlbum.userId,
+        albumId: userAlbum.albumId,
+      })
+      .then((rows) => {
+        if (rows.length === 0) {
+          // no matching records found
+          return trx('userAlbums')
+            .returning(['userId', 'albumId'])
+            .insert(userAlbum)
+            .then((rows) => {
+              if (rows.length > 0) {
+                return rows[0];
+              } else {
+                console.log(
+                  'insertSingleUserAlbum added row but got no results',
+                  userAlbum
+                );
+                return null;
+              }
+            })
+            .catch((err) =>
+              console.log('insertSingleUserAlbum insert error', err, userAlbum)
+            );
+        } else {
+          // duplicate spotifyId found
+          if (userAlbum.localId || userAlbum.oneDriveId) {
+            // update the record with localId and oneDriveId
+            // console.log('insertSingleUserAlbum duplicate found: ', userAlbum);
+            return trx('userAlbums')
+              .where({
+                userId: userAlbum.userId,
+                albumId: userAlbum.albumId,
+              })
+              .update(
+                { localId: userAlbum.localId, oneDriveId: userAlbum.oneDriveId },
+                ['userId', 'albumId']
+              )
+              .then((rows) => {
+                if (rows.length > 0) {
+                  return rows[0];
+                } else {
+                  console.log(
+                    'insertSingleUserAlbum added row but got no results',
+                    userAlbum
+                  );
+                  return null;
+                }
+              })
+              .catch((err) =>
+                console.log('insertSingleUserAlbum update error', err, userAlbum)
+              );
+          } else {
+            // return userAlbum;
+            return rows[0];
+          }
+        }
+      })
+      .catch((err) => {
+        console.log('insertSingleUserAlbum select error: ', err, userAlbum);
+        return null;
+      });
+  })
+    .then((result) => {
+      // console.log('insertSingleUserAlbum transaction result: ', result);
+      return result;
     })
     .catch((err) => {
-      console.log('insertSingleUserAlbum error: ', err);
+      console.log('insertSingleUserAlbum transaction error: ', err, userAlbum);
       return null;
     });
 };

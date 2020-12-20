@@ -39,7 +39,7 @@ const FileAnalysis = ({
   const handleRead = async () => {
     if (localFileData && localFileData.length > 0) {
       const theAlbumArray = await readAlbumArray(localFileData);
-      // console.log('handleRead got theAlbumArray', theAlbumArray);
+      console.log('handleRead got theAlbumArray', theAlbumArray);
       const sendArray = theAlbumArray.map((item) => ({
         localId: item.localId ? item.localId : -1,
         oneDriveId: item.oneDriveId ? item.oneDriveId : '',
@@ -50,7 +50,7 @@ const FileAnalysis = ({
       const rawData = await httpService.post(`/album-view/user-owned-albums`, {
         albums: sendArray,
       });
-      // console.log('user owned albums return rawData', rawData);
+      console.log('user owned albums return rawData', rawData);
       const data = rawData.map((item) => ({
         albumId: item.albumId,
         spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
@@ -187,7 +187,12 @@ const FileAnalysis = ({
     </Grid.Row>
   );
 
-  const anyLocalAlbums = savedAlbumData.data.some((album) => !!album[albumFileIdProp]);
+  const anyLocalAlbums = savedAlbumData.data.some(
+    (album) =>
+      !!album[albumFileIdProp] &&
+      ((albumFileIdProp === 'localId' && album?.tracks?.length > 0) ||
+        albumFileIdProp !== 'localId')
+  );
 
   console.log('localFileData in FileAnalysis is: ', localFileData);
 
@@ -198,12 +203,12 @@ const FileAnalysis = ({
       {localFileData.length > 0 && !anyLocalAlbums && (
         <Button onClick={handleRead}>Read Files</Button>
       )}
-      {anyLocalAlbums && (
+      {localFileData.length > 0 && anyLocalAlbums && (
         <Button onClick={() => setHideMatches(!hideMatches)}>
           {hideMatches ? 'Show Matches' : 'Hide Matches'}
         </Button>
       )}
-      {anyLocalAlbums && savedAlbumData.data.length > 0 && (
+      {localFileData.length > 0 && anyLocalAlbums && savedAlbumData.data.length > 0 && (
         <Grid celled centered style={{ width: '80%' }}>
           <Grid.Row columns={2} style={theme}>
             <Grid.Column>

@@ -128,7 +128,7 @@ const chatWithSpotify = async (accessToken, url, method) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    console.log('axios got response for ', url);
+    // console.log('axios got response for ', url);
     if (response && response.data) {
       return response.data;
     } else {
@@ -179,11 +179,9 @@ const getSavedAlbums = async (userId, offset) => {
   if (!credentials || !credentials.access_token) {
     return 0;
   }
-  const response = await chatWithSpotify(
-    credentials.access_token,
-    `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`,
-    'GET'
-  );
+  const url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`;
+  console.log('getSavedAlbums url', url);
+  const response = await chatWithSpotify(credentials.access_token, url, 'GET');
   //console.log('getSavedAlbums response album[0]', response.items);
   if (!response || response.length === 0) {
     return 0;
@@ -213,10 +211,14 @@ const getSavedAlbums = async (userId, offset) => {
   // add albums to database
   for (let i = 0; i < albums.length; i += 1) {
     const albumId = await album.insertSingleAlbum(albums[i]);
-    // console.log('insertSingleAlbum in getSavedAlbums returned ', result);
+    // console.log('insertSingleAlbum in getSavedAlbums returned ', albumId);
 
     // associate album with user
-    const result = await user.insertSingleUserAlbum({ userId, albumId: albumId });
+    const result = await user.insertSingleUserAlbum({
+      userId,
+      albumId: albumId,
+    });
+    // console.log('insertSingleUserAlbum returned: ', result);
   }
 
   return response.total;
@@ -251,7 +253,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('axios got response for ', url);
+      // console.log('axios got response for ', url);
       //    console.log(
       //      'aggregateSpotifyArtistData raw: ',
       //      JSON.stringify(response.data)
@@ -286,7 +288,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('axios got response for ', url);
+      // console.log('axios got response for ', url);
       //console.log(
       //  'aggregateSpotifyArtistData 2 raw: ',
       //  JSON.stringify(response.data)
@@ -323,7 +325,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log('axios got response for ', url);
+      // console.log('axios got response for ', url);
       //console.log(
       //  'aggregateSpotifyArtistData 2 raw: ',
       //  JSON.stringify(response.data)

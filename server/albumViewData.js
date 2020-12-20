@@ -22,15 +22,16 @@ const integrateUserOwnedAlbums = async (req, res) => {
   //console.log('integrateUserOwnedAlbums', albums);
   if (albums && albums.length > 0) {
     for (let i = 0; i < albums.length; i++) {
+      // console.log('integrateUserOwnedAlbums inserting:', albums[i]);
       const artistId = await artist.insertSingleArtist({
-        name: albums[i].artist,
+        name: albums[i].artistName,
       });
-      // console.log('integrateUserOwnedAlbums artist: ', artistId);
+      // console.log('integrateUserOwnedAlbums artistId: ', artistId);
       const albumId = await album.insertSingleAlbum({
         artistId: artistId,
         name: albums[i].albumName,
       });
-      // console.log('integrateUserOwnedAlbums album: ', albumId);
+      // console.log('integrateUserOwnedAlbums albumId: ', albumId);
 
       // associate album with user
       const result = await user.insertSingleUserAlbum({
@@ -39,13 +40,12 @@ const integrateUserOwnedAlbums = async (req, res) => {
         localId: albums[i].localId,
         oneDriveId: albums[i].oneDriveId,
       });
+      // console.log('insertSingleUserAlbum returned: ', result);
     }
   }
 
   const userAlbums = await user.getUserAlbums(userId, genreId);
   res.json(userAlbums);
-
-//  res.json({ result: 'test' });
 };
 
 module.exports = {

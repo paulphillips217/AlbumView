@@ -15,7 +15,7 @@ const talkToLastFm = async (req, res) => {
     },
   })
     .then((response) => {
-      console.log('axios got response for ', url);
+      // console.log('axios got response for ', url);
       if (response && response.data) {
         //console.log('last.fm response', response.data);
         res.json(response.data);
@@ -40,7 +40,7 @@ const chatWithLastFm = async (url, method) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log('axios got response for ', url);
+    // console.log('axios got response for ', url);
     if (response && response.data) {
       return response.data;
     } else {

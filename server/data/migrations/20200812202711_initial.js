@@ -12,6 +12,7 @@ exports.up = async (knex) => {
       artist.string('musicBrainzId', 64);
       artist.string('tadbId', 64);
       artist.string('name', 128).notNullable();
+      artist.string('matchName', 128).notNullable();
       artist.string('imageUrl', 512);
     })
   }
@@ -31,6 +32,7 @@ exports.up = async (knex) => {
       album.string('musicBrainzId', 64);
       album.string('tadbId', 64);
       album.string('name', 128).notNullable();
+      album.string('matchName', 128).notNullable();
       album.string('imageUrl', 512);
       album.datetime('releaseDate');
     })

@@ -78,17 +78,15 @@ const start = async () => {
       await spotifyData.getSavedAlbums(userId, offset);
       job.progress(offset);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
-      console.log(
-        `savedAlbumQueue count and offset: ${offset}, count: ${count}`
-      );
+      // console.log(`savedAlbumQueue count and offset: ${offset}, count: ${count}`);
     }
 
     job.progress(count);
     console.log('savedAlbumQueue processing completed');
 
+    console.log('savedAlbumQueue starting the audio db queue');
     // await lastAlbumQueue.add();
     await audioDbAlbumQueue.add();
-    console.log('savedAlbumQueue started the audio db queue');
   });
 
   // gets information for albums from Last.fm
@@ -132,8 +130,8 @@ const start = async () => {
             console.log('lastAlbumQueue album genre', genres[j]);
             const { count, name } = genres[j];
             if (count >= 10) {
-              const genreRecord = await genre.addGenre(name);
-              const albumGenre = await album.addAlbumGenre(
+              const genreRecord = await genre.insertGenre(name);
+              const albumGenre = await album.insertAlbumGenre(
                 genrelessAlbums[i].albumId,
                 genreRecord.id
               );
@@ -151,7 +149,7 @@ const start = async () => {
 
   // gets information for albums from theAudioDb.com
   audioDbAlbumQueue.process(maxJobsPerWorker, async (job) => {
-    console.log('audioDbAlbumQueue starting');
+    // console.log('audioDbAlbumQueue starting');
     const albums = await album.getAlbumsWithNoTadbId();
     console.log('getAlbumsWithNoTadbId album count', albums.length);
 
@@ -192,54 +190,30 @@ const start = async () => {
         await album.addTadbId(albums[i].albumId, tadbId);
         if (albumData) {
           if (albumData.strStyle) {
-            const genreRecord = await genre.addGenre(albumData.strStyle);
+            const genreRecord = await genre.insertGenre(albumData.strStyle);
             if (genreRecord && genreRecord.id) {
-              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
-              console.log(
-                'audioDbAlbumQueue albumGenreRecord',
-                albums[i].albumId,
-                genreRecord.id
-              );
+              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
+              // console.log('audioDbAlbumQueue strStyle albumGenreRecord', genre, albums[i].albumId, genreRecord.id);
             } else {
-              console.log(
-                'audioDbAlbumQueue no albumData.strStyle',
-                albums[i].albumId,
-                albumData.strStyle
-              );
+              // console.log('audioDbAlbumQueue no albumData.strStyle', albums[i].albumId, albumData.strStyle);
             }
           }
           if (albumData.strGenre) {
-            const genreRecord = await genre.addGenre(albumData.strGenre);
+            const genreRecord = await genre.insertGenre(albumData.strGenre);
             if (genreRecord && genreRecord.id) {
-              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
-              console.log(
-                'audioDbAlbumQueue albumGenreRecord',
-                albums[i].albumId,
-                genreRecord.id
-              );
+              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
+              // console.log('audioDbAlbumQueue strGenre albumGenreRecord',albums[i].albumId,genreRecord.id);
             } else {
-              console.log(
-                'audioDbAlbumQueue no albumData.strGenre',
-                albums[i].albumId,
-                albumData.strGenre
-              );
+              // console.log('audioDbAlbumQueue no albumData.strGenre',albums[i].albumId,albumData.strGenre);
             }
           }
           if (albumData.strMood) {
-            const genreRecord = await genre.addGenre(albumData.strMood);
+            const genreRecord = await genre.insertGenre(albumData.strMood);
             if (genreRecord && genreRecord.id) {
-              await album.addAlbumGenre(albums[i].albumId, genreRecord.id);
-              console.log(
-                'audioDbAlbumQueue albumGenreRecord',
-                albums[i].albumId,
-                genreRecord.id
-              );
+              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
+              // console.log('audioDbAlbumQueue strMood albumGenreRecord', albums[i].albumId, genreRecord.id);
             } else {
-              console.log(
-                'audioDbAlbumQueue no albumData.strMood',
-                albums[i].albumId,
-                albumData.strMood
-              );
+              // console.log('audioDbAlbumQueue no albumData.strMood', albums[i].albumId, albumData.strMood);
             }
           }
         }

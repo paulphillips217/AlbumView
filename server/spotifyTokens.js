@@ -62,11 +62,11 @@ const getSpotifyCredentials = async (userId) => {
     spotifyRefreshToken,
     spotifyExpiration,
   } = credentials;
-  console.log('getCredentialsFromHeader from database', {
-    spotifyAuthToken,
-    spotifyRefreshToken,
-    spotifyExpiration,
-  });
+  //console.log('getCredentialsFromHeader from database', {
+  //  spotifyAuthToken,
+  //  spotifyRefreshToken,
+  //  spotifyExpiration,
+  //});
 
   const tokenExpiration = moment(spotifyExpiration);
   const currentTime = moment();
@@ -82,7 +82,7 @@ const getSpotifyCredentials = async (userId) => {
     );
   }
 
-  console.log('getCredentialsFromHeader using existing credentials');
+  // console.log('getCredentialsFromHeader using existing credentials');
   return {
     access_token: spotifyAuthToken,
     refresh_token: spotifyRefreshToken,
