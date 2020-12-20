@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, Card, Dropdown, Grid, Segment } from 'semantic-ui-react';
+import { Button, Card, Dropdown, Grid, Progress, Segment } from 'semantic-ui-react';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import { ContextType } from '../store/types';
@@ -13,8 +13,10 @@ import {
   setRelatedToArtist,
   setDataLoading,
   setSelectedGenre,
+  setAlbumJobId,
 } from '../store/actions';
 import {
+  getAlbumJobId,
   getContextType,
   getDataLoading,
   getSelectedGenre,
@@ -22,6 +24,7 @@ import {
 } from '../store/selectors';
 import ModalConfig from './ModalConfig';
 import HttpService from '../util/httpUtils';
+import { useInterval } from '../util/useInterval';
 
 const AlbumViewHeader = ({
   isSpotifyAuthenticated,
@@ -29,6 +32,7 @@ const AlbumViewHeader = ({
   contextData,
   dataLoading,
   genre,
+  jobId,
   setItem,
   setLoading,
   setType,
@@ -36,9 +40,11 @@ const AlbumViewHeader = ({
   setGridData,
   resetListData,
   setGenre,
+  setJobId,
   httpService,
 }) => {
   const theme = useTheme();
+  const [jobProgress, setJobProgress] = useState(-1);
   const [genreOptions, setGenreOptions] = useState([
     {
       key: 0,
@@ -115,6 +121,28 @@ const AlbumViewHeader = ({
     getGenreList();
   }, [isSpotifyAuthenticated, httpService]);
 
+  const getAlbumJobProgress = () => {
+    if (
+      !isSpotifyAuthenticated ||
+      contextType !== ContextType.Albums ||
+      jobId <= 0 ||
+      jobProgress >= 100
+    ) {
+      return;
+    }
+    httpService
+      .get(`/album-view/job-progress/${jobId}`)
+      .then((jobData) => {
+        console.log('getAlbumJobProgress: ', jobId, jobData);
+        setJobProgress(jobData.progress);
+        if (jobData.progress >= 100) {
+          setJobId(-1);
+        }
+      })
+      .catch((error) => console.log(error));
+  };
+  useInterval(getAlbumJobProgress, 1000);
+
   const handleContextChange = (e, { value }) => {
     setGridData({ spotifyCount: 0, offset: 0, data: [] });
     resetListData();
@@ -182,13 +210,18 @@ const AlbumViewHeader = ({
         </Grid.Column>
         <Grid.Column>
           <Segment basic textAlign="center">
-            {dataLoading && (
+            {dataLoading && contextType !== ContextType.Albums && (
               <Button onClick={handleCancelLoading}>
                 {loadingButtonText}
                 <br />
                 (click to cancel)
               </Button>
             )}
+            {contextType === ContextType.Albums &&
+              jobProgress > 0 &&
+              jobProgress < 100 && (
+                <Progress percent={Math.floor(jobProgress)} progress />
+              )}
           </Segment>
         </Grid.Column>
         <Grid.Column>
@@ -212,6 +245,7 @@ AlbumViewHeader.propTypes = {
   }).isRequired,
   dataLoading: PropTypes.bool.isRequired,
   genre: PropTypes.number.isRequired,
+  jobId: PropTypes.number.isRequired,
   setType: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
   setRelatedTo: PropTypes.func.isRequired,
@@ -219,6 +253,7 @@ AlbumViewHeader.propTypes = {
   resetListData: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
   setGenre: PropTypes.func.isRequired,
+  setJobId: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
@@ -227,6 +262,7 @@ const mapStateToProps = (state) => ({
   contextType: getContextType(state),
   dataLoading: getDataLoading(state),
   genre: getSelectedGenre(state),
+  jobId: getAlbumJobId(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -237,6 +273,7 @@ const mapDispatchToProps = (dispatch) => ({
   resetListData: () => dispatch(resetContextListData()),
   setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
   setGenre: (id) => dispatch(setSelectedGenre(id)),
+  setJobId: (data) => dispatch(setAlbumJobId(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumViewHeader);

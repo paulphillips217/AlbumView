@@ -11,11 +11,11 @@ import AlbumViewHeader from './AlbumViewHeader';
 import {
   getSavedAlbumData,
   getContextSortType,
-  getDataLoading,
   getSpotifyIsAuthenticated,
-  getSelectedGenre, getLocalFileData
+  getSelectedGenre,
+  getLocalFileData, getAlbumJobId
 } from '../store/selectors';
-import { setSavedAlbumData, setDataLoading } from '../store/actions';
+import { setSavedAlbumData, setAlbumJobId } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
 import { createLocalAlbumTracks } from '../util/localFileUtils';
@@ -23,13 +23,13 @@ import { sortGridData } from '../util/sortUtils';
 
 const AlbumContext = ({
   isSpotifyAuthenticated,
-  dataLoading,
   savedAlbumData,
   localFileData,
   contextSortType,
   genre,
+  jobId,
   setAlbumData,
-  setLoading,
+  setJobId,
   httpService,
 }) => {
   const theme = useTheme();
@@ -38,7 +38,6 @@ const AlbumContext = ({
     let spotifyCount = savedAlbumData.spotifyCount;
     if (!isSpotifyAuthenticated) {
       console.log('albumContext getGridData - not logged in');
-      setLoading(false);
       return;
     }
     if (spotifyCount < 0) {
@@ -46,6 +45,7 @@ const AlbumContext = ({
       const data = await httpService.get(`/spotify/album-list-refresh`);
       console.log('saved album data refreshed: ', data);
       spotifyCount = data.count;
+      setJobId(parseInt(data.jobId));
     }
     console.log('albumContext getGridData - fetching data');
     try {
@@ -64,14 +64,6 @@ const AlbumContext = ({
         releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
         tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
       }));
-      if (data.length >= spotifyCount) {
-        console.log(
-          'albumContext getGridData setting loading false',
-          data.length,
-          spotifyCount
-        );
-        setLoading(false);
-      }
       const sortedData = sortGridData(data, contextSortType);
       setAlbumData({
         spotifyCount: spotifyCount,
@@ -86,7 +78,7 @@ const AlbumContext = ({
     httpService,
     isSpotifyAuthenticated,
     setAlbumData,
-    setLoading,
+    setJobId,
     localFileData,
     savedAlbumData.spotifyCount,
   ]);
@@ -94,6 +86,15 @@ const AlbumContext = ({
   useEffect(() => {
     getGridData();
   }, [genre, getGridData]);
+
+  useEffect(() => {
+    // AlbumViewHeader will set jobId to -1 to let us know the worker job finished
+    if (jobId === -1){
+      console.log('AlbumContext refreshing grid on worker completion');
+      getGridData();
+      setJobId(0);
+    }
+  }, [jobId, setJobId, getGridData]);
 
   const contextData = {
     name: 'Your Saved Albums',
@@ -125,7 +126,6 @@ const AlbumContext = ({
 
 AlbumContext.propTypes = {
   isSpotifyAuthenticated: PropTypes.bool.isRequired,
-  dataLoading: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
@@ -144,23 +144,24 @@ AlbumContext.propTypes = {
   localFileData: PropTypes.any.isRequired,
   contextSortType: PropTypes.string.isRequired,
   genre: PropTypes.number.isRequired,
+  jobId: PropTypes.number.isRequired,
   setAlbumData: PropTypes.func.isRequired,
-  setLoading: PropTypes.func.isRequired,
+  setJobId: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({
   isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
-  dataLoading: getDataLoading(state),
   savedAlbumData: getSavedAlbumData(state),
   localFileData: getLocalFileData(state),
   contextSortType: getContextSortType(state),
   genre: getSelectedGenre(state),
+  jobId: getAlbumJobId(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setAlbumData: (data) => dispatch(setSavedAlbumData(data)),
-  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
+  setJobId: (data) => dispatch(setAlbumJobId(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumContext);

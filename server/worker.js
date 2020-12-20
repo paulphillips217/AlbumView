@@ -6,6 +6,8 @@ if (process.env.NODE_ENV !== 'production') {
   //console.log('worker environment', result.parsed);
 }
 
+// most of this worker code is taken from the example at https://github.com/heroku-examples/node-workers-example
+
 // notes on spotify rate limiting:
 // from website https://developer.spotify.com/documentation/web-api/
 // Note: If Web API returns status code 429, it means that you have sent too many requests.
@@ -76,12 +78,12 @@ const start = async () => {
     while (offset < count) {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getSavedAlbums(userId, offset);
-      job.progress(offset);
+      job.progress(count > 0 ? (100 * offset / count) : 100);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
       // console.log(`savedAlbumQueue count and offset: ${offset}, count: ${count}`);
     }
 
-    job.progress(count);
+    job.progress(100);
     console.log('savedAlbumQueue processing completed');
 
     console.log('savedAlbumQueue starting the audio db queue');

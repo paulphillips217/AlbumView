@@ -19,6 +19,7 @@ import {
   SELECTED_GENRE,
   SELECTED_ALBUM_ID,
   SELECTED_SPOTIFY_ALBUM_ID,
+  ALBUM_JOB_ID,
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
@@ -131,6 +132,11 @@ export const setSelectedAlbumId = (id) => ({
 
 export const setSelectedSpotifyAlbumId = (id) => ({
   type: SELECTED_SPOTIFY_ALBUM_ID,
+  payload: id,
+});
+
+export const setAlbumJobId = (id) => ({
+  type: ALBUM_JOB_ID,
   payload: id,
 });
 

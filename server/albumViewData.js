@@ -3,6 +3,9 @@ const artist = require('./data/artist');
 const album = require('./data/album');
 const user = require('./data/user');
 
+const Queue = require('bull');
+const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+
 // this gets them from the database and sends them to the client
 const getGenreList = async (req, res) => {
   const genreList = await genre.getGenres(req.user.userId);
@@ -48,8 +51,26 @@ const integrateUserOwnedAlbums = async (req, res) => {
   res.json(userAlbums);
 };
 
+const getJobProgress = async (req, res) => {
+  const jobId = req.params.id;
+  console.log('getJobProgress', jobId);
+
+  const job = await savedAlbumQueue.getJob(jobId);
+
+  if (job === null) {
+    console.log('getJobProgress job not found');
+    res.json({ notFound: true });
+  } else {
+    const state = await job.getState();
+    const progress = job._progress;
+    const failedReason = job.failedReason;
+    res.json({ jobId, state, progress, failedReason });
+  }
+}
+
 module.exports = {
   getGenreList,
   getAlbumGenreList,
   integrateUserOwnedAlbums,
+  getJobProgress,
 };

@@ -171,7 +171,7 @@ const refreshSavedAlbums = async (req, res) => {
   console.log('refreshSavedAlbums created savedAlbumQueue worker job', job.id);
 
   // return album count to client
-  res.json({ count: totalCount });
+  res.json({ count: totalCount, jobId: job.id });
 };
 
 const getSavedAlbums = async (userId, offset) => {

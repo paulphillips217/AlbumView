@@ -41,6 +41,7 @@ const FileAnalysis = ({
   const theme = useTheme();
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
+  const [readingData, setReadingData] = useState(false);
 
   const handleRead = async () => {
     if (localFileData && localFileData.length > 0) {
@@ -78,6 +79,7 @@ const FileAnalysis = ({
     } else {
       console.log('file import data is empty');
     }
+    setReadingData(false);
   };
 
   const handleSearch = (item) => {
@@ -206,7 +208,15 @@ const FileAnalysis = ({
       {!localFileData.length &&
         React.createElement(folderPicker, { setLocalFileData, httpService }, null)}
       {localFileData.length > 0 && !anyLocalAlbums && (
-        <Button onClick={handleRead}>Read Files</Button>
+        <Button
+          loading={readingData}
+          onClick={() => {
+            setReadingData(true);
+            handleRead();
+          }}
+        >
+          Read Files
+        </Button>
       )}
       {localFileData.length > 0 && anyLocalAlbums && (
         <Button onClick={() => setHideMatches(!hideMatches)}>

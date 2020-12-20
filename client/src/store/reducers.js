@@ -22,6 +22,7 @@ import {
   SELECTED_GENRE,
   SELECTED_ALBUM_ID,
   SELECTED_SPOTIFY_ALBUM_ID,
+  ALBUM_JOB_ID,
 } from './types';
 
 const initialState = {
@@ -52,6 +53,7 @@ const initialState = {
   selectedGenre: 0,
   selectedAlbumId: 0,
   selectedSpotifyAlbumId: '',
+  albumJobId: 0,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -162,6 +164,11 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting selectedSpotifyAlbumId', action.payload);
       return Object.assign({}, state, {
         selectedSpotifyAlbumId: action.payload,
+      });
+    case ALBUM_JOB_ID:
+      console.log('setting albumJobId', action.payload);
+      return Object.assign({}, state, {
+        albumJobId: action.payload,
       });
     default:
       return state;

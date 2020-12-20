@@ -15,4 +15,8 @@ router.post('/user-owned-albums',
   passport.authenticate('jwt', { session: false }),
   albumViewData.integrateUserOwnedAlbums);
 
+router.get('/job-progress/:id',
+  passport.authenticate('jwt', { session: false }),
+  albumViewData.getJobProgress);
+
 module.exports = router
