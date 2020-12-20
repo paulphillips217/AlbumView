@@ -31,7 +31,10 @@ const insertSingleAlbum = (album) => {
       } else {
         return trx('album')
           .select()
-          .where('matchName', album.matchName)
+          .where({
+            artistId: album.artistId,
+            matchName: album.matchName,
+          })
           .then((rows) => returnOrInsertAlbum(trx, rows, album))
           .catch((err) => {
             console.log('insertSingleAlbum select error: ', err, album);
@@ -53,11 +56,16 @@ const returnOrInsertAlbum = (trx, rows, album) => {
   if (rows && rows.length > 0) {
     // duplicate spotifyId found
     // console.log('insertSingleAlbum duplicate found: ', rows);
-    if (album.spotifyId && !(rows[0].spotifyId)) {
+    if (album.spotifyId && !rows[0].spotifyId) {
       // updating album record to include spotifyId
       trx('album')
         .where('id', rows[0].id)
-        .update({ spotifyId: album.spotifyId, name: album.name, imageUrl: album.imageUrl, releaseDate: album.releaseDate })
+        .update({
+          spotifyId: album.spotifyId,
+          name: album.name,
+          imageUrl: album.imageUrl,
+          releaseDate: album.releaseDate,
+        })
         .then((result) => {
           console.log('insertSingleAlbum update result: ', result);
         })

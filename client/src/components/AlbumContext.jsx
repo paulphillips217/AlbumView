@@ -13,17 +13,19 @@ import {
   getContextSortType,
   getDataLoading,
   getSpotifyIsAuthenticated,
-  getSelectedGenre,
+  getSelectedGenre, getLocalFileData
 } from '../store/selectors';
 import { setSavedAlbumData, setDataLoading } from '../store/actions';
 import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
-import { blendAlbumLists } from '../util/localFileUtils';
+import { createLocalAlbumTracks } from '../util/localFileUtils';
+import { sortGridData } from '../util/sortUtils';
 
 const AlbumContext = ({
   isSpotifyAuthenticated,
   dataLoading,
   savedAlbumData,
+  localFileData,
   contextSortType,
   genre,
   setAlbumData,
@@ -49,6 +51,8 @@ const AlbumContext = ({
     try {
       const rawData = await httpService.get(`/spotify/album-list-fetch/${genre}`);
       // console.log('albumContext saved album data', rawData);
+      const theAlbumArray = createLocalAlbumTracks(localFileData);
+      console.log('AlbumContext.getGridData got theAlbumArray', theAlbumArray);
       const data = rawData.map((item) => ({
         albumId: item.albumId,
         spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
@@ -57,7 +61,8 @@ const AlbumContext = ({
         albumName: item.albumName ? item.albumName : 'unknown album',
         artistName: item.artistName ? item.artistName : 'unknown artist',
         image: item.imageUrl,
-        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf()  : Date.now(),
+        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
+        tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
       }));
       if (data.length >= spotifyCount) {
         console.log(
@@ -67,15 +72,11 @@ const AlbumContext = ({
         );
         setLoading(false);
       }
-      console.log('albumContext just before blending', data);
-      blendAlbumLists(
-        data,
-        'albumId',
-        savedAlbumData,
-        spotifyCount,
-        contextSortType,
-        setAlbumData
-      );
+      const sortedData = sortGridData(data, contextSortType);
+      setAlbumData({
+        spotifyCount: spotifyCount,
+        data: sortedData,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -86,6 +87,8 @@ const AlbumContext = ({
     isSpotifyAuthenticated,
     setAlbumData,
     setLoading,
+    localFileData,
+    savedAlbumData.spotifyCount,
   ]);
 
   useEffect(() => {
@@ -138,6 +141,7 @@ AlbumContext.propTypes = {
       })
     ),
   }).isRequired,
+  localFileData: PropTypes.any.isRequired,
   contextSortType: PropTypes.string.isRequired,
   genre: PropTypes.number.isRequired,
   setAlbumData: PropTypes.func.isRequired,
@@ -149,6 +153,7 @@ const mapStateToProps = (state) => ({
   isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
   dataLoading: getDataLoading(state),
   savedAlbumData: getSavedAlbumData(state),
+  localFileData: getLocalFileData(state),
   contextSortType: getContextSortType(state),
   genre: getSelectedGenre(state),
 });

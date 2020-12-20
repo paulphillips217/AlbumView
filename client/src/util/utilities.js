@@ -37,35 +37,6 @@ export const filterByAlbumType = (album, type) => {
   return album.albumType === type;
 };
 
-export const trimTrackFileName = (name) => {
-  let newName = name;
-  // if the first two characters are numeric, remove them
-  let num = newName.slice(0, 2);
-  // the best way to check for NaN is by checking for self-equality
-  // eslint-disable-next-line no-self-compare
-  if (+num === +num) {
-    newName = newName.slice(2, newName.length);
-  } else {
-    // if the first one character is numeric, remove it
-    num = newName.slice(0, 1);
-    // eslint-disable-next-line no-self-compare
-    if (+num === +num) {
-      newName = newName.slice(1, newName.length);
-    }
-  }
-
-  // if the last 3 or 4 characters are an extension (come after a dot) remove them
-  newName =
-    newName.charAt(newName.length - 5) === '.'
-      ? newName.slice(0, newName.length - 5)
-      : newName;
-  newName =
-    newName.charAt(newName.length - 4) === '.'
-      ? newName.slice(0, newName.length - 4)
-      : newName;
-  return newName;
-};
-
 export const getRandomInt = (max) => {
   return Math.floor(Math.random() * Math.floor(max));
 }

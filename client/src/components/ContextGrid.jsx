@@ -34,7 +34,6 @@ const ContextGrid = ({
     }
     setAlbumId(0);
     setSpotifyAlbumId('');
-    return;
   };
 
   const GridItem = (item, index) => (

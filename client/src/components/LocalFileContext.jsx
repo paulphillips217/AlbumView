@@ -11,7 +11,11 @@ import { setDataLoading, setLocalFileData } from '../store/actions';
 import FileAnalysis from './FileAnalysis';
 import LocalFolderPicker from './LocalFolderPicker';
 import HttpService from '../util/httpUtils';
-import { createLocalTracks, tearDownLocalTracks } from '../util/localFileUtils';
+import {
+  createLocalAlbumTracks,
+  createLocalTracks,
+  tearDownLocalTracks,
+} from '../util/localFileUtils';
 
 const LocalFileContext = ({
   savedAlbumData,
@@ -23,35 +27,6 @@ const LocalFileContext = ({
   const theme = useTheme();
 
   setLoading(false);
-
-  const readAlbumArray = (fileData) => {
-    const theAlbumArray = [];
-    Object.keys(fileData).forEach((key, index) => {
-      const item = fileData[key];
-      if (!item.type.includes('audio')) {
-        return;
-      }
-      const splitPath = item.webkitRelativePath.split('/');
-      const artistName = splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
-      const albumName =
-        splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
-      const fileIndex = theAlbumArray.findIndex(
-        (a) => a.artistName && a.artistName === artistName && a.albumName && a.albumName === albumName
-      );
-      if (fileIndex >= 0) {
-        theAlbumArray[fileIndex].tracks.push(item);
-      } else {
-        theAlbumArray.push({
-          artistName,
-          albumName,
-          localId: index + 1,
-          tracks: [item],
-        });
-      }
-    });
-    console.log('read local albums: ', theAlbumArray);
-    return theAlbumArray;
-  };
 
   const contextData = {
     name: 'Local File Analysis',
@@ -71,7 +46,7 @@ const LocalFileContext = ({
           savedAlbumData={savedAlbumData.data}
           folderPicker={LocalFolderPicker}
           localFileData={localFileData}
-          readAlbumArray={readAlbumArray}
+          readAlbumArray={createLocalAlbumTracks}
           createTracks={createLocalTracks}
           tearDownTracks={tearDownLocalTracks}
           setLocalFileData={setFileData}
