@@ -96,7 +96,7 @@ const talkToSpotify = async (req, res) => {
       req.user.userId
     );
 
-    if (!credentials || !credentials.access_token) {
+    if (!credentials || !credentials.spotifyAuthToken) {
       console.log(
         'talkToSpotify - failed to get credentials, removing invalid cookie'
       );
@@ -106,7 +106,7 @@ const talkToSpotify = async (req, res) => {
       return;
     }
 
-    accessToken = credentials.access_token;
+    accessToken = credentials.spotifyAuthToken;
     console.log('talkToSpotify token: ', accessToken);
   } catch (err) {
     console.error('talkToSpotify error getting credentials', err);
@@ -176,14 +176,15 @@ const refreshSavedAlbums = async (req, res) => {
 
 const getSavedAlbums = async (userId, offset) => {
   const credentials = await spotifyTokens.getSpotifyCredentials(userId);
-  if (!credentials || !credentials.access_token) {
+  if (!credentials || !credentials.spotifyAuthToken) {
     return 0;
   }
   const url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`;
   console.log('getSavedAlbums url', url);
-  const response = await chatWithSpotify(credentials.access_token, url, 'GET');
+  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
   //console.log('getSavedAlbums response album[0]', response.items);
-  if (!response || response.length === 0) {
+  if (!response || response.length === 0 || !response.items) {
+    console.error('getSavedAlbums response is invalid: ', response);
     return 0;
   }
 
@@ -228,7 +229,7 @@ const aggregateSpotifyArtistData = async (req, res) => {
   const credentials = await spotifyTokens.getSpotifyCredentials(
     req.user.userId
   );
-  const accessToken = credentials.access_token;
+  const accessToken = credentials.spotifyAuthToken;
 
   let url = '';
   let artistList = [];

@@ -92,9 +92,12 @@ exports.up = async (knex) => {
   } else {
     result = await knex.schema.createTable('user', (user) => {
       user.integer('id').primary();
-      user.string('spotifyAuthToken', 512).notNullable();
-      user.string('spotifyRefreshToken', 512).notNullable();
-      user.datetime('spotifyExpiration').notNullable();
+      user.string('spotifyAuthToken', 512);
+      user.string('spotifyRefreshToken', 512);
+      user.datetime('spotifyExpiration');
+      user.text('oneDriveProfileId');
+      user.text('oneDriveParams');
+      user.datetime('oneDriveExpiration');
     })
   }
   hasTable = await knex.schema.hasTable('userAlbums');

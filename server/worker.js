@@ -78,7 +78,7 @@ const start = async () => {
     while (offset < count) {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getSavedAlbums(userId, offset);
-      job.progress(count > 0 ? (100 * offset / count) : 100);
+      job.progress(count > 0 ? Math.floor(100 * offset / count) : 100);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
       // console.log(`savedAlbumQueue count and offset: ${offset}, count: ${count}`);
     }

@@ -1,52 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const moment = require('moment');
 const spotifyData = require('../spotifyData');
-const authorizeSpotify = require('../authorizeSpotify');
 const spotifyTokens = require('../spotifyTokens');
-const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const user = require('../data/user');
 
-// jwt session code comes from
-// https://blog.usejournal.com/sessionless-authentication-withe-jwts-with-node-express-passport-js-69b059e4b22c
-
-const setSessionJwt = async (req, res) => {
-  console.log('setSessionJwt entry point -- ', req.url);
-
-  const userId = await user.initializeUser(req.credentials);
-  console.log('setSessionJwt initialized user', userId);
-  if (userId <= 0) {
-    res.status(400).send({ error: 'database error' });
-    return;
-  }
-
-  /** This is what ends up in our JWT */
-  const payload = {
-    userId: userId,
-    expires: moment().add(parseInt(process.env.JWT_EXPIRATION_HOURS), 'hours'),
-  };
-
-  /** assigns payload to req.user */
-  req.login(payload, { session: false }, (error) => {
-    if (error) {
-      res.status(400).send({ error });
-      return;
-    }
-
-    /** generate a signed json web token and return it in the response */
-    const token = jwt.sign(JSON.stringify(payload), process.env.JWT_SECRET);
-
-    /** assign our jwt to the cookie */
-    res.cookie('jwt', token, { httpOnly: true });
-    res.cookie('spotify', 'true');
-
-    res.redirect(process.env.CLIENT_URL);
-  });
-};
-
-router.get('/login', authorizeSpotify);
-router.get('/callback', spotifyTokens.getSpotifyAccessToken, setSessionJwt);
+router.get('/login', spotifyTokens.authorizeSpotify);
+router.get(
+  '/callback',
+  spotifyTokens.getSpotifyAccessToken,
+  spotifyTokens.handleSpotifyAuthentication
+);
 router.get(
   '/history',
   passport.authenticate('jwt', { session: false }),

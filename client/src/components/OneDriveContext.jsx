@@ -48,7 +48,7 @@ const OneDriveFileContext = ({
           albumList.forEach((album) =>
             theAlbumArray.push({
               oneDriveId: album.id,
-              artist: artist.name,
+              artistName: artist.name,
               albumName: album.name,
               tracks: [],
             })

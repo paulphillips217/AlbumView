@@ -220,7 +220,7 @@ const AlbumViewHeader = ({
             {contextType === ContextType.Albums &&
               jobProgress > 0 &&
               jobProgress < 100 && (
-                <Progress percent={Math.floor(jobProgress)} progress />
+                <Progress percent={jobProgress} progress />
               )}
           </Segment>
         </Grid.Column>

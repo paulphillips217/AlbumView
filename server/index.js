@@ -18,6 +18,9 @@ const spotifyRoutes = require('./routes/spotify');
 const lastFmRoutes = require('./routes/last-fm');
 const albumViewRoutes = require('./routes/album-view');
 
+const user = require('./data/user');
+const moment = require('moment');
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -42,7 +45,7 @@ passport.use(
     {
       jwtFromRequest: (req) => {
         console.log('getting JWT from request - url', req.url);
-        console.log('getting JWT from request - cookies', req.cookies);
+        // console.log('getting JWT from request - cookies', req.cookies);
         return req.cookies ? req.cookies.jwt : '';
       },
       secretOrKey: process.env.JWT_SECRET,
@@ -79,19 +82,25 @@ app.use(
 );
 
 // In-memory storage of logged-in users (TODO: move to database)
-var users = {};
+// var users = {};
 
 // Passport calls serializeUser and deserializeUser to manage users
-passport.serializeUser(function (user, done) {
-  console.log('serializeUser ', user);
+passport.serializeUser((user, done) => {
+  // console.log('serializeUser oid: ', user.profile.oid);
+  console.log('serializeUser userId: ', user.userId);
   // Use the OID property of the user as a key
-  users[user.profile.oid] = user;
-  done(null, user.profile.oid);
+  // users[user.profile.oid] = user;
+  // done(null, user.profile.oid);
+  done(null, user.userId);
 });
 
-passport.deserializeUser(function (id, done) {
-  console.log('deserializeUser ', id);
-  done(null, users[id] ? users[id] : null);
+passport.deserializeUser(async (userId, done) => {
+  // console.log('deserializeUser oid:', id);
+  console.log('deserializeUser userId:', userId);
+  // done(null, users[id] ? users[id] : null);
+  const oneDriveCredentials = await user.getOneDriveCredentials(userId);
+  console.log(`deserializeUser credentials ${oneDriveCredentials ? 'success' : 'failed'}`);
+  done(null, {...oneDriveCredentials, userId});
 });
 
 // Configure simple-oauth2
@@ -127,9 +136,21 @@ async function signInComplete(
   // Create a simple-oauth2 token from raw tokens
   let oauthToken = oauth2.accessToken.create(params);
 
+  console.log('signInComplete accessToken expires: ', oauthToken.token.expires_in);
+  const credentials = {
+    oneDriveProfileId: profile.oid,
+    oneDriveParams: JSON.stringify(params),
+    oneDriveExpiration: moment()
+      .add(oauthToken.token.expires_in, 'seconds')
+      .format(),
+  };
+
   // Save the profile and tokens in user storage
-  users[profile.oid] = { profile, oauthToken };
-  return done(null, users[profile.oid]);
+  // users[profile.oid] = { profile, oauthToken };
+  const userId = await user.initializeOneDriveUser(credentials);
+  console.log('signInComplete saved user to database: ', userId);
+  //return done(null, users[profile.oid]);
+  return done(null, {...credentials, userId});
 }
 
 // Configure OIDC strategy
