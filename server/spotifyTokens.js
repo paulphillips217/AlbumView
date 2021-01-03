@@ -57,8 +57,14 @@ const getSpotifyAccessToken = (req, res, next) => {
 
 const getSpotifyCredentials = async (userId) => {
   const credentials = await user.getSpotifyCredentials(userId);
-  if (!credentials) {
-    console.log('getSpotifyCredentials - user not found in database');
+  if (!credentials || !(credentials.spotifyRefreshToken)) {
+    // if we get here we don't have a proper token, so we'll log out the user
+    console.log('getSpotifyCredentials - credentials not found in database');
+    await user.updateTokens(userId, {
+      spotifyAuthToken: null,
+      spotifyRefreshToken: null,
+      spotifyExpiration: null,
+    })
     return {};
   }
 
@@ -75,7 +81,7 @@ const getSpotifyCredentials = async (userId) => {
 
   const tokenExpiration = moment(spotifyExpiration);
   const currentTime = moment();
-  if (tokenExpiration <= currentTime && spotifyRefreshToken) {
+  if ((!spotifyExpiration || tokenExpiration <= currentTime) && spotifyRefreshToken) {
     console.log('getSpotifyCredentials refreshing credentials');
     // console.log('getSpotifyCredentials token before refresh: ', spotifyAuthToken);
     return await refreshSpotifyAccessToken(userId, spotifyRefreshToken);
@@ -163,9 +169,26 @@ const handleSpotifyAuthentication = async (req, res) => {
   }
 }
 
+const logOutSpotifyUser = async (req, res) => {
+  console.log('logOutSpotifyUser clearing database fields for user ', req.user.userId);
+  await user.updateTokens(req.user.userId, {
+    spotifyAuthToken: null,
+    spotifyRefreshToken: null,
+    spotifyExpiration: null,
+  });
+  await albumViewTokens.setSessionJwt(req, res);
+  res.json({ signedOut: true });
+
+  // req.session.destroy(function (err) {
+  //   req.logout();
+  //   res.redirect('/');
+  // });
+}
+
 module.exports = {
   getSpotifyAccessToken,
   getSpotifyCredentials,
   authorizeSpotify,
   handleSpotifyAuthentication,
+  logOutSpotifyUser,
 };

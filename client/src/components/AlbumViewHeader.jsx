@@ -226,7 +226,7 @@ const AlbumViewHeader = ({
         </Grid.Column>
         <Grid.Column>
           <Segment basic textAlign="center">
-            <ModalConfig />
+            <ModalConfig httpService={httpService} />
           </Segment>
         </Grid.Column>
       </Grid>

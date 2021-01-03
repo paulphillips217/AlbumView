@@ -88,7 +88,7 @@ const start = async () => {
 
     console.log('savedAlbumQueue starting the audio db queue');
     // await lastAlbumQueue.add();
-    // await audioDbAlbumQueue.add();       // put this back once done with auth changes
+    await audioDbAlbumQueue.add();
   });
 
   // gets information for albums from Last.fm

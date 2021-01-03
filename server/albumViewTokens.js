@@ -23,7 +23,7 @@ const setSessionJwt = async (req, res) => {
     } else if (req.credentials && req.credentials.spotifyAuthToken) {
       userId = await user.getUserFromSpotifyToken(req.credentials.spotifyAuthToken);
       console.log('setSessionJwt got existing user from spotify credentials', userId);
-      if (userId === 0) {
+      if (userId === 0 && req.credentials) {
         userId = await user.initializeSpotifyUser(req.credentials);
         console.log('setSessionJwt initialized user from spotify credentials', userId);
       }

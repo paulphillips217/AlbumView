@@ -5,6 +5,7 @@ const spotifyTokens = require('../spotifyTokens');
 const passport = require('passport');
 
 router.get('/login', spotifyTokens.authorizeSpotify);
+router.get('/logout', spotifyTokens.logOutSpotifyUser);
 router.get(
   '/callback',
   spotifyTokens.getSpotifyAccessToken,

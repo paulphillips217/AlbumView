@@ -25,6 +25,8 @@ import {
   setSavedTrackSort,
 } from '../store/actions';
 import { AlbumViewTheme, SortTypes } from '../store/types';
+import HttpService from '../util/httpUtils';
+import '../styles/App.css';
 
 const ModalConfig = ({
   albumViewTheme,
@@ -43,6 +45,7 @@ const ModalConfig = ({
   setPlaylistSortOrder,
   setSavedTrackSortOrder,
   setPlaylistTrackSortOrder,
+  httpService,
 }) => {
   const theme = useTheme();
   const history = useHistory();
@@ -161,14 +164,33 @@ const ModalConfig = ({
     setGridColumns(e.target.value);
   };
 
-  const handleLogOut = () => {
+  const handleLogOutSpotify = () => {
     // kill the cookie
     document.cookie = 'spotify= ;max-age=0';
-    console.log('handleLogOut - updated cookie', document.cookie);
+    console.log('handleLogOutSpotify - updated cookie', document.cookie);
+    httpService
+      .get(`/spotify/logout`)
+      .then((response) => {
+        console.log('handleLogOutSpotify logout response: ', response);
+      })
+      .catch((error) => console.log(error));
     setItem('');
     setRelatedTo('');
     setGridData({ spotifyCount: 0, data: [] });
     resetListData();
+    history.push('/');
+  };
+
+  const handleLogOutOneDrive = () => {
+    // kill the cookie
+    document.cookie = 'oneDrive= ;max-age=0';
+    console.log('handleLogOutOneDrive - updated cookie', document.cookie);
+    httpService
+      .get(`/one-drive/signout`)
+      .then((response) => {
+        console.log('handleLogOutOneDrive signout response: ', response);
+      })
+      .catch((error) => console.log(error));
     history.push('/');
   };
 
@@ -197,7 +219,12 @@ const ModalConfig = ({
               onChange={handleContextGridColumnsChange}
             />
           </div>
-          <Button onClick={handleLogOut}>Log Out</Button>
+          <button className="spotify-button" onClick={handleLogOutSpotify}>
+            Log Out Spotify
+          </button>
+          <button className="one-drive-button" onClick={handleLogOutOneDrive}>
+            Log Out OneDrive
+          </button>
         </Tab.Pane>
       ),
     },
@@ -285,6 +312,7 @@ ModalConfig.propTypes = {
   setPlaylistSortOrder: PropTypes.func.isRequired,
   setSavedTrackSortOrder: PropTypes.func.isRequired,
   setPlaylistTrackSortOrder: PropTypes.func.isRequired,
+  httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
 const mapStateToProps = (state) => ({

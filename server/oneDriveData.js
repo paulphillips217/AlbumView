@@ -1,4 +1,5 @@
 const oneDriveTokens = require('./oneDriveTokens');
+const albumViewTokens = require('./albumViewTokens');
 const oneDriveGraph = require('./oneDriveGraph');
 
 const getOneDriveFolders = async (req, res) => {
@@ -8,7 +9,7 @@ const getOneDriveFolders = async (req, res) => {
     if (!accessToken) {
       // if there's a problem, expire the cookie
       console.log('invalid accessToken in getOneDriveFolders, removing cookie');
-      res.cookie('oneDrive', '', { maxAge: 0 });
+      await albumViewTokens.setSessionJwt(req, res);
       res.json({ emptyResponse: true });
       return;
     }
@@ -37,7 +38,7 @@ const getOneDriveFile = async (req, res) => {
     if (!accessToken) {
       // if there's a problem, expire the cookie
       console.log('invalid accessToken in getOneDriveFile, removing cookie');
-      res.cookie('oneDrive', '', { maxAge: 0 });
+      await albumViewTokens.setSessionJwt(req, res);
       res.json({ emptyResponse: true });
       return;
     }

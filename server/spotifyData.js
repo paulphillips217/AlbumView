@@ -1,5 +1,6 @@
 const axios = require('axios');
 const moment = require('moment');
+const albumViewTokens = require('./albumViewTokens');
 const spotifyTokens = require('./spotifyTokens');
 const utilities = require('./utilities');
 const artist = require('./data/artist');
@@ -100,8 +101,7 @@ const talkToSpotify = async (req, res) => {
       console.log(
         'talkToSpotify - failed to get credentials, removing invalid cookie'
       );
-      res.cookie('jwt', '', { maxAge: 0 });
-      res.cookie('spotify', '', { maxAge: 0 });
+      await albumViewTokens.setSessionJwt(req, res);
       res.json({ empty: true });
       return;
     }
@@ -119,6 +119,10 @@ const talkToSpotify = async (req, res) => {
 
 const chatWithSpotify = async (accessToken, url, method) => {
   try {
+    if (!accessToken) {
+      console.log('chatWithSpotify got empty accessToken');
+      return { emptyResponse: true };
+    }
     const response = await axios({
       url: url,
       method: method,
@@ -229,6 +233,15 @@ const aggregateSpotifyArtistData = async (req, res) => {
   const credentials = await spotifyTokens.getSpotifyCredentials(
     req.user.userId
   );
+  if (!credentials || !credentials.spotifyAuthToken) {
+    console.log(
+      'aggregateSpotifyArtistData - failed to get credentials, removing invalid cookie'
+    );
+    await albumViewTokens.setSessionJwt(req, res);
+    res.json({ empty: true });
+    return;
+  }
+
   const accessToken = credentials.spotifyAuthToken;
 
   let url = '';

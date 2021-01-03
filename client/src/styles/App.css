@@ -76,8 +76,8 @@ td:last-child {
   font-weight: 700;
   letter-spacing: 2px;
   line-height: 12px;
-  margin-bottom: 0;
-  margin-top: 100px;
+  margin-bottom: 10px;
+  margin-top: 10px;
   min-width: 160px;
   overflow-wrap: break-word;
   padding: 11px 32px 9px;
@@ -127,7 +127,6 @@ td:last-child {
   font-weight: 600;
   line-height: 15px;
   margin-right: 0px;
-  margin-top: 100px;
   max-width: 374px;
   min-width: 230px;
   outline: rgb(255, 255, 255) none 0px;

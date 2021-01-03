@@ -18,8 +18,8 @@ const spotifyRoutes = require('./routes/spotify');
 const lastFmRoutes = require('./routes/last-fm');
 const albumViewRoutes = require('./routes/album-view');
 
+const oneDriveTokens = require('./oneDriveTokens');
 const user = require('./data/user');
-const moment = require('moment');
 
 const app = express();
 app.use(cors());
@@ -37,7 +37,7 @@ if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
 
-/* AlbumView authentication starts here */
+/* AlbumView authentication setup starts here */
 const JWTStrategy = require('passport-jwt').Strategy;
 
 passport.use(
@@ -64,7 +64,7 @@ passport.use(
     }
   )
 );
-/* AlbumView authentication ends here */
+/* AlbumView authentication setup ends here */
 
 /* OneDrive setup starts here */
 
@@ -80,9 +80,6 @@ app.use(
     unset: 'destroy',
   })
 );
-
-// In-memory storage of logged-in users (TODO: move to database)
-// var users = {};
 
 // Passport calls serializeUser and deserializeUser to manage users
 passport.serializeUser((user, done) => {
@@ -103,77 +100,6 @@ passport.deserializeUser(async (userId, done) => {
   done(null, {...oneDriveCredentials, userId});
 });
 
-// Configure simple-oauth2
-const oauth2 = require('simple-oauth2').create({
-  client: {
-    id: process.env.OAUTH_APP_ID,
-    secret: process.env.OAUTH_APP_PASSWORD,
-  },
-  auth: {
-    tokenHost: process.env.OAUTH_AUTHORITY,
-    authorizePath: process.env.OAUTH_AUTHORIZE_ENDPOINT,
-    tokenPath: process.env.OAUTH_TOKEN_ENDPOINT,
-  },
-});
-
-// Callback function called once the sign-in is complete
-// and an access token has been obtained
-async function signInComplete(
-  req,
-  iss,
-  sub,
-  profile,
-  accessToken,
-  refreshToken,
-  params,
-  done
-) {
-  console.log('signInComplete profile.oid', profile.oid);
-  if (!profile.oid) {
-    return done(new Error('No OID found in user profile.'));
-  }
-
-  let userId = 0;
-
-  await passport.authenticate('jwt', (err, user, info) => {
-    if (err) {
-      console.log('passport auth inside signInComplete has error');
-      return;
-    }
-    if (user) {
-      console.log('passport auth inside signInComplete has user', user.userId);
-      userId = user.userId;
-    }
-  })(req);
-
-  console.log('after passport auth inside signInComplete', userId);
-
-  // Create a simple-oauth2 token from raw tokens
-  let oauthToken = oauth2.accessToken.create(params);
-
-  console.log('signInComplete accessToken expires: ', oauthToken.token.expires_in);
-  const credentials = {
-    oneDriveProfileId: profile.oid,
-    oneDriveParams: JSON.stringify(params),
-    oneDriveExpiration: moment()
-      .add(oauthToken.token.expires_in, 'seconds')
-      .format(),
-  };
-  // console.log('signInComplete credentials: ', credentials);
-
-  // Save the profile and tokens in user storage
-  if (userId) {
-    await user.updateTokens(userId, credentials);
-    // console.log('signInComplete updated existing database user: ', response);
-  }
-  else {
-    userId = await user.initializeOneDriveUser(credentials);
-    console.log('signInComplete initialized new database user: ', userId);
-  }
-
-  return done(null, {...credentials, userId});
-}
-
 // Configure OIDC strategy
 passport.use(
   new OIDCStrategy(
@@ -189,7 +115,7 @@ passport.use(
       passReqToCallback: true,
       scope: process.env.OAUTH_SCOPES.split(' '),
     },
-    signInComplete
+    oneDriveTokens.signInComplete
   )
 );
 

@@ -23,12 +23,7 @@ router.post(
   oneDriveTokens.handleOneDriveAuthentication
 );
 
-router.get('/signout', function (req, res) {
-  req.session.destroy(function (err) {
-    req.logout();
-    res.redirect('/');
-  });
-});
+router.get('/signout', oneDriveTokens.signOutOneDriveUser);
 
 router.get('/children/:id', oneDriveData.getOneDriveFolders);
 
