@@ -152,12 +152,7 @@ const getSpotifyCredentials = (userId) => {
     .select('spotifyAuthToken', 'spotifyRefreshToken', 'spotifyExpiration')
     .from('user')
     .where('id', userId)
-    .then((rows) => {
-      if (rows && rows.length > 0) {
-        return rows[0];
-      }
-      return null;
-    })
+    .first()
     .catch((err) => console.log('getSpotifyCredentials error', err.name, err.message));
 };
 
@@ -172,8 +167,9 @@ const getOneDriveCredentials = (userId) => {
 
 const updateTokens = (userId, tokens) => {
   console.log('updateTokens for user ', userId);
-  db('user')
+  return db('user')
     .where({ id: userId })
+    .returning(['id','spotifyExpiration', 'oneDriveExpiration'])
     .update(tokens)
     .catch((err) => console.log('updateTokens error', err.name, err.message));
 };

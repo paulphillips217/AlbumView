@@ -119,6 +119,7 @@ const oauth2 = require('simple-oauth2').create({
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
 async function signInComplete(
+  req,
   iss,
   sub,
   profile,
@@ -128,10 +129,24 @@ async function signInComplete(
   done
 ) {
   console.log('signInComplete profile.oid', profile.oid);
-
   if (!profile.oid) {
     return done(new Error('No OID found in user profile.'));
   }
+
+  let userId = 0;
+
+  await passport.authenticate('jwt', (err, user, info) => {
+    if (err) {
+      console.log('passport auth inside signInComplete has error');
+      return;
+    }
+    if (user) {
+      console.log('passport auth inside signInComplete has user', user.userId);
+      userId = user.userId;
+    }
+  })(req);
+
+  console.log('after passport auth inside signInComplete', userId);
 
   // Create a simple-oauth2 token from raw tokens
   let oauthToken = oauth2.accessToken.create(params);
@@ -144,12 +159,18 @@ async function signInComplete(
       .add(oauthToken.token.expires_in, 'seconds')
       .format(),
   };
+  // console.log('signInComplete credentials: ', credentials);
 
   // Save the profile and tokens in user storage
-  // users[profile.oid] = { profile, oauthToken };
-  const userId = await user.initializeOneDriveUser(credentials);
-  console.log('signInComplete saved user to database: ', userId);
-  //return done(null, users[profile.oid]);
+  if (userId) {
+    await user.updateTokens(userId, credentials);
+    // console.log('signInComplete updated existing database user: ', response);
+  }
+  else {
+    userId = await user.initializeOneDriveUser(credentials);
+    console.log('signInComplete initialized new database user: ', userId);
+  }
+
   return done(null, {...credentials, userId});
 }
 
@@ -165,7 +186,7 @@ passport.use(
       allowHttpForRedirectUrl: true,
       clientSecret: process.env.OAUTH_APP_PASSWORD,
       validateIssuer: false,
-      passReqToCallback: false,
+      passReqToCallback: true,
       scope: process.env.OAUTH_SCOPES.split(' '),
     },
     signInComplete
