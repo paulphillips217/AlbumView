@@ -51,12 +51,15 @@ export const tearDownLocalTracks = (albumTrackList) => {
 export const createOneDriveTracks = async (album, httpService) => {
   const trackList = await httpService.get(`/one-drive/children/${album.oneDriveId}`);
   console.log('createOneDriveTracks', trackList);
-  return trackList
-    .filter((t) => t.file.mimeType.includes('audio'))
-    .map((t) => ({
-      name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
-      url: t['@microsoft.graph.downloadUrl'],
-    }));
+  if (Array.isArray(trackList)) {
+    return trackList
+      .filter((t) => t.file.mimeType.includes('audio'))
+      .map((t) => ({
+        name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
+        url: t['@microsoft.graph.downloadUrl'],
+      }));
+  }
+  return [];
 };
 
 export const tearDownOneDriveTracks = () => {

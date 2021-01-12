@@ -5,6 +5,12 @@ const oneDriveGraph = require('./oneDriveGraph');
 const getOneDriveFolders = async (req, res) => {
   try {
     console.log('getOneDriveFolders id: ', req.params.id);
+    if (!req.user || !req.user.userId) {
+      console.log('userId not found in getOneDriveFolders, removing cookie');
+      await albumViewTokens.setSessionJwt(req, res);
+      res.json({ error: 'userId not found' });
+      return;
+    }
     const accessToken = await oneDriveTokens.getOneDriveAccessToken(req.user.userId);
     if (!accessToken) {
       // if there's a problem, expire the cookie
@@ -34,6 +40,12 @@ const getOneDriveFolders = async (req, res) => {
 const getOneDriveFile = async (req, res) => {
   try {
     console.log('getOneDriveFile id: ', req.params.id);
+    if (!req.user || !req.user.userId) {
+      console.log('userId not found in getOneDriveFile, removing cookie');
+      await albumViewTokens.setSessionJwt(req, res);
+      res.json({ error: 'userId not found' });
+      return;
+    }
     const accessToken = oneDriveTokens.getOneDriveAccessToken(req.user.userId);
     if (!accessToken) {
       // if there's a problem, expire the cookie
