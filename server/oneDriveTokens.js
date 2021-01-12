@@ -125,14 +125,19 @@ const handleOneDriveAuthentication = async (req, res) => {
 }
 
 const signOutOneDriveUser = async (req, res) => {
-  console.log('signOutOneDriveUser clearing database fields for user ', req.user.userId);
-  await user.updateTokens(req.user.userId, {
-    oneDriveProfileId: null,
-    oneDriveParams: null,
-    oneDriveExpiration: null,
-  });
-  await albumViewTokens.setSessionJwt(req, res);
-  res.json({ signedOut: true });
+  if (req.user && req.user.userId) {
+    console.log('signOutOneDriveUser clearing database fields for user ', req.user.userId);
+    await user.updateTokens(req.user.userId, {
+      oneDriveProfileId: null,
+      oneDriveParams: null,
+      oneDriveExpiration: null,
+    });
+    await albumViewTokens.setSessionJwt(req, res);
+    res.json({ signedOut: true });
+  } else {
+    console.log('signOutOneDriveUser found no user');
+    res.json({ error: true });
+  }
 
   // req.session.destroy(function (err) {
   //   req.logout();

@@ -8,18 +8,21 @@ if (process.env.NODE_ENV !== 'production') {
 
 // most of this worker code is taken from the example at https://github.com/heroku-examples/node-workers-example
 
+// notes to clean out redis database
+// "redis-cli" starts redis cli
+// "keys *" displays all keys
+// "flushdb" deletes all keys
+// "quit" exits redis cli
+
 // notes on spotify rate limiting:
 // from website https://developer.spotify.com/documentation/web-api/
 // Note: If Web API returns status code 429, it means that you have sent too many requests.
 // When this happens, check the Retry-After header, where you will see a number displayed.
 // This is the number of seconds that you need to wait, before you try your request again.
 
-let throng = require('throng');
-let Queue = require('bull');
+const throng = require('throng');
+const Queue = require('bull');
 
-const album = require('./data/album');
-const artist = require('./data/artist');
-const genre = require('./data/genre');
 const spotifyData = require('./spotifyData');
 const lastFmData = require('./lastFmData');
 const theAudioDbData = require('./theAudioDbData');
@@ -42,11 +45,16 @@ const start = async () => {
   // Connect to the named work queues
   let testQueue = new Queue('test', process.env.REDIS_URL);
   let savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+  let spotifyAlbumArtistQueue = new Queue(
+    'spotifyAlbumsArtists',
+    process.env.REDIS_URL
+  );
   let lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
   let audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
 
   console.log('starting worker process');
 
+  // *** TEST QUEUE ***
   testQueue.process(maxJobsPerWorker, async (job) => {
     // This is an example job that just slowly reports on progress
     // while doing no work. Replace this with your own job logic.
@@ -59,14 +67,13 @@ const start = async () => {
       job.progress(progress)
     }
     */
-    //    const artist = await artist.insertSingleArtist();
-    //    console.log('inserted single artist', artist);
 
     // A job can return values that will be stored in Redis as JSON
     // This return value is unused in this demo application.
     return { value: 'This will be stored' };
   });
 
+  // *** SAVED ALBUM QUEUE ***
   // gets the user's saved albums from Spotify
   savedAlbumQueue.process(maxJobsPerWorker, async (job) => {
     const { userId, count } = job.data;
@@ -78,7 +85,7 @@ const start = async () => {
     while (offset < count) {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getSavedAlbums(userId, offset);
-      job.progress(count > 0 ? Math.floor(100 * offset / count) : 100);
+      job.progress(count > 0 ? Math.floor((100 * offset) / count) : 100);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
       // console.log(`savedAlbumQueue count and offset: ${offset}, count: ${count}`);
     }
@@ -86,141 +93,38 @@ const start = async () => {
     job.progress(100);
     console.log('savedAlbumQueue processing completed');
 
-    console.log('savedAlbumQueue starting the audio db queue');
-    // await lastAlbumQueue.add();
+    console.log('savedAlbumQueue starting secondary queues');
+    await spotifyAlbumArtistQueue.add({ userId });
+    await lastAlbumQueue.add();
     await audioDbAlbumQueue.add();
   });
 
+  // *** SPOTIFY QUEUE ***
+  // gets information for albums and artists from spotify
+  spotifyAlbumArtistQueue.process(maxJobsPerWorker, async (job) => {
+    const { userId } = job.data;
+    console.log('spotifyAlbumArtistQueue starting with userId: ', userId);
+    await spotifyData.addArtistImageUrls(userId, sleep);
+    await spotifyData.addAlbumSpotifyIds(userId, sleep);
+    await  spotifyData.addArtistSpotifyIds(userId, sleep);
+  });
+
+  // *** LAST.FM QUEUE ***
   // gets information for albums from Last.fm
   lastAlbumQueue.process(maxJobsPerWorker, async (job) => {
     console.log('lastAlbumQueue starting');
-    const albums = await album.getAlbumsWithNoMbid();
-    console.log('getAlbumsWithNoMbid album count', albums.length);
-
-    if (albums) {
-      for (let i = 0; i < albums.length; i++) {
-        await sleep(process.env.LAST_FM_INTERVAL);
-        let musicBrainzId = await lastFmData.getMusicBrainzId(
-          albums[i].artistName,
-          albums[i].albumName
-        );
-        console.log('lastAlbumQueue musicBrainzId', musicBrainzId);
-        if (!musicBrainzId) {
-          musicBrainzId = 'NOT-FOUND';
-        }
-        await album.addMusicBrainzId(albums[i].albumId, musicBrainzId);
-      }
-    }
-
-    const genrelessAlbums = await album.getAlbumsWithNoGenres();
-    console.log('getAlbumsWithNoGenres album count', genrelessAlbums.length);
-    if (genrelessAlbums) {
-      for (let i = 0; i < genrelessAlbums.length; i++) {
-        // for now, skip albums whose musicBrainzId is NOT-FOUND
-        if (genrelessAlbums[i].musicBrainzId === 'NOT-FOUND') {
-          continue;
-        }
-        await sleep(process.env.LAST_FM_INTERVAL);
-        let genres = await lastFmData.getAlbumGenres(
-          genrelessAlbums[i].musicBrainzId,
-          genrelessAlbums[i].artistName,
-          genrelessAlbums[i].albumName
-        );
-
-        if (genres) {
-          for (let j = 0; j < genres.length; j++) {
-            console.log('lastAlbumQueue album genre', genres[j]);
-            const { count, name } = genres[j];
-            if (count >= 10) {
-              const genreRecord = await genre.insertGenre(name);
-              const albumGenre = await album.insertAlbumGenre(
-                genrelessAlbums[i].albumId,
-                genreRecord.id
-              );
-              console.log(
-                'lastAlbumQueue albumGenreRecord',
-                genrelessAlbums[i].albumId,
-                genreRecord.id
-              );
-            }
-          }
-        }
-      }
-    }
+    await lastFmData.addAlbumLastFmData(sleep);
+    await lastFmData.addArtistLastFmData(sleep);
+    // some day we might get genres from last.fm again ???
+    // await lastFmData.getLastFmGenres(sleep);
   });
 
+  // *** AUDIO DB QUEUE ***
   // gets information for albums from theAudioDb.com
   audioDbAlbumQueue.process(maxJobsPerWorker, async (job) => {
-    // console.log('audioDbAlbumQueue starting');
-    const albums = await album.getAlbumsWithNoTadbId();
-    console.log('getAlbumsWithNoTadbId album count', albums.length);
-
-    if (albums) {
-      let tadbId;
-      for (let i = 0; i < albums.length; i++) {
-        await sleep(process.env.THE_AUDIO_DB_INTERVAL);
-        let albumData = await theAudioDbData.getAlbumData(
-          albums[i].artistName,
-          albums[i].albumName
-        );
-        // if we didn't get a result, try removing everything between parentheses
-        if (
-          (!albumData || !albumData.idAlbum) &&
-          (albums[i].albumName.includes('&') ||
-            albums[i].albumName.includes('(') ||
-            albums[i].albumName.includes('/'))
-        ) {
-          const albumName = albums[i].albumName
-            .replace(/\(.+\)/g, '')
-            .replace(/&/g, 'and')
-            .replace(/ \/ /g, '/');
-          console.log(
-            `trying to search for ${albumName} instead of ${albums[i].albumName}`
-          );
-          await sleep(process.env.THE_AUDIO_DB_INTERVAL);
-          albumData = await theAudioDbData.getAlbumData(
-            albums[i].artistName,
-            albumName
-          );
-        }
-        //console.log('audioDbAlbumQueue albumData', albumData);
-        if (albumData && albumData.idAlbum) {
-          tadbId = albumData.idAlbum;
-        } else {
-          tadbId = 'NOT-FOUND';
-        }
-        await album.addTadbId(albums[i].albumId, tadbId);
-        if (albumData) {
-          if (albumData.strStyle) {
-            const genreRecord = await genre.insertGenre(albumData.strStyle);
-            if (genreRecord && genreRecord.id) {
-              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
-              // console.log('audioDbAlbumQueue strStyle albumGenreRecord', genre, albums[i].albumId, genreRecord.id);
-            } else {
-              // console.log('audioDbAlbumQueue no albumData.strStyle', albums[i].albumId, albumData.strStyle);
-            }
-          }
-          if (albumData.strGenre) {
-            const genreRecord = await genre.insertGenre(albumData.strGenre);
-            if (genreRecord && genreRecord.id) {
-              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
-              // console.log('audioDbAlbumQueue strGenre albumGenreRecord',albums[i].albumId,genreRecord.id);
-            } else {
-              // console.log('audioDbAlbumQueue no albumData.strGenre',albums[i].albumId,albumData.strGenre);
-            }
-          }
-          if (albumData.strMood) {
-            const genreRecord = await genre.insertGenre(albumData.strMood);
-            if (genreRecord && genreRecord.id) {
-              await album.insertAlbumGenre(albums[i].albumId, genreRecord.id);
-              // console.log('audioDbAlbumQueue strMood albumGenreRecord', albums[i].albumId, genreRecord.id);
-            } else {
-              // console.log('audioDbAlbumQueue no albumData.strMood', albums[i].albumId, albumData.strMood);
-            }
-          }
-        }
-      }
-    }
+    console.log('audioDbAlbumQueue starting');
+    await theAudioDbData.addAlbumTheAudioDbData(sleep);
+    await theAudioDbData.addArtistTheAudioDbData(sleep);
   });
 };
 

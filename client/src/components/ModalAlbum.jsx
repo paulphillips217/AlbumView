@@ -33,24 +33,28 @@ const ModalAlbum = ({
     [albumId, savedAlbumData]
   );
 
-  const getSpotifyAlbumId = useCallback(
-    () =>
+  const getSpotifyAlbumId = useCallback(() => {
+    const id =
       albumId > 0
         ? savedAlbumData.data[getSavedAlbumIndex()].spotifyAlbumId
-        : spotifyAlbumId,
-    [albumId, savedAlbumData, getSavedAlbumIndex, spotifyAlbumId]
-  );
+        : spotifyAlbumId;
+    return id !== 'NOT-FOUND' ? id : '';
+  }, [albumId, savedAlbumData, getSavedAlbumIndex, spotifyAlbumId]);
 
   const getInitialDisplayType = useCallback(() => {
     if (getSpotifyAlbumId() !== '') {
+      console.log('ModalAlbum initial display type is spotify');
       return ModalDisplayTypes.Spotify;
     }
-    if (albumId > 0 && savedAlbumData.data[getSavedAlbumIndex()].localId) {
+    if (albumId > 0 && savedAlbumData.data[getSavedAlbumIndex()].localId >= 0) {
+      console.log('ModalAlbum initial display type is local');
       return ModalDisplayTypes.Local;
     }
     if (albumId > 0 && savedAlbumData.data[getSavedAlbumIndex()].oneDriveId) {
+      console.log('ModalAlbum initial display type is oneDrive');
       return ModalDisplayTypes.OneDrive;
     }
+    console.log('ModalAlbum initial display type is unknown');
     return ModalDisplayTypes.Unknown;
   }, [getSpotifyAlbumId, albumId, savedAlbumData, getSavedAlbumIndex]);
 

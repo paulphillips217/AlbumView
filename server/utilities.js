@@ -37,6 +37,27 @@ const getImage = (images) => {
   return image.url;
 };
 
+const getLastFmImage = (images) => {
+  if (images == null || !images.length) {
+    return '';
+  }
+  let image = images.find((i) => i.size === 'extralarge');
+  if (image == null) {
+    image = images.find((i) => i.size === 'large');
+  }
+  if (image == null) {
+    image = images.find((i) => i.size === 'medium');
+  }
+  // otherwise take the first one
+  if (image == null) {
+    image = images[0];
+  }
+  if (image == null) {
+    return '';
+  }
+  return image['#text'];
+}
+
 const makeMatchName = (name) => {
   if (!name) {
     return 'EMPTY NAME';
@@ -74,5 +95,6 @@ const makeMatchName = (name) => {
 module.exports = {
   isJson,
   getImage,
+  getLastFmImage,
   makeMatchName,
 };

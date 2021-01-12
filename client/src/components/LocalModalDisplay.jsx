@@ -83,7 +83,7 @@ const LocalModalDisplay = ({
   }
 
   let typeCount = spotifyAlbumId ? 1 : 0;
-  typeCount += localId ? 1 : 0;
+  typeCount += localId >= 0 ? 1 : 0;
   typeCount += oneDriveId ? 1 : 0;
 
   return (

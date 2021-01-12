@@ -70,7 +70,7 @@ const AlbumContext = ({
         data: sortedData,
       });
     } catch (err) {
-      console.error(err);
+      console.error(err.name, err.message);
     }
   }, [
     contextSortType,

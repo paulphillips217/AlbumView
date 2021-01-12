@@ -170,14 +170,19 @@ const handleSpotifyAuthentication = async (req, res) => {
 }
 
 const logOutSpotifyUser = async (req, res) => {
-  console.log('logOutSpotifyUser clearing database fields for user ', req.user.userId);
-  await user.updateTokens(req.user.userId, {
-    spotifyAuthToken: null,
-    spotifyRefreshToken: null,
-    spotifyExpiration: null,
-  });
-  await albumViewTokens.setSessionJwt(req, res);
-  res.json({ signedOut: true });
+  if (req.user && req.user.userId) {
+    console.log('logOutSpotifyUser clearing database fields for user ', req.user.userId);
+    await user.updateTokens(req.user.userId, {
+      spotifyAuthToken: null,
+      spotifyRefreshToken: null,
+      spotifyExpiration: null,
+    });
+    await albumViewTokens.setSessionJwt(req, res);
+    res.json({ signedOut: true });
+  } else {
+    console.log('logOutSpotifyUser found no user');
+    res.json({ error: true });
+  }
 
   // req.session.destroy(function (err) {
   //   req.logout();

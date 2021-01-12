@@ -19,13 +19,13 @@ const insertSingleAlbum = (album) => {
                 .where('matchName', album.matchName)
                 .then((rows) => returnOrInsertAlbum(trx, rows, album))
                 .catch((err) => {
-                  console.log('insertSingleAlbum select error: ', err, album);
+                  console.log('insertSingleAlbum select error: ', err.name, err.message, album);
                   return null;
                 });
             }
           })
           .catch((err) => {
-            console.log('insertSingleAlbum select error: ', err, album);
+            console.log('insertSingleAlbum select error: ', err.name, err.message, album);
             return null;
           });
       } else {
@@ -37,7 +37,7 @@ const insertSingleAlbum = (album) => {
           })
           .then((rows) => returnOrInsertAlbum(trx, rows, album))
           .catch((err) => {
-            console.log('insertSingleAlbum select error: ', err, album);
+            console.log('insertSingleAlbum select error: ', err.name, err.message, album);
             return null;
           });
       }
@@ -47,7 +47,7 @@ const insertSingleAlbum = (album) => {
       return result;
     })
     .catch((err) => {
-      console.log('insertSingleAlbum transaction error: ', err, album);
+      console.log('insertSingleAlbum transaction error: ', err.name, err.message, album);
       return null;
     });
 };
@@ -70,7 +70,7 @@ const returnOrInsertAlbum = (trx, rows, album) => {
           console.log('insertSingleAlbum update result: ', result);
         })
         .catch((err) => {
-          console.log('insertSingleAlbum update error: ', err, album);
+          console.log('insertSingleAlbum update error: ', err.name, err.message, album);
         });
     }
     return rows[0].id;
@@ -89,10 +89,24 @@ const returnOrInsertAlbum = (trx, rows, album) => {
         }
       })
       .catch((err) => {
-        console.log('insertSingleAlbum insert error: ', err, album);
+        console.log('insertSingleAlbum insert error: ', err.name, err.message, album);
         return null;
       });
   }
+};
+
+const getAlbumsWithNoSpotifyId = () => {
+  console.log('getAlbumsWithNoSpotifyId');
+  return db
+    .from('album')
+    .innerJoin('artist', 'album.artistId', 'artist.id')
+    .whereNull('album.spotifyId')
+    .select(
+      { albumId: 'album.id' },
+      { albumName: 'album.name' },
+      { artistName: 'artist.name' }
+    )
+    .catch((err) => console.log('getAlbumsWithNoSpotifyId error', err.name, err.message));
 };
 
 const getAlbumsWithNoMbid = () => {
@@ -106,7 +120,7 @@ const getAlbumsWithNoMbid = () => {
       { albumName: 'album.name' },
       { artistName: 'artist.name' }
     )
-    .catch((err) => console.log('getAlbumsWithNoMbid error', err));
+    .catch((err) => console.log('getAlbumsWithNoMbid error', err.name, err.message));
 };
 
 const getAlbumsWithNoTadbId = () => {
@@ -120,7 +134,24 @@ const getAlbumsWithNoTadbId = () => {
       { albumName: 'album.name' },
       { artistName: 'artist.name' }
     )
-    .catch((err) => console.log('getAlbumsWithNoTadbId error', err));
+    .catch((err) => console.log('getAlbumsWithNoTadbId error', err.name, err.message));
+};
+
+const getAlbumById = (albumId) => {
+  // console.log('getAlbumById');
+  return db
+    .from('album')
+    .where({ id: albumId})
+    .then((rows) => {
+      if (rows && rows.length > 0) {
+        // console.log('getAlbumById got: ', rows);
+        return rows[0];
+      } else {
+        console.log('getAlbumById got no results');
+        return null;
+      }
+    })
+    .catch((err) => console.log('getAlbumById error', err.name, err.message));
 };
 
 const addMusicBrainzId = (albumId, musicBrainzId) => {
@@ -128,7 +159,15 @@ const addMusicBrainzId = (albumId, musicBrainzId) => {
   db('album')
     .where({ id: albumId })
     .update('musicBrainzId', musicBrainzId)
-    .catch((err) => console.log('addMusicBrainzId error', err));
+    .catch((err) => console.log('addMusicBrainzId error', err.name, err.message));
+};
+
+const addSpotifyId = (albumId, spotifyId) => {
+  console.log('addSpotifyId ', albumId, spotifyId);
+  db('album')
+    .where({ id: albumId })
+    .update('spotifyId', spotifyId)
+    .catch((err) => console.log('addSpotifyId error', err.name, err.message));
 };
 
 const addTadbId = (albumId, tadbId) => {
@@ -136,7 +175,15 @@ const addTadbId = (albumId, tadbId) => {
   db('album')
     .where({ id: albumId })
     .update('tadbId', tadbId)
-    .catch((err) => console.log('addTadbId error', err));
+    .catch((err) => console.log('addTadbId error', err.name, err.message));
+};
+
+const updateAlbum = (albumId, album) => {
+  console.log('updateAlbum for album ', albumId);
+  return db('album')
+    .where({ id: albumId })
+    .update(album)
+    .catch((err) => console.log('updateAlbum error', err.name, err.message));
 };
 
 const getAlbumsWithNoGenres = () => {
@@ -152,7 +199,7 @@ const getAlbumsWithNoGenres = () => {
       { albumName: 'album.name' },
       { artistName: 'artist.name' }
     )
-    .catch((err) => console.log('getAlbumsWithNoGenres error', err));
+    .catch((err) => console.log('getAlbumsWithNoGenres error', err.name, err.message));
 };
 
 const insertAlbumGenre = (albumId, genreId) => {
@@ -193,7 +240,7 @@ const insertAlbumGenre = (albumId, genreId) => {
               .catch((err) => {
                 console.log(
                   'insertAlbumGenre insert error (albumId, genreId): ',
-                  err,
+                  err.name, err.message,
                   albumId,
                   genreId
                 );
@@ -204,7 +251,7 @@ const insertAlbumGenre = (albumId, genreId) => {
         .catch((err) => {
           console.log(
             'insertAlbumGenre select error (albumId, genreId): ',
-            err,
+            err.name, err.message,
             albumId,
             genreId
           );
@@ -215,7 +262,7 @@ const insertAlbumGenre = (albumId, genreId) => {
     .catch((err) => {
       console.log(
         'insertAlbumGenre transaction error (albumId, genreId): ',
-        err,
+        err.name, err.message,
         albumId,
         genreId
       );
@@ -227,17 +274,21 @@ const getAlbumGenres = () => {
   return db('albumGenres')
     .select()
     .catch((err) => {
-      console.log('getAlbumGenres error: ', err);
+      console.log('getAlbumGenres error: ', err.name, err.message);
       return null;
     });
 };
 
 module.exports = {
   insertSingleAlbum,
+  getAlbumsWithNoSpotifyId,
   getAlbumsWithNoMbid,
   getAlbumsWithNoTadbId,
+  getAlbumById,
+  addSpotifyId,
   addMusicBrainzId,
   addTadbId,
+  updateAlbum,
   getAlbumsWithNoGenres,
   insertAlbumGenre,
   getAlbumGenres,

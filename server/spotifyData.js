@@ -109,7 +109,7 @@ const talkToSpotify = async (req, res) => {
     accessToken = credentials.spotifyAuthToken;
     console.log('talkToSpotify token: ', accessToken);
   } catch (err) {
-    console.error('talkToSpotify error getting credentials', err);
+    console.error('talkToSpotify error getting credentials', err.name, err.message);
     res.json({ empty: true });
   }
 
@@ -140,7 +140,7 @@ const chatWithSpotify = async (accessToken, url, method) => {
       return { emptyResponse: true };
     }
   } catch (err) {
-    console.error('chatWithSpotify error', err);
+    console.error('chatWithSpotify error', err.name, err.message);
     return { emptyResponse: true };
   }
 };
@@ -375,10 +375,188 @@ const aggregateSpotifyArtistData = async (req, res) => {
   }
 };
 
+const searchAlbum = async (userId, artistName, albumName) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
+  if (!credentials || !credentials.spotifyAuthToken) {
+    return 0;
+  }
+  const query = `album:${encodeURIComponent(albumName)}+artist:${encodeURIComponent(artistName)}`;
+  const url = `https://api.spotify.com/v1/search?q=${query}&type=album`;
+
+  console.log('searchAlbum url', url);
+  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  //console.log('searchAlbum response album[0]', response.items);
+  if (!response || response.length === 0) {
+    console.error('searchAlbum response is invalid: ', JSON.stringify(response));
+    return 0;
+  }
+  return response;
+};
+
+const searchArtist = async (userId, artistName) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
+  if (!credentials || !credentials.spotifyAuthToken) {
+    return 0;
+  }
+  const query = `artist:${encodeURIComponent(artistName)}`;
+  const url = `https://api.spotify.com/v1/search?q=${query}&type=artist`;
+
+  console.log('searchArtist url', url);
+  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  //console.log('searchAlbum response album[0]', response.items);
+  if (!response || response.length === 0) {
+    console.error('searchArtist response is invalid: ', JSON.stringify(response));
+    return 0;
+  }
+  return response;
+};
+
+const getArtistById = async (userId, spotifyId) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
+  if (!credentials || !credentials.spotifyAuthToken) {
+    return null;
+  }
+  const url = `https://api.spotify.com/v1/artists/${spotifyId}`;
+
+  console.log('getArtistById url', url);
+  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  //console.log('getArtistById response album[0]', response.items);
+  if (!response || response.length === 0) {
+    console.error('getArtistById response is invalid: ', JSON.stringify(response));
+    return null;
+  }
+  return response;
+}
+
+const addArtistImageUrls = async (userId, sleep) => {
+  const spotifyArtists = await artist.getSpotifyArtistsWithNoImageUrl();
+  console.log('addArtistImageUrls count', spotifyArtists.length);
+
+  if (spotifyArtists && spotifyArtists.length > 0) {
+    for (let i = 0; i < spotifyArtists.length; i++) {
+      if (spotifyArtists[i].spotifyId === 'NOT-FOUND') {
+        continue;
+      }
+      await sleep(process.env.SPOTIFY_INTERVAL);
+
+      // console.log('addArtistImageUrls spotifyArtists record: ', spotifyArtists[i]);
+      console.log(
+        'spotifyAlbumArtistQueue getting spotifyArtist: ',
+        spotifyArtists[i].artistId,
+        spotifyArtists[i].spotifyId
+      );
+      const spotifyArtistInfo = await getArtistById(
+        userId,
+        spotifyArtists[i].spotifyId
+      );
+      // console.log('addArtistImageUrls getArtistById spotifyArtistInfo: ', spotifyArtistInfo);
+
+      if (spotifyArtistInfo && spotifyArtistInfo.images) {
+        await artist.updateArtist(spotifyArtists[i].artistId, {
+          imageUrl: utilities.getImage(spotifyArtistInfo.images),
+        });
+      }
+    }
+  }
+};
+
+const addAlbumSpotifyIds = async (userId, sleep) => {
+  const albums = await album.getAlbumsWithNoSpotifyId();
+  console.log('addAlbumSpotifyIds album count', albums.length);
+
+  if (albums && albums.length > 0) {
+    for (let i = 0; i < albums.length; i++) {
+      await sleep(process.env.SPOTIFY_INTERVAL);
+      console.log(
+        'addAlbumSpotifyIds searching for album: ',
+        albums[i].artistName,
+        albums[i].albumName
+      );
+      const response = await searchAlbum(
+        userId,
+        albums[i].artistName,
+        albums[i].albumName
+      );
+      // console.log('addAlbumSpotifyIds response array length: ', response.albums.items.length);
+      // console.log('addAlbumSpotifyIds got searchAlbum response: ', JSON.stringify(response.albums.items));
+
+      if (response && response.albums.items.length === 1) {
+        // only fill in the spotify ID if there's a single match
+        console.log(
+          'addAlbumSpotifyIds got single searchAlbum response, updating album'
+        );
+        // console.log('addAlbumSpotifyIds got single searchAlbum response: ', JSON.stringify(response.albums.items[0]));
+        await album.updateAlbum(albums[i].albumId, {
+          spotifyId: response.albums.items[0].id,
+          imageUrl: response.albums.items[0].images
+            ? utilities.getImage(response.albums.items[0].images)
+            : null,
+          releaseDate: moment(response.albums.items[0].release_date),
+        });
+      } else {
+        await album.addSpotifyId(albums[i].albumId, 'NOT-FOUND');
+      }
+    }
+  }
+};
+
+const addArtistSpotifyIds = async (userId, sleep) => {
+  const artists = await artist.getArtistsWithNoSpotifyId();
+  console.log('addArtistSpotifyIds artist count', artists.length);
+
+  if (artists && artists.length > 0) {
+    for (let i = 0; i < artists.length; i++) {
+      await sleep(process.env.SPOTIFY_INTERVAL);
+
+      console.log('addArtistSpotifyIds artists record: ', artists[i]);
+      // console.log('addArtistSpotifyIds searching for artist: ', artists[i],artistId, artists[i].artistName);
+      const response = await searchArtist(
+        userId,
+        artists[i].artistName
+      );
+      // console.log('addArtistSpotifyIds response: ', response.artists.items);
+
+      if (response && response.artists && response.artists.items.length > 0) {
+        // if there's only one match take that one, otherwise search for an
+        // exact name match because sometimes you get multiple names together
+        let match = null;
+        if (response.artists.items.length === 1) {
+          match = response.artists.items[0];
+        } else {
+          match = response.artists.items.find(
+            (item) => item.name === artists[i].artistName
+          );
+        }
+        if (match) {
+          console.log('addArtistSpotifyIds got match and updating artist: ', artists[i].artistId);
+          await artist.updateArtist(artists[i].artistId, {
+            spotifyId: match.id,
+            imageUrl: match.images ? utilities.getImage(match.images) : null,
+          });
+        } else {
+          await artist.updateArtist(artists[i].artistId, {
+            spotifyId: 'NOT-FOUND',
+          });
+        }
+      } else {
+        await artist.updateArtist(artists[i].artistId, {
+          spotifyId: 'NOT-FOUND',
+        });
+      }
+    }
+  }
+};
+
 module.exports = {
   talkToSpotify,
   aggregateSpotifyArtistData,
   refreshSavedAlbums,
   getSavedAlbums,
   fetchSavedAlbums,
+  searchAlbum,
+  searchArtist,
+  getArtistById,
+  addArtistImageUrls,
+  addAlbumSpotifyIds,
+  addArtistSpotifyIds,
 };
