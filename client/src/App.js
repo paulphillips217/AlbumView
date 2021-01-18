@@ -13,7 +13,7 @@ import { setOneDriveLoggedIn, setSpotifyIsAuthenticated } from './store/actions'
 import { getAlbumViewTheme, getContextType } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import AlbumContext from './components/AlbumContext';
 import TrackContext from './components/TrackContext';
 import PlaylistContext from './components/PlaylistContext';
@@ -39,17 +39,17 @@ const App = ({
   setOneDriveLoggedIn,
   httpService,
 }) => {
-  const history = useHistory();
-  const urlParams = new URLSearchParams(window.location.search);
-
   console.log('Album View Cookie: ', document.cookie);
   setSpotifyLoggedIn(document.cookie.includes('spotify='));
+  setOneDriveLoggedIn(document.cookie.includes('oneDrive='));
 
-  if (urlParams.has('oneDriveLogin')) {
-    setOneDriveLoggedIn(urlParams.get('oneDriveLogin'));
-    console.log(`oneDriveLogin is set`);
-    history.push('/');
-  }
+  // const history = useHistory();
+  // const urlParams = new URLSearchParams(window.location.search);
+  // if (urlParams.has('oneDriveLogin')) {
+  //   setOneDriveLoggedIn(!!urlParams.get('oneDriveLogin'));
+  //   console.log(`oneDriveLogin is set`);
+  //   history.push('/');
+  // }
 
   const activeTheme = albumViewTheme === AlbumViewTheme.Light ? lightTheme : darkTheme;
 

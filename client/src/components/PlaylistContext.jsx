@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import SplitPane from 'react-split-pane';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
@@ -57,14 +58,15 @@ const PlaylistContext = ({
           .get(`/spotify/playlist-tracks/${contextItem}/${offset}/${SPOTIFY_PAGE_LIMIT}`)
           .then((rawData) => {
             const data = rawData.items.map((e) => ({
-              trackName: e.track.name,
-              albumId: e.track.album.id,
+              albumId: 0,
+              spotifyAlbumId: e.track.album.id,
               albumName: e.track.album.name,
-              artist: e.track.album.artists[0]
+              artistName: e.track.album.artists[0]
                 ? e.track.album.artists[0].name
                 : 'unknown artist',
+              trackName: e.track.name,
               image: getImage(e.track.album.images),
-              releaseDate: e.track.album.release_date,
+              releaseDate: e.track.album.release_date ? moment(e.track.album.release_date).valueOf()  : Date.now(),
             }));
             const newData = contextGridData.data.concat(data);
             setGridData({
@@ -176,7 +178,7 @@ const PlaylistContext = ({
             minSize={50}
             defaultSize={350}
             style={{ height: '50%', position: 'relative' }}
-            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+            paneStyle={{ 'overflowY': 'auto', 'overflowX': 'hidden' }}
           >
             <ContextList httpService={httpService} />
             <ContextGrid contextGridData={contextGridData} httpService={httpService} />
@@ -196,12 +198,13 @@ PlaylistContext.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        trackName: PropTypes.string,
-        albumId: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         albumName: PropTypes.string,
-        artist: PropTypes.string,
+        artistName: PropTypes.string,
+        trackName: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,

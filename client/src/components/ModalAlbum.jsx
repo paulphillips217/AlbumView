@@ -1,72 +1,69 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Image, Modal, Icon } from 'semantic-ui-react';
-import {
-  setContextGridData,
-  setContextItem,
-  resetContextListData,
-  setContextType,
-  setDataLoading,
-  setRelatedToArtist,
-  addSavedAlbum,
-  removeSavedAlbum,
-} from '../store/actions';
+import { Modal } from 'semantic-ui-react';
+import { setSelectedAlbumId, setSelectedSpotifyAlbumId } from '../store/actions';
 import { ModalDisplayTypes } from '../store/types';
 import HttpService from '../util/httpUtils';
-import { getContextSortType, getSavedAlbumData } from '../store/selectors';
+import {
+  getSavedAlbumData,
+  getSelectedAlbumId,
+  getSelectedSpotifyAlbumId,
+} from '../store/selectors';
 import SpotifyModalDisplay from './SpotifyModalDisplay';
 import LocalModalDisplay from './LocalModalDisplay';
 import {
   createLocalTracks,
   createOneDriveTracks,
   tearDownLocalTracks,
-  tearDownOneDriveTracks
+  tearDownOneDriveTracks,
 } from '../util/localFileUtils';
 
 const ModalAlbum = ({
   albumId,
-  artistName,
-  albumName,
-  image,
-  localId,
-  oneDriveId,
-  useMiniImage,
+  spotifyAlbumId,
   savedAlbumData,
+  setAlbumId,
+  setSpotifyAlbumId,
   httpService,
 }) => {
-  const getInitialDisplayType = () => {
-    if (albumId) {
+  const getSavedAlbumIndex = useCallback(
+    () =>
+      albumId > 0 ? savedAlbumData.data.findIndex((item) => item.albumId === albumId) : 0,
+    [albumId, savedAlbumData]
+  );
+
+  const getSpotifyAlbumId = useCallback(() => {
+    const id =
+      albumId > 0
+        ? savedAlbumData.data[getSavedAlbumIndex()].spotifyAlbumId
+        : spotifyAlbumId;
+    return id !== 'NOT-FOUND' ? id : '';
+  }, [albumId, savedAlbumData, getSavedAlbumIndex, spotifyAlbumId]);
+
+  const getInitialDisplayType = useCallback(() => {
+    if (getSpotifyAlbumId() !== '') {
+      console.log('ModalAlbum initial display type is spotify');
       return ModalDisplayTypes.Spotify;
     }
-    if (localId) {
+    if (albumId > 0 && savedAlbumData.data[getSavedAlbumIndex()].localId >= 0) {
+      console.log('ModalAlbum initial display type is local');
       return ModalDisplayTypes.Local;
     }
-    if (oneDriveId) {
+    if (albumId > 0 && savedAlbumData.data[getSavedAlbumIndex()].oneDriveId) {
+      console.log('ModalAlbum initial display type is oneDrive');
       return ModalDisplayTypes.OneDrive;
     }
-    return '';
-  }
+    console.log('ModalAlbum initial display type is unknown');
+    return ModalDisplayTypes.Unknown;
+  }, [getSpotifyAlbumId, albumId, savedAlbumData, getSavedAlbumIndex]);
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [modalDisplayType, setModalDisplayType] = useState(getInitialDisplayType());
 
-  const modalTrigger = () =>
-    image ? (
-      <Image
-        size={useMiniImage ? 'mini' : ''}
-        style={{ cursor: 'pointer' }}
-        src={image}
-        onClick={() => setModalOpen(true)}
-      />
-    ) : (
-      <Icon
-        link
-        name="file image outline"
-        size="huge"
-        onClick={() => setModalOpen(true)}
-      />
-    );
+  useEffect(() => {
+    // if the albumId changes, reset the display type as if initial rendering
+    setModalDisplayType(getInitialDisplayType());
+  }, [getInitialDisplayType]);
 
   const setUpLocalTracks = (albumFileId) => {
     const album = savedAlbumData.data.find((item) => item.localId === albumFileId);
@@ -78,97 +75,92 @@ const ModalAlbum = ({
     return createOneDriveTracks(album, httpService);
   };
 
+  const resetSelectedAlbum = () => {
+    setAlbumId(0);
+    setSpotifyAlbumId('');
+  };
+
   // render child component conditional on modalOpen so that the data is queried on initial render
   return (
-    <Modal trigger={modalTrigger()} open={modalOpen} onClose={() => setModalOpen(false)}>
-      {modalOpen && albumId && modalDisplayType === ModalDisplayTypes.Spotify && (
+    <Modal open={albumId > 0 || spotifyAlbumId !== ''} onClose={resetSelectedAlbum}>
+      {getSpotifyAlbumId() !== '' && modalDisplayType === ModalDisplayTypes.Spotify && (
         <SpotifyModalDisplay
-          albumId={albumId}
+          spotifyAlbumId={getSpotifyAlbumId()}
           setModalDisplayType={setModalDisplayType}
           httpService={httpService}
         />
       )}
-      {modalOpen && localId > 0 && modalDisplayType === ModalDisplayTypes.Local && (
-        <LocalModalDisplay
-          albumFileId={localId}
-          albumId={albumId}
-          localId={localId}
-          oneDriveId={oneDriveId}
-          artistName={artistName}
-          albumName={albumName}
-          tearDownTracks={tearDownLocalTracks}
-          setUpTracks={setUpLocalTracks}
-          setModalDisplayType={setModalDisplayType}
-          httpService={httpService}
-        />
-      )}
-      {modalOpen && oneDriveId && modalDisplayType === ModalDisplayTypes.OneDrive && (
-        <LocalModalDisplay
-          albumFileId={oneDriveId}
-          albumId={albumId}
-          localId={localId}
-          oneDriveId={oneDriveId}
-          artistName={artistName}
-          albumName={albumName}
-          tearDownTracks={tearDownOneDriveTracks}
-          setUpTracks={setUpOneDriveTracks}
-          setModalDisplayType={setModalDisplayType}
-          httpService={httpService}
-        />
+      {albumId > 0 &&
+        savedAlbumData.data[getSavedAlbumIndex()].localId > 0 &&
+        modalDisplayType === ModalDisplayTypes.Local && (
+          <LocalModalDisplay
+            albumFileId={savedAlbumData.data[getSavedAlbumIndex()].localId}
+            spotifyAlbumId={getSpotifyAlbumId()}
+            localId={savedAlbumData.data[getSavedAlbumIndex()].localId}
+            oneDriveId={savedAlbumData.data[getSavedAlbumIndex()].oneDriveId}
+            artistName={savedAlbumData.data[getSavedAlbumIndex()].artistName}
+            albumName={savedAlbumData.data[getSavedAlbumIndex()].albumName}
+            tearDownTracks={tearDownLocalTracks}
+            setUpTracks={setUpLocalTracks}
+            setModalDisplayType={setModalDisplayType}
+            httpService={httpService}
+          />
+        )}
+      {albumId > 0 &&
+        savedAlbumData.data[getSavedAlbumIndex()].oneDriveId &&
+        modalDisplayType === ModalDisplayTypes.OneDrive && (
+          <LocalModalDisplay
+            albumFileId={savedAlbumData.data[getSavedAlbumIndex()].oneDriveId}
+            spotifyAlbumId={getSpotifyAlbumId()}
+            localId={savedAlbumData.data[getSavedAlbumIndex()].localId}
+            oneDriveId={savedAlbumData.data[getSavedAlbumIndex()].oneDriveId}
+            artistName={savedAlbumData.data[getSavedAlbumIndex()].artistName}
+            albumName={savedAlbumData.data[getSavedAlbumIndex()].albumName}
+            tearDownTracks={tearDownOneDriveTracks}
+            setUpTracks={setUpOneDriveTracks}
+            setModalDisplayType={setModalDisplayType}
+            httpService={httpService}
+          />
+        )}
+      {modalDisplayType === ModalDisplayTypes.Unknown && (
+        <div>Error: unknown modal display type</div>
       )}
     </Modal>
   );
 };
 
 ModalAlbum.propTypes = {
-  albumId: PropTypes.string,
-  artistName: PropTypes.string.isRequired,
-  albumName: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
-  localId: PropTypes.number,
-  oneDriveId: PropTypes.string,
-  useMiniImage: PropTypes.bool,
+  albumId: PropTypes.number.isRequired,
+  spotifyAlbumId: PropTypes.string.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
+  setAlbumId: PropTypes.func.isRequired,
+  setSpotifyAlbumId: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
-ModalAlbum.defaultProps = {
-  albumId: null,
-  localId: 0,
-  oneDriveId: '',
-  useMiniImage: false,
-};
-
 const mapStateToProps = (state) => ({
+  albumId: getSelectedAlbumId(state),
+  spotifyAlbumId: getSelectedSpotifyAlbumId(state),
   savedAlbumData: getSavedAlbumData(state),
-  contextSortType: getContextSortType(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setType: (type) => dispatch(setContextType(type)),
-  setItem: (id) => dispatch(setContextItem(id)),
-  setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
-  setGridData: (data) => dispatch(setContextGridData(data)),
-  resetListData: () => dispatch(resetContextListData()),
-  setLoading: (isLoading) => dispatch(setDataLoading(isLoading)),
-  addAlbum: (album, savedAlbumData, contextSortType) =>
-    addSavedAlbum(album, savedAlbumData, contextSortType, dispatch),
-  removeAlbum: (savedAlbumData, albumId) =>
-    removeSavedAlbum(savedAlbumData, albumId, dispatch),
+  setAlbumId: (id) => dispatch(setSelectedAlbumId(id)),
+  setSpotifyAlbumId: (id) => dispatch(setSelectedSpotifyAlbumId(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalAlbum);

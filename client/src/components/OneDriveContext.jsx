@@ -48,7 +48,7 @@ const OneDriveFileContext = ({
           albumList.forEach((album) =>
             theAlbumArray.push({
               oneDriveId: album.id,
-              artist: artist.name,
+              artistName: artist.name,
               albumName: album.name,
               tracks: [],
             })
@@ -93,16 +93,16 @@ OneDriveFileContext.propTypes = {
   isOneDriveLoggedIn: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,

@@ -22,23 +22,17 @@ export const sortGridData = (data, sortType) => {
 };
 
 export const stripLeadingArticle = (string) => {
-  return string ? string.replace(/^(an?|the)\s/i, '') : '';
-};
-
-export const cleanTitle = (title) => {
-  // remove all articles
-  let cleanedTitle = title.toLowerCase().replaceAll('the ', '');
-  cleanedTitle = cleanedTitle.replaceAll('a ', '');
-  cleanedTitle = cleanedTitle.replaceAll('an ', '');
-  // remove special characters
-  cleanedTitle = cleanedTitle.replaceAll(/[\\/:*?"'<>| ._]/g, '');
-  // remove anything within parentheses
-  return cleanedTitle.replace(/ *\([^)]*\) */g, '');
+  if (typeof string === 'string' || string instanceof String) {
+    return string ? string.replace(/^(an?|the)\s/i, '') : '';
+  } else {
+    console.log('stripLeadingArticle -- string is not a string', string);
+    return 'xxxxxxxxxx';
+  }
 };
 
 export const sortByArtistThenAlbumName = (a, b) => {
-  const artist1 = stripLeadingArticle(a.artist).toLowerCase();
-  const artist2 = stripLeadingArticle(b.artist).toLowerCase();
+  const artist1 = stripLeadingArticle(a.artistName).toLowerCase();
+  const artist2 = stripLeadingArticle(b.artistName).toLowerCase();
   // if the artists are the same, sort by the album names
   if (artist1 === artist2) {
     const albumName1 = stripLeadingArticle(a.albumName).toLowerCase();
@@ -57,13 +51,16 @@ export const sortByArtistThenAlbumName = (a, b) => {
 };
 
 export const sortByArtistThenAlbumDate = (a, b) => {
-  const artist1 = stripLeadingArticle(a.artist).toLowerCase();
-  const artist2 = stripLeadingArticle(b.artist).toLowerCase();
+  const artist1 = stripLeadingArticle(a.artistName).toLowerCase();
+  const artist2 = stripLeadingArticle(b.artistName).toLowerCase();
   // if the artists are the same, sort by the album date
   if (artist1 === artist2) {
-    const albumDate1 = stripLeadingArticle(a.releaseDate).toLowerCase();
-    const albumDate2 = stripLeadingArticle(b.releaseDate).toLowerCase();
+    const albumDate1 = a.releaseDate ? a.releaseDate : Date.now();
+    const albumDate2 = b.releaseDate ? b.releaseDate : Date.now();
     if (albumDate1 === albumDate2) {
+      if (!a.trackName || !b.trackName) {
+        return 0;
+      }
       const trackName1 = stripLeadingArticle(a.trackName).toLowerCase();
       const trackName2 = stripLeadingArticle(b.trackName).toLowerCase();
       if (trackName1 === trackName2) {
@@ -77,8 +74,8 @@ export const sortByArtistThenAlbumDate = (a, b) => {
 };
 
 export const sortByArtistThenTrackName = (a, b) => {
-  const artist1 = stripLeadingArticle(a.artist).toLowerCase();
-  const artist2 = stripLeadingArticle(b.artist).toLowerCase();
+  const artist1 = stripLeadingArticle(a.artistName).toLowerCase();
+  const artist2 = stripLeadingArticle(b.artistName).toLowerCase();
   // if the artists are the same, sort by the album date
   if (artist1 === artist2) {
     const trackName1 = stripLeadingArticle(a.trackName).toLowerCase();

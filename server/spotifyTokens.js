@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const moment = require('moment');
+const albumViewTokens = require('./albumViewTokens');
 const spotify = require('./credentials');
 const user = require('./data/user');
 
@@ -27,7 +28,7 @@ const getSpotifyAccessToken = (req, res, next) => {
       searchParams.set(prop, data[prop]);
     });
 
-    console.log('posting access token to spotify');
+    console.log('getSpotifyAccessToken - posting access token to spotify');
     let responseTime = null;
     fetch(url, {
       method: 'POST',
@@ -40,10 +41,14 @@ const getSpotifyAccessToken = (req, res, next) => {
         return res.json();
       })
       .then((credentials) => {
-        credentials.token_expiration = responseTime
-          .add(credentials.expires_in, 'seconds')
-          .format();
-        req.credentials = credentials;
+        console.log('getSpotifyAccessToken adding credentials to request');
+        req.credentials = {
+          spotifyAuthToken: credentials.access_token,
+          spotifyRefreshToken: credentials.refresh_token,
+          spotifyExpiration: responseTime
+            .add(credentials.expires_in, 'seconds')
+            .format(),
+        };
         next();
       })
       .catch(next);
@@ -51,9 +56,15 @@ const getSpotifyAccessToken = (req, res, next) => {
 };
 
 const getSpotifyCredentials = async (userId) => {
-  const credentials = await user.getCredentials(userId);
-  if (!credentials) {
-    console.log('getSpotifyCredentials - user not found in database');
+  const credentials = await user.getSpotifyCredentials(userId);
+  if (!credentials || !(credentials.spotifyRefreshToken)) {
+    // if we get here we don't have a proper token, so we'll log out the user
+    console.log('getSpotifyCredentials - credentials not found in database');
+    await user.updateTokens(userId, {
+      spotifyAuthToken: null,
+      spotifyRefreshToken: null,
+      spotifyExpiration: null,
+    })
     return {};
   }
 
@@ -62,36 +73,30 @@ const getSpotifyCredentials = async (userId) => {
     spotifyRefreshToken,
     spotifyExpiration,
   } = credentials;
-  console.log('getCredentialsFromHeader from database', {
-    spotifyAuthToken,
-    spotifyRefreshToken,
-    spotifyExpiration,
-  });
+  //console.log('getCredentialsFromHeader from database', {
+  //  spotifyAuthToken,
+  //  spotifyRefreshToken,
+  //  spotifyExpiration,
+  //});
 
   const tokenExpiration = moment(spotifyExpiration);
   const currentTime = moment();
-  if (tokenExpiration <= currentTime && spotifyRefreshToken) {
-    console.log('getCredentialsFromHeader refreshing credentials');
-    console.log(
-      'getCredentialsFromHeader token before refresh: ',
-      spotifyAuthToken
-    );
-    return await refreshSpotifyAccessToken(
-      userId,
-      spotifyRefreshToken
-    );
+  if ((!spotifyExpiration || tokenExpiration <= currentTime) && spotifyRefreshToken) {
+    console.log('getSpotifyCredentials refreshing credentials');
+    // console.log('getSpotifyCredentials token before refresh: ', spotifyAuthToken);
+    return await refreshSpotifyAccessToken(userId, spotifyRefreshToken);
   }
 
-  console.log('getCredentialsFromHeader using existing credentials');
+  console.log('getSpotifyCredentials using existing credentials');
   return {
-    access_token: spotifyAuthToken,
-    refresh_token: spotifyRefreshToken,
-    token_expiration: spotifyExpiration,
+    spotifyAuthToken,
+    spotifyRefreshToken,
+    spotifyExpiration,
   };
 };
 
-const refreshSpotifyAccessToken = async (userId, refresh_token) => {
-  if (!refresh_token) {
+const refreshSpotifyAccessToken = async (userId, spotifyRefreshToken) => {
+  if (!spotifyRefreshToken) {
     console.log('refreshSpotifyAccessToken: refresh token is empty');
     return {};
   }
@@ -99,7 +104,7 @@ const refreshSpotifyAccessToken = async (userId, refresh_token) => {
   const url = 'https://accounts.spotify.com/api/token';
   const data = {
     grant_type: 'refresh_token',
-    refresh_token: refresh_token,
+    refresh_token: spotifyRefreshToken,
     client_id: spotify.client_id,
     client_secret: spotify.client_secret,
   };
@@ -113,7 +118,7 @@ const refreshSpotifyAccessToken = async (userId, refresh_token) => {
     searchParams.set(prop, data[prop]);
   });
 
-  console.log('posting refresh token to spotify');
+  console.log('refreshSpotifyAccessToken posting refresh token to spotify');
   let responseTime = null;
   try {
     const fetchResponse = await fetch(url, {
@@ -123,28 +128,72 @@ const refreshSpotifyAccessToken = async (userId, refresh_token) => {
     });
     responseTime = moment();
     const credentials = await fetchResponse.json();
-    credentials.token_expiration = responseTime
-      .add(credentials.expires_in, 'seconds')
-      .format();
-    credentials.refresh_token = refresh_token;
+    const newCredentials = {
+      spotifyAuthToken: credentials.access_token,
+      spotifyExpiration: responseTime
+        .add(credentials.expires_in, 'seconds')
+        .format(),
+      spotifyRefreshToken: spotifyRefreshToken,
+    };
     console.log('refreshSpotifyAccessToken got credentials');
 
     // add the new tokens to the database
-    await user.updateSpotifyTokens(userId, {
-      spotifyAuthToken: credentials.access_token,
-      spotifyRefreshToken: credentials.refresh_token,
-      spotifyExpiration: credentials.token_expiration,
-    });
-
-    return credentials;
-
+    await user.updateTokens(userId, newCredentials);
+    return newCredentials;
   } catch (err) {
     console.error(err);
     return {};
   }
 };
 
+const authorizeSpotify = (req, res) => {
+  console.log('authorizeSpotify - login url process');
+  const scopes =
+    'user-read-recently-played playlist-read-private playlist-read-collaborative user-modify-playback-state user-library-modify user-library-read user-follow-read user-read-playback-state user-modify-playback-state';
+
+  const url = `https://accounts.spotify.com/authorize?&client_id=${
+    spotify.client_id
+  }&redirect_uri=${encodeURI(
+    spotify.redirect_uri
+  )}&response_type=code&scope=${scopes}`;
+
+  res.redirect(url);
+};
+
+const handleSpotifyAuthentication = async (req, res) => {
+  console.log('handleSpotifyAuthentication entry point -- ', req.url);
+  if (await albumViewTokens.setSessionJwt(req, res)) {
+    res.redirect(process.env.CLIENT_URL);
+  } else {
+    res.json({ error: true });
+  }
+}
+
+const logOutSpotifyUser = async (req, res) => {
+  if (req.user && req.user.userId) {
+    console.log('logOutSpotifyUser clearing database fields for user ', req.user.userId);
+    await user.updateTokens(req.user.userId, {
+      spotifyAuthToken: null,
+      spotifyRefreshToken: null,
+      spotifyExpiration: null,
+    });
+    await albumViewTokens.setSessionJwt(req, res);
+    res.json({ signedOut: true });
+  } else {
+    console.log('logOutSpotifyUser found no user');
+    res.json({ error: true });
+  }
+
+  // req.session.destroy(function (err) {
+  //   req.logout();
+  //   res.redirect('/');
+  // });
+}
+
 module.exports = {
   getSpotifyAccessToken,
   getSpotifyCredentials,
+  authorizeSpotify,
+  handleSpotifyAuthentication,
+  logOutSpotifyUser,
 };

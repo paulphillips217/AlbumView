@@ -4,7 +4,7 @@ exports.seed = function(knex) {
     .then(function () {
       // Inserts seed entries
       return knex('artist').insert([
-        {spotifyId: "3eqjTLE0HfPfh78zjh6TqT", name: "Bruce Springsteen"},
+        {spotifyId: "3eqjTLE0HfPfh78zjh6TqT", name: "Bruce Springsteen", matchName: "brucespringsteen"},
       ]);
     });
 };

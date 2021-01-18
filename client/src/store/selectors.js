@@ -17,6 +17,10 @@ export const getSavedTrackSort = (store) => store.albumView.savedTrackSort;
 export const getOneDriveLoggedIn = (store) => store.albumView.oneDriveLoggedIn;
 export const getLocalFileData = (store) => store.albumView.localFileData;
 export const getOneDriveRoot = (store) => store.albumView.oneDriveRoot;
+export const getSelectedGenre = (store) => store.albumView.selectedGenre;
+export const getSelectedAlbumId = (store) => store.albumView.selectedAlbumId;
+export const getSelectedSpotifyAlbumId = (store) => store.albumView.selectedSpotifyAlbumId;
+export const getAlbumJobId = (store) => store.albumView.albumJobId;
 
 export const getContextSortType = (store) => {
   switch (store.albumView.contextType) {

@@ -1,12 +1,46 @@
-import { trimTrackFileName } from './utilities';
-import { cleanTitle, sortGridData } from './sortUtils';
+const trimTrackFileName = (name) => {
+  let newName = name;
+  // if the first two characters are numeric, remove them
+  let num = newName.slice(0, 2);
+  // the best way to check for NaN is by checking for self-equality
+  // eslint-disable-next-line no-self-compare
+  if (+num === +num) {
+    newName = newName.slice(2, newName.length);
+  } else {
+    // if the first one character is numeric, remove it
+    num = newName.slice(0, 1);
+    // eslint-disable-next-line no-self-compare
+    if (+num === +num) {
+      newName = newName.slice(1, newName.length);
+    }
+  }
+  // if the last 3 or 4 characters are an extension (come after a dot) remove them
+  newName =
+    newName.charAt(newName.length - 5) === '.'
+      ? newName.slice(0, newName.length - 5)
+      : newName;
+  newName =
+    newName.charAt(newName.length - 4) === '.'
+      ? newName.slice(0, newName.length - 4)
+      : newName;
+  return newName;
+};
 
 export const createLocalTracks = (album) => {
-  console.log('createLocalTracks');
-  return album.localFileObjects.map((track) => ({
-    name: trimTrackFileName(track.name),
-    url: URL.createObjectURL(track),
-  }));
+  console.log('createLocalTracks', album);
+  if (album?.localFileObjects) {
+    return album.localFileObjects.map((track) => ({
+      name: trimTrackFileName(track.name),
+      url: URL.createObjectURL(track),
+    }));
+  }
+  if (album?.tracks) {
+    return album.tracks.map((track) => ({
+      name: trimTrackFileName(track.name),
+      url: URL.createObjectURL(track),
+    }));
+  }
+  return [];
 };
 
 export const tearDownLocalTracks = (albumTrackList) => {
@@ -17,73 +51,47 @@ export const tearDownLocalTracks = (albumTrackList) => {
 export const createOneDriveTracks = async (album, httpService) => {
   const trackList = await httpService.get(`/one-drive/children/${album.oneDriveId}`);
   console.log('createOneDriveTracks', trackList);
-  return trackList
-    .filter((t) => t.file.mimeType.includes('audio'))
-    .map((t) => ({
-      name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
-      url: t['@microsoft.graph.downloadUrl'],
-    }));
+  if (Array.isArray(trackList)) {
+    return trackList
+      .filter((t) => t.file.mimeType.includes('audio'))
+      .map((t) => ({
+        name: t.audio && t.audio.title ? t.audio.title : trimTrackFileName(t.name),
+        url: t['@microsoft.graph.downloadUrl'],
+      }));
+  }
+  return [];
 };
 
 export const tearDownOneDriveTracks = () => {
   console.log('tearDownOneDriveTracks');
 };
 
-// this is used to merged album lists.  The master list is savedAlbumData
-// the mergeList can be spotify albums, local file albums, or oneDrive albums
-export const blendAlbumLists = (
-  mergeList,
-  mergeListIdProp,
-  savedAlbumData,
-  spotifyCount,
-  offset,
-  contextSortType,
-  setAlbumData
-) => {
-  // start with the spotify list and add any file albums to it
-  const blendedList = savedAlbumData.data.slice();
-
-  if (mergeList && mergeList.length > 0) {
-    // loop through the file system albums
-    mergeList.forEach((item) => {
-      // match on artist & album name, but don't match if there are different valid id's
-      // because there are multiple spotify album versions
-      const matchIndex = blendedList.findIndex(
-        (a) =>
-          cleanTitle(a.artist) === cleanTitle(item.artist) &&
-          cleanTitle(a.albumName) === cleanTitle(item.albumName) &&
-          (a[mergeListIdProp] === item[mergeListIdProp] ||
-            !a[mergeListIdProp] ||
-            !item[mergeListIdProp])
-      );
-      // console.log('localFileObjects in blendAlbumLists', item.tracks);
-      if (matchIndex >= 0) {
-        // the album was found in the merge list, so it exists in both places
-        // add the merge list id and the tracks array to the master list
-        blendedList[matchIndex][mergeListIdProp] = item[mergeListIdProp];
-        if (item.tracks && item.tracks.length > 0) {
-          blendedList.localFileObjects = item.tracks;
-        }
-      } else {
-        // the album isn't in the master list, so add it
-        const album = {
-          albumId: item.albumId ? item.albumId : null,
-          [mergeListIdProp]: item[mergeListIdProp] ? item[mergeListIdProp] : null,
-          albumName: item.albumName,
-          artist: item.artist,
-          image: item.image ? item.image : '',
-          releaseDate: item.releaseDate ? item.releaseDate : '',
-          localFileObjects: item.tracks && item.tracks.length > 0 ? item.tracks : null,
-        };
-        blendedList.push(album);
-        // console.log('blendAlbumLists added album: ', album);
-      }
-    });
-  }
-  // console.log('blended album list: ', blendedList);
-  setAlbumData({
-    spotifyCount,
-    offset,
-    data: sortGridData(blendedList, contextSortType),
+export const createLocalAlbumTracks = (fileData) => {
+  const theAlbumArray = [];
+  Object.keys(fileData).forEach((key, index) => {
+    const item = fileData[key];
+    if (!item.type.includes('audio')) {
+      return;
+    }
+    const splitPath = item.webkitRelativePath.split('/');
+    const artistName = splitPath.length >= 3 ? splitPath[splitPath.length - 3] : 'invalid';
+    const albumName =
+      splitPath.length >= 3 ? splitPath[splitPath.length - 2] : 'invalid';
+    const fileIndex = theAlbumArray.findIndex(
+      (a) => a.artistName && a.artistName === artistName && a.albumName && a.albumName === albumName
+    );
+    // console.log(`createLocalAlbumTracks [${fileIndex}]: ${artistName}, ${albumName}`);
+    if (fileIndex >= 0) {
+      theAlbumArray[fileIndex].tracks.push(item);
+    } else {
+      theAlbumArray.push({
+        artistName,
+        albumName,
+        localId: index + 1,
+        tracks: [item],
+      });
+    }
   });
+  console.log('read local albums: ', theAlbumArray);
+  return theAlbumArray;
 };

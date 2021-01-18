@@ -19,6 +19,10 @@ import {
   LOCAL_FILE_DATA,
   ONE_DRIVE_ROOT,
   SPOTIFY_IS_AUTHENTICATED,
+  SELECTED_GENRE,
+  SELECTED_ALBUM_ID,
+  SELECTED_SPOTIFY_ALBUM_ID,
+  ALBUM_JOB_ID,
 } from './types';
 
 const initialState = {
@@ -26,7 +30,7 @@ const initialState = {
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
   relatedToArtist: '',
-  savedAlbumData: { spotifyCount: 0, offset: 0, data: [] },
+  savedAlbumData: { spotifyCount: -1, data: [] },
   contextGridData: { spotifyCount: 0, data: [] },
   contextListData: {
     spotifyCount: -1,
@@ -46,6 +50,10 @@ const initialState = {
   oneDriveLoggedIn: false,
   localFileData: [],
   oneDriveRoot: '',
+  selectedGenre: 0,
+  selectedAlbumId: 0,
+  selectedSpotifyAlbumId: '',
+  albumJobId: 0,
 };
 
 export function albumViewReducer(state = initialState, action) {
@@ -141,6 +149,26 @@ export function albumViewReducer(state = initialState, action) {
       console.log('setting oneDriveRoot', action.payload);
       return Object.assign({}, state, {
         oneDriveRoot: action.payload,
+      });
+    case SELECTED_GENRE:
+      console.log('setting selectedGenre', action.payload);
+      return Object.assign({}, state, {
+        selectedGenre: action.payload,
+      });
+    case SELECTED_ALBUM_ID:
+      console.log('setting selectedAlbumId', action.payload);
+      return Object.assign({}, state, {
+        selectedAlbumId: action.payload,
+      });
+    case SELECTED_SPOTIFY_ALBUM_ID:
+      console.log('setting selectedSpotifyAlbumId', action.payload);
+      return Object.assign({}, state, {
+        selectedSpotifyAlbumId: action.payload,
+      });
+    case ALBUM_JOB_ID:
+      console.log('setting albumJobId', action.payload);
+      return Object.assign({}, state, {
+        albumJobId: action.payload,
       });
     default:
       return state;

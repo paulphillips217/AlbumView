@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
-import { Button, Grid } from 'semantic-ui-react';
+import { Button, Grid, Image } from 'semantic-ui-react';
 import {
   getContextSortType,
   getSavedAlbumData,
@@ -12,11 +13,14 @@ import {
 import { getImage } from '../util/utilities';
 import { SortTypes } from '../store/types';
 import { sortGridData } from '../util/sortUtils';
-import ModalAlbum from './ModalAlbum';
 import ModalFileAlbum from './ModalFileAlbum';
 import HttpService from '../util/httpUtils';
-import { setSavedAlbumData } from '../store/actions';
-import { blendAlbumLists } from '../util/localFileUtils';
+import {
+  setSavedAlbumData,
+  setSelectedAlbumId,
+  setSelectedSpotifyAlbumId,
+} from '../store/actions';
+import ModalAlbum from './ModalAlbum';
 
 const FileAnalysis = ({
   isSpotifyAuthenticated,
@@ -30,35 +34,66 @@ const FileAnalysis = ({
   tearDownTracks,
   setAlbumData,
   setLocalFileData,
+  setAlbumId,
+  setSpotifyAlbumId,
   httpService,
 }) => {
   const theme = useTheme();
   const [searchResultData, setSearchResultData] = useState([]);
   const [hideMatches, setHideMatches] = useState(false);
+  const [readingData, setReadingData] = useState(false);
+
+  const getTracks = (item, theAlbumArray, savedAlbumData) => {
+    const localTracks = theAlbumArray.find((a) => a.localId === item.localId)?.tracks;
+    return localTracks && localTracks.length > 0
+      ? localTracks
+      : savedAlbumData.data.find((a) => a.albumId === item.albumId)?.tracks;
+  };
 
   const handleRead = async () => {
     if (localFileData && localFileData.length > 0) {
       const theAlbumArray = await readAlbumArray(localFileData);
       console.log('handleRead got theAlbumArray', theAlbumArray);
-      blendAlbumLists(
-        theAlbumArray,
-        albumFileIdProp,
-        savedAlbumData,
-        savedAlbumData.spotifyCount,
-        savedAlbumData.offset,
-        contextSortType,
-        setAlbumData
-      );
+      const sendArray = theAlbumArray.map((item) => ({
+        localId: item.localId ? item.localId : -1,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+        artistName: item.artistName,
+        albumName: item.albumName,
+      }));
+      // console.log('handleRead sendArray', sendArray);
+      const rawData = await httpService.post(`/album-view/user-owned-albums`, {
+        albums: sendArray,
+      });
+      console.log('user owned albums return rawData', rawData);
+      const data = rawData.map((item) => ({
+        albumId: item.albumId,
+        spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
+        localId: item.localId ? item.localId : null,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+        albumName: item.albumName ? item.albumName : 'unknown album',
+        artistName: item.artistName ? item.artistName : 'unknown artist',
+        image: item.imageUrl,
+        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
+        tracks: getTracks(item, theAlbumArray, savedAlbumData),
+      }));
+      // console.log('user owned albums return data', data);
+      const sortedData = sortGridData(data, contextSortType);
+      // console.log('saving data');
+      setAlbumData({
+        spotifyCount: savedAlbumData.spotifyCount,
+        data: sortedData,
+      });
     } else {
       console.log('file import data is empty');
     }
+    setReadingData(false);
   };
 
   const handleSearch = (item) => {
     console.log('handle search: ', item);
     const query = `album:${encodeURIComponent(
       item.albumName
-    )}+artist:${encodeURIComponent(item.artist)}`;
+    )}+artist:${encodeURIComponent(item.artistName)}`;
     httpService
       .get(`/spotify/search/${query}/album`)
       .then((rawData) => {
@@ -69,9 +104,9 @@ const FileAnalysis = ({
         } else {
           data = rawData.albums.items.map((e) => ({
             [albumFileIdProp]: item[albumFileIdProp],
-            albumId: e.id,
+            spotifyAlbumId: e.id,
             albumName: e.name,
-            artist: e.artists[0] ? e.artists[0].name : 'unknown artist',
+            artistName: e.artists[0] ? e.artists[0].name : 'unknown artist',
             image: getImage(e.images),
           }));
         }
@@ -86,6 +121,7 @@ const FileAnalysis = ({
     const album = savedAlbumData.data.find(
       (item) => item[albumFileIdProp] === albumFileId
     );
+    console.log('FileAnalysis.setUpTracks album: ', albumFileIdProp, albumFileId, album);
     return createTracks(album, httpService);
   };
 
@@ -96,22 +132,30 @@ const FileAnalysis = ({
     return '';
   };
 
+  const selectSearchResultItem = (item) => {
+    if (item.spotifyAlbumId) {
+      setSpotifyAlbumId(item.spotifyAlbumId);
+      setAlbumId(0);
+      return;
+    }
+    setAlbumId(0);
+    setSpotifyAlbumId('');
+  };
+
   const gridItemSearchResults = (item) => {
     return searchResultData
       .filter((result) => result[albumFileIdProp] === item[albumFileIdProp])
       .map((result) =>
-        result.albumId ? (
+        result.spotifyAlbumId ? (
           <div>
-            <ModalAlbum
-              albumId={result.albumId}
-              artistName={result.artist}
-              albumName={result.albumName}
-              image={result.image}
-              useMiniImage
-              httpService={httpService}
+            <Image
+              size="tiny"
+              style={{ cursor: 'pointer' }}
+              src={result.image}
+              onClick={() => selectSearchResultItem(result)}
             />
             <div style={theme}>
-              {!!result.artist && <div>{result.artist}</div>}
+              {!!result.artistName && <div>{result.artistName}</div>}
               {result.albumName}
             </div>
           </div>
@@ -122,10 +166,10 @@ const FileAnalysis = ({
   };
 
   const gridItemColor = (item) => {
-    if (item[albumFileIdProp] && item.albumId) {
+    if (item[albumFileIdProp] && item.spotifyAlbumId) {
       return 'green';
     }
-    if (item.albumId) {
+    if (item.spotifyAlbumId) {
       return 'blue';
     }
     return 'red';
@@ -137,7 +181,7 @@ const FileAnalysis = ({
         {item[albumFileIdProp] ? (
           <ModalFileAlbum
             albumFileId={item[albumFileIdProp]}
-            artistName={item.artist}
+            artistName={item.artistName}
             albumName={item.albumName}
             setUpTracks={setUpTracks}
             tearDownTracks={tearDownTracks}
@@ -148,31 +192,45 @@ const FileAnalysis = ({
         )}
       </Grid.Column>
       <Grid.Column>{item[albumFileIdProp] ? item.albumName : ''}</Grid.Column>
-      <Grid.Column>{item.albumId ? item.artist : gridItemSearchButton(item)}</Grid.Column>
       <Grid.Column>
-        {item.albumId ? item.albumName : gridItemSearchResults(item)}
+        {item.spotifyAlbumId ? item.artistName : gridItemSearchButton(item)}
+      </Grid.Column>
+      <Grid.Column>
+        {item.spotifyAlbumId ? item.albumName : gridItemSearchResults(item)}
       </Grid.Column>
     </Grid.Row>
   );
 
-  const anyLocalAlbums = savedAlbumData.data.some((album) => !!album[albumFileIdProp]);
+  const anyLocalAlbums = savedAlbumData.data.some(
+    (album) =>
+      !!album[albumFileIdProp] &&
+      ((albumFileIdProp === 'localId' && album?.tracks?.length > 0) ||
+        albumFileIdProp !== 'localId')
+  );
 
   console.log('localFileData in FileAnalysis is: ', localFileData);
 
   return (
     <div style={{ ...theme, paddingLeft: '20px' }}>
       {!localFileData.length &&
-        !anyLocalAlbums &&
         React.createElement(folderPicker, { setLocalFileData, httpService }, null)}
       {localFileData.length > 0 && !anyLocalAlbums && (
-        <Button onClick={handleRead}>Read Files</Button>
+        <Button
+          loading={readingData}
+          onClick={() => {
+            setReadingData(true);
+            handleRead();
+          }}
+        >
+          Read Files
+        </Button>
       )}
-      {anyLocalAlbums && (
+      {localFileData.length > 0 && anyLocalAlbums && (
         <Button onClick={() => setHideMatches(!hideMatches)}>
           {hideMatches ? 'Show Matches' : 'Hide Matches'}
         </Button>
       )}
-      {anyLocalAlbums && savedAlbumData.data.length > 0 && (
+      {localFileData.length > 0 && anyLocalAlbums && savedAlbumData.data.length > 0 && (
         <Grid celled centered style={{ width: '80%' }}>
           <Grid.Row columns={2} style={theme}>
             <Grid.Column>
@@ -183,10 +241,13 @@ const FileAnalysis = ({
             </Grid.Column>
           </Grid.Row>
           {sortGridData(savedAlbumData.data, SortTypes.ArtistThenAlbumName)
-            .filter((item) => !(hideMatches && item[albumFileIdProp] && item.albumId))
+            .filter(
+              (item) => !(hideMatches && item[albumFileIdProp] && item.spotifyAlbumId)
+            )
             .map((item, index) => GridItem(item, index))}
         </Grid>
       )}
+      <ModalAlbum httpService={httpService} />
     </div>
   );
 };
@@ -196,16 +257,16 @@ FileAnalysis.propTypes = {
   albumFileIdProp: PropTypes.string.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artist: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         localId: PropTypes.number,
         oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
@@ -217,6 +278,8 @@ FileAnalysis.propTypes = {
   tearDownTracks: PropTypes.func.isRequired,
   setAlbumData: PropTypes.func.isRequired,
   setLocalFileData: PropTypes.func.isRequired,
+  setAlbumId: PropTypes.func.isRequired,
+  setSpotifyAlbumId: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
@@ -228,6 +291,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   setAlbumData: (data) => dispatch(setSavedAlbumData(data)),
+  setAlbumId: (id) => dispatch(setSelectedAlbumId(id)),
+  setSpotifyAlbumId: (id) => dispatch(setSelectedSpotifyAlbumId(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileAnalysis);

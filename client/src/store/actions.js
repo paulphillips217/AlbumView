@@ -16,6 +16,10 @@ import {
   LOCAL_FILE_DATA,
   ONE_DRIVE_ROOT,
   SPOTIFY_IS_AUTHENTICATED,
+  SELECTED_GENRE,
+  SELECTED_ALBUM_ID,
+  SELECTED_SPOTIFY_ALBUM_ID,
+  ALBUM_JOB_ID,
 } from './types';
 import { sortGridData } from '../util/sortUtils';
 
@@ -116,26 +120,46 @@ export const setOneDriveRoot = (root) => ({
   payload: root,
 });
 
+export const setSelectedGenre = (id) => ({
+  type: SELECTED_GENRE,
+  payload: id,
+});
+
+export const setSelectedAlbumId = (id) => ({
+  type: SELECTED_ALBUM_ID,
+  payload: id,
+});
+
+export const setSelectedSpotifyAlbumId = (id) => ({
+  type: SELECTED_SPOTIFY_ALBUM_ID,
+  payload: id,
+});
+
+export const setAlbumJobId = (id) => ({
+  type: ALBUM_JOB_ID,
+  payload: id,
+});
+
 export const addSavedAlbum = (album, savedAlbumData, contextSortType, dispatch) => {
   console.log('addSavedAlbum action: ', album);
   const newData = savedAlbumData.data.concat(album);
   dispatch(
     setSavedAlbumData({
       spotifyCount: savedAlbumData.spotifyCount + 1,
-      offset: savedAlbumData.offset + 1,
       data: sortGridData(newData, contextSortType),
     })
   );
 };
 
-export const removeSavedAlbum = (albumId, savedAlbumData, dispatch) => {
-  if (savedAlbumData.data.some((item) => item.albumId === albumId)) {
-    const newData = savedAlbumData.data.filter((item) => item.albumId !== albumId);
+export const removeSavedAlbum = (spotifyAlbumId, savedAlbumData, dispatch) => {
+  if (savedAlbumData.data.some((item) => item.spotifyAlbumId === spotifyAlbumId)) {
+    const newData = savedAlbumData.data.filter(
+      (item) => item.spotifyAlbumId !== spotifyAlbumId
+    );
     // for simplification we assume it's only one we're removing
     dispatch(
       setSavedAlbumData({
         spotifyCount: savedAlbumData.spotifyCount - 1,
-        offset: savedAlbumData.offset - 1,
         data: newData,
       })
     );

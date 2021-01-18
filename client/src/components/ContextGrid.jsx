@@ -3,35 +3,59 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
-import { Grid, Header } from 'semantic-ui-react';
+import { Grid, Header, Image, Icon } from 'semantic-ui-react';
 import { filterByAlbumType } from '../util/utilities';
 import { getContextType, getContextGridColumns } from '../store/selectors';
 import { ContextType } from '../store/types';
 import ModalAlbum from './ModalAlbum';
 import HttpService from '../util/httpUtils';
+import { setSelectedAlbumId, setSelectedSpotifyAlbumId } from '../store/actions';
 
 const ContextGrid = ({
   contextType,
   contextGridData,
   contextGridColumns,
+  setAlbumId,
+  setSpotifyAlbumId,
   httpService,
 }) => {
   const theme = useTheme();
 
+  const selectAlbum = (item) => {
+    if (item.albumId) {
+      setAlbumId(item.albumId);
+      setSpotifyAlbumId('');
+      return;
+    }
+    if (item.spotifyAlbumId) {
+      setSpotifyAlbumId(item.spotifyAlbumId);
+      setAlbumId(0);
+      return;
+    }
+    setAlbumId(0);
+    setSpotifyAlbumId('');
+  };
+
   const GridItem = (item, index) => (
     <Grid.Column key={index}>
       <div style={theme}>
-        <ModalAlbum
-          albumId={item.albumId}
-          artistName={item.artist}
-          albumName={item.albumName}
-          image={item.image}
-          localId={item.localId}
-          oneDriveId={item.oneDriveId}
-          httpService={httpService}
-        />
+        {item.image ? (
+          <Image
+            size="medium"
+            style={{ cursor: 'pointer' }}
+            src={item.image}
+            onClick={() => selectAlbum(item)}
+          />
+        ) : (
+          <Icon
+            link
+            name="file image outline"
+            size="huge"
+            onClick={() => selectAlbum(item)}
+          />
+        )}
         <div style={theme}>
-          {!!item.artist && <div>{item.artist}</div>}
+          {!!item.artistName && <div>{item.artistName}</div>}
           {item.trackName || item.albumName}
         </div>
       </div>
@@ -78,6 +102,7 @@ const ContextGrid = ({
     <div className="grid-container">
       {useArtistAlbumGrid && contextGridData.data.length > 0 ? <ArtistAlbumGrid /> : ''}
       {!useArtistAlbumGrid && contextGridData.data.length > 0 ? <AlbumGrid /> : ''}
+      <ModalAlbum httpService={httpService} />
     </div>
   );
 };
@@ -88,15 +113,18 @@ ContextGrid.propTypes = {
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        albumId: PropTypes.string,
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
         albumName: PropTypes.string,
-        artist: PropTypes.string,
+        artistName: PropTypes.string,
         image: PropTypes.string,
-        releaseDate: PropTypes.string,
+        releaseDate: PropTypes.number,
       })
     ),
   }).isRequired,
   contextGridColumns: PropTypes.number.isRequired,
+  setAlbumId: PropTypes.func.isRequired,
+  setSpotifyAlbumId: PropTypes.func.isRequired,
   httpService: PropTypes.instanceOf(HttpService).isRequired,
 };
 
@@ -105,4 +133,9 @@ const mapStateToProps = (state) => ({
   contextGridColumns: getContextGridColumns(state),
 });
 
-export default connect(mapStateToProps)(ContextGrid);
+const mapDispatchToProps = (dispatch) => ({
+  setAlbumId: (id) => dispatch(setSelectedAlbumId(id)),
+  setSpotifyAlbumId: (id) => dispatch(setSelectedSpotifyAlbumId(id)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContextGrid);

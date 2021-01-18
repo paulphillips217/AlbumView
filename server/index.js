@@ -16,10 +16,14 @@ const passport = require('passport');
 
 const spotifyRoutes = require('./routes/spotify');
 const lastFmRoutes = require('./routes/last-fm');
+const albumViewRoutes = require('./routes/album-view');
+
+const oneDriveTokens = require('./oneDriveTokens');
+const user = require('./data/user');
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -33,14 +37,15 @@ if (isDev) {
   app.use(express.static(path.resolve(__dirname, '../client/build')));
 }
 
-/* AlbumView authentication starts here */
+/* AlbumView authentication setup starts here */
 const JWTStrategy = require('passport-jwt').Strategy;
 
 passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: (req) => {
-        console.log('getting JWT from request - cookies', req.cookies);
+        console.log('getting JWT from request - url', req.url);
+        // console.log('getting JWT from request - cookies', req.cookies);
         return req.cookies ? req.cookies.jwt : '';
       },
       secretOrKey: process.env.JWT_SECRET,
@@ -59,7 +64,7 @@ passport.use(
     }
   )
 );
-/* AlbumView authentication ends here */
+/* AlbumView authentication setup ends here */
 
 /* OneDrive setup starts here */
 
@@ -76,59 +81,24 @@ app.use(
   })
 );
 
-// In-memory storage of logged-in users (TODO: move to database)
-var users = {};
-
 // Passport calls serializeUser and deserializeUser to manage users
-passport.serializeUser(function (user, done) {
-  console.log('serializeUser ', user);
+passport.serializeUser((user, done) => {
+  // console.log('serializeUser oid: ', user.profile.oid);
+  console.log('serializeUser userId: ', user.userId);
   // Use the OID property of the user as a key
-  users[user.profile.oid] = user;
-  done(null, user.profile.oid);
+  // users[user.profile.oid] = user;
+  // done(null, user.profile.oid);
+  done(null, user.userId);
 });
 
-passport.deserializeUser(function (id, done) {
-  console.log('deserializeUser ', id);
-  done(null, users[id] ? users[id] : null);
+passport.deserializeUser(async (userId, done) => {
+  // console.log('deserializeUser oid:', id);
+  console.log('deserializeUser userId:', userId);
+  // done(null, users[id] ? users[id] : null);
+  const oneDriveCredentials = await user.getOneDriveCredentials(userId);
+  console.log(`deserializeUser credentials ${oneDriveCredentials ? 'success' : 'failed'}`);
+  done(null, {...oneDriveCredentials, userId});
 });
-
-// Configure simple-oauth2
-const oauth2 = require('simple-oauth2').create({
-  client: {
-    id: process.env.OAUTH_APP_ID,
-    secret: process.env.OAUTH_APP_PASSWORD,
-  },
-  auth: {
-    tokenHost: process.env.OAUTH_AUTHORITY,
-    authorizePath: process.env.OAUTH_AUTHORIZE_ENDPOINT,
-    tokenPath: process.env.OAUTH_TOKEN_ENDPOINT,
-  },
-});
-
-// Callback function called once the sign-in is complete
-// and an access token has been obtained
-async function signInComplete(
-  iss,
-  sub,
-  profile,
-  accessToken,
-  refreshToken,
-  params,
-  done
-) {
-  console.log('signInComplete profile.oid', profile.oid);
-
-  if (!profile.oid) {
-    return done(new Error('No OID found in user profile.'));
-  }
-
-  // Create a simple-oauth2 token from raw tokens
-  let oauthToken = oauth2.accessToken.create(params);
-
-  // Save the profile and tokens in user storage
-  users[profile.oid] = { profile, oauthToken };
-  return done(null, users[profile.oid]);
-}
 
 // Configure OIDC strategy
 passport.use(
@@ -142,10 +112,10 @@ passport.use(
       allowHttpForRedirectUrl: true,
       clientSecret: process.env.OAUTH_APP_PASSWORD,
       validateIssuer: false,
-      passReqToCallback: false,
+      passReqToCallback: true,
       scope: process.env.OAUTH_SCOPES.split(' '),
     },
-    signInComplete
+    oneDriveTokens.signInComplete
   )
 );
 
@@ -156,13 +126,10 @@ app.use(passport.session());
 /* this is the end of the OneDrive setup */
 
 /* start bull & redis queue setup */
-let Queue = require('bull');
+const Queue = require('bull');
 
-// Connect to a local redis instance locally, and the Heroku-provided URL in production
-let REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-
-// Create / Connect to a named work queue
-let workQueue = new Queue('work', REDIS_URL);
+// create / connect to a named work queue
+const testQueue = new Queue('test', process.env.REDIS_URL);
 
 // Kick off a new job by adding it to the work queue
 app.get('/job', async (req, res) => {
@@ -170,28 +137,29 @@ app.get('/job', async (req, res) => {
   // This would be where you could pass arguments to the job
   // Ex: workQueue.add({ url: 'https://www.heroku.com' })
   // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
-  let job = await workQueue.add();
+  const job = await testQueue.add({myData: "this is test data"});
+  console.log('this is after the await for the add');
   res.json({ id: job.id });
 });
 
 // Allows the client to query the state of a background job
 app.get('/job/:id', async (req, res) => {
-  let id = req.params.id;
-  let job = await workQueue.getJob(id);
+  const id = req.params.id;
+  const job = await testQueue.getJob(id);
 
   if (job === null) {
     res.status(404).end();
   } else {
-    let state = await job.getState();
-    let progress = job._progress;
-    let reason = job.failedReason;
+    const state = await job.getState();
+    const progress = job._progress;
+    const reason = job.failedReason;
     res.json({ id, state, progress, reason });
   }
 });
 
 // You can listen to global events to get notified when jobs are processed
-workQueue.on('global:completed', (jobId, result) => {
-  console.log(`Job completed with result ${result}`);
+testQueue.on('global:completed', (jobId, result) => {
+  console.log(`Global testQueue Listener: Job completed with result ${result}`);
 });
 
 /* end bull & redis queue setup */
@@ -199,6 +167,7 @@ workQueue.on('global:completed', (jobId, result) => {
 app.use('/spotify', spotifyRoutes);
 app.use('/one-drive', oneDriveRoutes);
 app.use('/last-fm', lastFmRoutes);
+app.use('/album-view', albumViewRoutes);
 
 // test endpoint to see if the server is running
 app.get('/ping', (req, res) => {

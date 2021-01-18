@@ -1,3 +1,12 @@
+// note: this isn't required for running, but it IS required to run migrations
+if (process.env.NODE_ENV !== 'production') {
+  const result = require('dotenv').config({ path: './server/variables.env' });
+  if (result.error) {
+    throw result.error;
+  }
+  //console.log(result.parsed);
+}
+
 module.exports = {
   development: {
     client: 'pg',

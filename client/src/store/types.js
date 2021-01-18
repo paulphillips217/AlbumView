@@ -16,6 +16,10 @@ export const SAVED_TRACK_SORT = 'SAVED_TRACK_SORT';
 export const ONE_DRIVE_LOGGED_IN = 'ONE_DRIVE_LOGGED_IN';
 export const LOCAL_FILE_DATA = 'LOCAL_FILE_DATA';
 export const ONE_DRIVE_ROOT = 'ONE_DRIVE_ROOT';
+export const SELECTED_GENRE = 'SELECTED_GENRE';
+export const SELECTED_ALBUM_ID = 'SELECTED_ALBUM_ID';
+export const SELECTED_SPOTIFY_ALBUM_ID = 'SELECTED_SPOTIFY_ALBUM_ID';
+export const ALBUM_JOB_ID = 'ALBUM_JOB_ID';
 
 export const ContextType = {
   Playlists: 'playlists',
@@ -46,4 +50,5 @@ export const ModalDisplayTypes = {
   Spotify: 'spotify',
   Local: 'local',
   OneDrive: 'oneDrive',
+  Unknown: 'unknown',
 };
