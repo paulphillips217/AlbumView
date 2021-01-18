@@ -116,9 +116,16 @@ const start = async () => {
     }
 
     console.log('savedAlbumQueue starting secondary queues');
-    await spotifyAlbumArtistQueue.add({ userId });
-    await lastAlbumQueue.add();
-    await audioDbAlbumQueue.add();
+    try {
+      let newJob = await spotifyAlbumArtistQueue.add({ userId });
+      console.log('addAlbumSpotifyIds job: ', newJob.id);
+      newJob = await lastAlbumQueue.add();
+      console.log('lastAlbumQueue job: ', newJob.id);
+      newJob = await audioDbAlbumQueue.add();
+      console.log('audioDbAlbumQueue job: ', newJob.id);
+    } catch (err) {
+      console.log('error starting secondary jobs: ', err.name, err.message);
+    }
   });
 
   // *** SPOTIFY QUEUE ***

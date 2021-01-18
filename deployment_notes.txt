@@ -1,0 +1,8 @@
+switch from nodemon to node in Procfile before deployment
+
+run migrations from the command line:
+heroku run knex migrate:latest -a album-view-online
+heroku run knex seed:run -a album-view-online
+
+list my last.fm applications:
+https://www.last.fm/api/accounts
