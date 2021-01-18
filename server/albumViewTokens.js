@@ -46,9 +46,9 @@ const setSessionJwt = async (req, res) => {
 
   // add spotify and oneDrive cookies if logged in
   const spotifyCredentials = await user.getSpotifyCredentials(userId);
-  const spotifyLoggedIn = !!(spotifyCredentials.spotifyAuthToken);
+  const spotifyLoggedIn = spotifyCredentials && spotifyCredentials.spotifyAuthToken;
   const oneDriveCredentials = await user.getOneDriveCredentials(userId);
-  const oneDriveLoggedIn = !!(oneDriveCredentials.oneDriveProfileId);
+  const oneDriveLoggedIn = oneDriveCredentials && oneDriveCredentials.oneDriveProfileId;
 
   // assigns payload to req.user
   req.login(payload, { session: false }, (error) => {

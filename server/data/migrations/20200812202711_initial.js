@@ -122,10 +122,31 @@ exports.up = async (knex) => {
       userAlbums.primary(['userId', 'albumId']);
     });
   }
+  hasTable = await knex.schema.hasTable('userArtists');
+  if (hasTable) {
+    console.log('userArtists table already exists');
+  } else {
+    result = await knex.schema.createTable('userArtists', (userArtists) => {
+      userArtists
+        .integer('userId')
+        .references('id')
+        .inTable('user')
+        .notNull()
+        .onDelete('cascade');
+      userArtists
+        .integer('artistId')
+        .references('id')
+        .inTable('artist')
+        .notNull()
+        .onDelete('cascade');
+      userArtists.primary(['userId', 'artistId']);
+    });
+  }
 };
 
 exports.down = async (knex) => {
   let result;
+  result = await knex.schema.dropTableIfExists('userArtists');
   result = await knex.schema.dropTableIfExists('userAlbums');
   result = await knex.schema.dropTableIfExists('user');
   result = await knex.schema.dropTableIfExists('albumGenres');

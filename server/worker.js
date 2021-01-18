@@ -29,13 +29,13 @@ const theAudioDbData = require('./theAudioDbData');
 
 // Spin up multiple processes to handle jobs to take advantage of more CPU cores
 // See: https://devcenter.heroku.com/articles/node-concurrency for more info
-let workers = +process.env.WEB_CONCURRENCY || 1;
+const workers = +process.env.WEB_CONCURRENCY || 1;
 
 // The maximum number of jobs each worker should process at once. This will need
 // to be tuned for your application. If each job is mostly waiting on network
 // responses it can be much higher. If each job is CPU-intensive, it might need
 // to be much lower.
-let maxJobsPerWorker = +process.env.MAX_JOBS_PER_WORKER || 50;
+const maxJobsPerWorker = +process.env.MAX_JOBS_PER_WORKER || 50;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,14 +43,14 @@ function sleep(ms) {
 
 const start = async () => {
   // Connect to the named work queues
-  let testQueue = new Queue('test', process.env.REDIS_URL);
-  let savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
-  let spotifyAlbumArtistQueue = new Queue(
+  const testQueue = new Queue('test', process.env.REDIS_URL);
+  const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+  const spotifyAlbumArtistQueue = new Queue(
     'spotifyAlbumsArtists',
     process.env.REDIS_URL
   );
-  let lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
-  let audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
+  const lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
+  const audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
 
   console.log('starting worker process');
 
@@ -93,6 +93,28 @@ const start = async () => {
     job.progress(100);
     console.log('savedAlbumQueue processing completed');
 
+    // now let's do followed artists (don't track progress here)
+    await sleep(process.env.SPOTIFY_INTERVAL);
+    const followedArtistCount = await spotifyData.getFollowedArtists(userId, 0);
+    offset = +process.env.SPOTIFY_PAGE_LIMIT;
+    while (offset < followedArtistCount) {
+      await sleep(process.env.SPOTIFY_INTERVAL);
+      await spotifyData.getFollowedArtists(userId, offset);
+      offset += +process.env.SPOTIFY_PAGE_LIMIT;
+      console.log(`savedAlbumQueue followedArtistCount and offset: ${offset}, followedArtistCount: ${followedArtistCount}`);
+    }
+
+    // and now artists from saved tracks (again, don't track progress here)
+    await sleep(process.env.SPOTIFY_INTERVAL);
+    const savedTrackArtistCount = await spotifyData.getSavedTrackArtists(userId, 0);
+    offset = +process.env.SPOTIFY_PAGE_LIMIT;
+    while (offset < savedTrackArtistCount) {
+      await sleep(process.env.SPOTIFY_INTERVAL);
+      await spotifyData.getSavedTrackArtists(userId, offset);
+      offset += +process.env.SPOTIFY_PAGE_LIMIT;
+      console.log(`savedAlbumQueue savedTrackArtistCount and offset: ${offset}, savedTrackArtistCount: ${savedTrackArtistCount}`);
+    }
+
     console.log('savedAlbumQueue starting secondary queues');
     await spotifyAlbumArtistQueue.add({ userId });
     await lastAlbumQueue.add();
@@ -104,9 +126,9 @@ const start = async () => {
   spotifyAlbumArtistQueue.process(maxJobsPerWorker, async (job) => {
     const { userId } = job.data;
     console.log('spotifyAlbumArtistQueue starting with userId: ', userId);
-    await spotifyData.addArtistImageUrls(userId, sleep);
     await spotifyData.addAlbumSpotifyIds(userId, sleep);
     await  spotifyData.addArtistSpotifyIds(userId, sleep);
+    await spotifyData.addArtistImageUrls(userId, sleep);
   });
 
   // *** LAST.FM QUEUE ***

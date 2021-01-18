@@ -72,9 +72,9 @@ router.get(
   spotifyData.talkToSpotify
 );
 router.get(
-  '/artist-list/:offset/:limit/:artists/:albums/:tracks',
+  '/artist-list',
   passport.authenticate('jwt', { session: false }),
-  spotifyData.aggregateSpotifyArtistData
+  spotifyData.fetchSavedArtists
 );
 router.get(
   '/artist-albums/:id/:offset/:limit',

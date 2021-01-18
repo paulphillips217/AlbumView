@@ -43,6 +43,13 @@ const FileAnalysis = ({
   const [hideMatches, setHideMatches] = useState(false);
   const [readingData, setReadingData] = useState(false);
 
+  const getTracks = (item, theAlbumArray, savedAlbumData) => {
+    const localTracks = theAlbumArray.find((a) => a.localId === item.localId)?.tracks;
+    return localTracks && localTracks.length > 0
+      ? localTracks
+      : savedAlbumData.data.find((a) => a.albumId === item.albumId)?.tracks;
+  };
+
   const handleRead = async () => {
     if (localFileData && localFileData.length > 0) {
       const theAlbumArray = await readAlbumArray(localFileData);
@@ -67,7 +74,7 @@ const FileAnalysis = ({
         artistName: item.artistName ? item.artistName : 'unknown artist',
         image: item.imageUrl,
         releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
-        tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
+        tracks: getTracks(item, theAlbumArray, savedAlbumData),
       }));
       // console.log('user owned albums return data', data);
       const sortedData = sortGridData(data, contextSortType);

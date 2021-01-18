@@ -9,8 +9,6 @@ const user = require('./data/user');
 
 const Queue = require('bull');
 const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
-let lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
-
 const getSpotifyUrl = (req) => {
   //console.log('getSpotifyUrl:', req.path);
   switch (true) {
@@ -109,7 +107,11 @@ const talkToSpotify = async (req, res) => {
     accessToken = credentials.spotifyAuthToken;
     console.log('talkToSpotify token: ', accessToken);
   } catch (err) {
-    console.error('talkToSpotify error getting credentials', err.name, err.message);
+    console.error(
+      'talkToSpotify error getting credentials',
+      err.name,
+      err.message
+    );
     res.json({ empty: true });
   }
 
@@ -185,7 +187,11 @@ const getSavedAlbums = async (userId, offset) => {
   }
   const url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`;
   console.log('getSavedAlbums url', url);
-  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
   //console.log('getSavedAlbums response album[0]', response.items);
   if (!response || response.length === 0 || !response.items) {
     console.error('getSavedAlbums response is invalid: ', response);
@@ -203,10 +209,18 @@ const getSavedAlbums = async (userId, offset) => {
       name: theArtist.name,
     });
     // console.log('insertSingleArtist in getSavedAlbums returned ', artistId);
+
+    // associate artist with user
+    const result = await user.insertSingleUserArtist({
+      userId,
+      artistId,
+    });
+    // console.log('insertSingleUserArtist returned: ', result);
+
     albums.push({
       spotifyId: theAlbum.id,
       name: theAlbum.name,
-      artistId: artistId,
+      artistId,
       imageUrl: theAlbum.images ? utilities.getImage(theAlbum.images) : '',
       releaseDate: moment(theAlbum.release_date),
     });
@@ -221,7 +235,7 @@ const getSavedAlbums = async (userId, offset) => {
     // associate album with user
     const result = await user.insertSingleUserAlbum({
       userId,
-      albumId: albumId,
+      albumId,
     });
     // console.log('insertSingleUserAlbum returned: ', result);
   }
@@ -229,150 +243,89 @@ const getSavedAlbums = async (userId, offset) => {
   return response.total;
 };
 
-const aggregateSpotifyArtistData = async (req, res) => {
-  const credentials = await spotifyTokens.getSpotifyCredentials(
-    req.user.userId
-  );
+// this gets them from the database and sends them to the client
+const fetchSavedArtists = async (req, res) => {
+  const userArtists = await user.getUserArtists(req.user.userId);
+  console.log('fetchSavedArtists count:', userArtists.length);
+  res.json(userArtists);
+};
+
+const getFollowedArtists = async (userId, offset) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
   if (!credentials || !credentials.spotifyAuthToken) {
-    console.log(
-      'aggregateSpotifyArtistData - failed to get credentials, removing invalid cookie'
-    );
-    await albumViewTokens.setSessionJwt(req, res);
-    res.json({ empty: true });
-    return;
+    return 0;
+  }
+  const url = `https://api.spotify.com/v1/me/following?type=artist&after=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`;
+  console.log('getFollowedArtists url', url);
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
+  // console.log('getFollowedArtists response items: ', response.artists.items);
+  if (!response || !response.artists || !response.artists.items) {
+    console.error('getFollowedArtists response is invalid: ', response);
+    return 0;
   }
 
-  const accessToken = credentials.spotifyAuthToken;
-
-  let url = '';
-  let artistList = [];
-  const offset = +req.params.offset;
-  const limit = +req.params.limit;
-  let artistTotal = +req.params.artists;
-  let albumTotal = +req.params.albums;
-  let trackTotal = +req.params.tracks;
-
-  try {
-    // first we get the artists you're following
-    // if we don't know what the total is it will be set to -1
-    if (artistTotal < 0 || offset < artistTotal) {
-      url = `https://api.spotify.com/v1/me/following?type=artist&after=${offset}&limit=${limit}`;
-      console.log('aggregate first url', req.path, url, req.method);
-      let response = await axios({
-        url: url,
-        method: req.method,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      // console.log('axios got response for ', url);
-      //    console.log(
-      //      'aggregateSpotifyArtistData raw: ',
-      //      JSON.stringify(response.data)
-      //    );
-      if (response && response.data && utilities.isJson(response.data)) {
-        artistTotal = +response.data.artists.total;
-        response.data.artists.items.forEach((item) => {
-          artistList.push({
-            id: item.id,
-            name: item.name,
-            images: item.images,
-          });
-        });
-      }
-      //console.log(
-      //  'aggregateSpotifyArtistData artistList: ',
-      //  JSON.stringify(artistList)
-      //);
-    }
-
-    // second is the list of favorite albums
-    // if we don't know what the total is it will be set to -1
-    if (albumTotal < 0 || offset < albumTotal) {
-      url = `https://api.spotify.com/v1/me/albums?offset=${offset}&limit=${limit}`;
-      console.log('aggregate second url', req.path, url, req.method);
-      const response = await axios({
-        url: url,
-        method: req.method,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      // console.log('axios got response for ', url);
-      //console.log(
-      //  'aggregateSpotifyArtistData 2 raw: ',
-      //  JSON.stringify(response.data)
-      //);
-      if (response && response.data && utilities.isJson(response.data)) {
-        albumTotal = +response.data.total;
-        response.data.items.forEach((item) => {
-          if (!artistList.some((a) => a.id === item.album.artists[0].id)) {
-            artistList.push({
-              id: item.album.artists[0].id,
-              name: item.album.artists[0].name,
-              images: '',
-            });
-          }
-        });
-      }
-      //console.log(
-      //  'aggregateSpotifyArtistData artistList: ',
-      //  JSON.stringify(artistList)
-      //);
-    }
-
-    // third is the list of favorite tracks
-    // if we don't know what the total is it will be set to -1
-    if (trackTotal < 0 || offset < trackTotal) {
-      url = `https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`;
-      console.log('aggregate third url', req.path, url, req.method);
-      const response = await axios({
-        url: url,
-        method: req.method,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      // console.log('axios got response for ', url);
-      //console.log(
-      //  'aggregateSpotifyArtistData 2 raw: ',
-      //  JSON.stringify(response.data)
-      //);
-      if (response && response.data && utilities.isJson(response.data)) {
-        trackTotal = +response.data.total;
-        response.data.items.forEach((item) => {
-          if (!artistList.some((a) => a.id === item.track.artists[0].id)) {
-            artistList.push({
-              id: item.track.artists[0].id,
-              name: item.track.artists[0].name,
-              images: '',
-            });
-          }
-        });
-      }
-      //console.log(
-      //  'aggregateSpotifyArtistData artistList: ',
-      //  JSON.stringify(artistList)
-      //);
-    }
-
-    res.json({
-      artistTotal,
-      albumTotal,
-      trackTotal,
-      offset,
-      data: artistList,
+  // add artists to database
+  // we need to do the inserts in an array with await so we don't duplicate
+  for (let i = 0; i < response.artists.items.length; i += 1) {
+    const theArtist = response.artists.items[i];
+    const artistId = await artist.insertSingleArtist({
+      spotifyId: theArtist.id,
+      name: theArtist.name,
     });
-  } catch (err) {
-    console.error(JSON.stringify(err));
-    res.json({ empty: true });
+    console.log('insertSingleArtist in getFollowedArtists returned ', artistId);
+
+    // associate artist with user
+    await user.insertSingleUserArtist({
+      userId,
+      artistId,
+    });
+    // console.log('insertSingleUserArtist returned: ', result);
   }
+
+  return response.total;
+};
+
+const getSavedTrackArtists = async (userId, offset) => {
+  const credentials = await spotifyTokens.getSpotifyCredentials(userId);
+  if (!credentials || !credentials.spotifyAuthToken) {
+    return 0;
+  }
+  const url = `https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${process.env.SPOTIFY_PAGE_LIMIT}`;
+  console.log('getSavedTrackArtists url', url);
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
+  // console.log('getSavedTrackArtists response items: ', response.items);
+  if (!response || !response.items) {
+    console.error('getSavedTrackArtists response is invalid: ', response);
+    return 0;
+  }
+
+  // add artists to database
+  // we need to do the inserts in an array with await so we don't duplicate
+  for (let i = 0; i < response.items.length; i += 1) {
+    const theArtist = response.items[i].track.artists[0];
+    const artistId = await artist.insertSingleArtist({
+      spotifyId: theArtist.id,
+      name: theArtist.name,
+    });
+    console.log('insertSingleArtist in getSavedTrackArtists returned ', artistId);
+
+    // associate artist with user
+    await user.insertSingleUserArtist({
+      userId,
+      artistId,
+    });
+    // console.log('insertSingleUserArtist returned: ', result);
+  }
+
+  return response.total;
 };
 
 const searchAlbum = async (userId, artistName, albumName) => {
@@ -380,14 +333,23 @@ const searchAlbum = async (userId, artistName, albumName) => {
   if (!credentials || !credentials.spotifyAuthToken) {
     return 0;
   }
-  const query = `album:${encodeURIComponent(albumName)}+artist:${encodeURIComponent(artistName)}`;
+  const query = `album:${encodeURIComponent(
+    albumName
+  )}+artist:${encodeURIComponent(artistName)}`;
   const url = `https://api.spotify.com/v1/search?q=${query}&type=album`;
 
   console.log('searchAlbum url', url);
-  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
   //console.log('searchAlbum response album[0]', response.items);
   if (!response || response.length === 0) {
-    console.error('searchAlbum response is invalid: ', JSON.stringify(response));
+    console.error(
+      'searchAlbum response is invalid: ',
+      JSON.stringify(response)
+    );
     return 0;
   }
   return response;
@@ -402,10 +364,17 @@ const searchArtist = async (userId, artistName) => {
   const url = `https://api.spotify.com/v1/search?q=${query}&type=artist`;
 
   console.log('searchArtist url', url);
-  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
   //console.log('searchAlbum response album[0]', response.items);
   if (!response || response.length === 0) {
-    console.error('searchArtist response is invalid: ', JSON.stringify(response));
+    console.error(
+      'searchArtist response is invalid: ',
+      JSON.stringify(response)
+    );
     return 0;
   }
   return response;
@@ -419,14 +388,21 @@ const getArtistById = async (userId, spotifyId) => {
   const url = `https://api.spotify.com/v1/artists/${spotifyId}`;
 
   console.log('getArtistById url', url);
-  const response = await chatWithSpotify(credentials.spotifyAuthToken, url, 'GET');
+  const response = await chatWithSpotify(
+    credentials.spotifyAuthToken,
+    url,
+    'GET'
+  );
   //console.log('getArtistById response album[0]', response.items);
   if (!response || response.length === 0) {
-    console.error('getArtistById response is invalid: ', JSON.stringify(response));
+    console.error(
+      'getArtistById response is invalid: ',
+      JSON.stringify(response)
+    );
     return null;
   }
   return response;
-}
+};
 
 const addArtistImageUrls = async (userId, sleep) => {
   const spotifyArtists = await artist.getSpotifyArtistsWithNoImageUrl();
@@ -510,10 +486,7 @@ const addArtistSpotifyIds = async (userId, sleep) => {
 
       console.log('addArtistSpotifyIds artists record: ', artists[i]);
       // console.log('addArtistSpotifyIds searching for artist: ', artists[i],artistId, artists[i].artistName);
-      const response = await searchArtist(
-        userId,
-        artists[i].artistName
-      );
+      const response = await searchArtist(userId, artists[i].artistName);
       // console.log('addArtistSpotifyIds response: ', response.artists.items);
 
       if (response && response.artists && response.artists.items.length > 0) {
@@ -528,7 +501,10 @@ const addArtistSpotifyIds = async (userId, sleep) => {
           );
         }
         if (match) {
-          console.log('addArtistSpotifyIds got match and updating artist: ', artists[i].artistId);
+          console.log(
+            'addArtistSpotifyIds got match and updating artist: ',
+            artists[i].artistId
+          );
           await artist.updateArtist(artists[i].artistId, {
             spotifyId: match.id,
             imageUrl: match.images ? utilities.getImage(match.images) : null,
@@ -549,10 +525,12 @@ const addArtistSpotifyIds = async (userId, sleep) => {
 
 module.exports = {
   talkToSpotify,
-  aggregateSpotifyArtistData,
   refreshSavedAlbums,
   getSavedAlbums,
+  getFollowedArtists,
+  getSavedTrackArtists,
   fetchSavedAlbums,
+  fetchSavedArtists,
   searchAlbum,
   searchArtist,
   getArtistById,

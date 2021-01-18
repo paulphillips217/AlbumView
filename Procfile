@@ -1,2 +1,2 @@
-web: nodemon ./server/index.js
-worker: nodemon ./server/worker.js
+web: node ./server/index.js
+worker: node ./server/worker.js

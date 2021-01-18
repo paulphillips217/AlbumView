@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import { Button, List, Image } from 'semantic-ui-react';
-import { getContextListData, getContextType } from '../store/selectors';
+import { getContextItem, getContextListData, getContextType, getRelatedToArtist } from '../store/selectors';
 import {
   setContextGridData,
   setContextItem,
@@ -15,6 +15,8 @@ import { ContextType } from '../store/types';
 
 const ContextList = ({
   contextType,
+  contextItem,
+  relatedToArtist,
   contextListData,
   setItem,
   setLoading,
@@ -35,8 +37,13 @@ const ContextList = ({
     }
   };
 
+  const getListItemBorder = (id) => {
+    const selected = contextType === ContextType.RelatedArtists ? (relatedToArtist === id) : (contextItem === id);
+    return selected ? '2px solid SteelBlue' : ''
+  }
+
   const ListItem = (item, index) => (
-    <List.Item key={index}>
+    <List.Item key={index} style={{ border: getListItemBorder(item.id) }}>
       <Image
         src={item.image}
         size="mini"
@@ -56,11 +63,7 @@ const ContextList = ({
         {item.author && (
           <List.Description>
             <div style={theme}>
-              by: 
-              {' '}
-              {item.author} 
-              {' '}
-              <br />
+              by: {item.author} <br />
             </div>
           </List.Description>
         )}
@@ -83,6 +86,8 @@ const ContextList = ({
 
 ContextList.propTypes = {
   contextType: PropTypes.string.isRequired,
+  contextItem: PropTypes.string.isRequired,
+  relatedToArtist: PropTypes.string.isRequired,
   contextListData: PropTypes.shape({
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
@@ -103,6 +108,8 @@ ContextList.propTypes = {
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
+  contextItem: getContextItem(state),
+  relatedToArtist: getRelatedToArtist(state),
   contextListData: getContextListData(state),
 });
 

@@ -5,6 +5,12 @@ const user = require('./data/user');
 
 const Queue = require('bull');
 const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+const spotifyAlbumArtistQueue = new Queue(
+  'spotifyAlbumsArtists',
+  process.env.REDIS_URL
+);
+const lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
+const audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
 
 // this gets them from the database and sends them to the client
 const getGenreList = async (req, res) => {
@@ -29,6 +35,14 @@ const integrateUserOwnedAlbums = async (req, res) => {
       const artistId = await artist.insertSingleArtist({
         name: albums[i].artistName,
       });
+
+      // associate artist with user
+      await user.insertSingleUserArtist({
+        userId,
+        artistId,
+      });
+      // console.log('insertSingleUserArtist returned: ', artistResult);
+
       // console.log('integrateUserOwnedAlbums artistId: ', artistId);
       const albumId = await album.insertSingleAlbum({
         artistId: artistId,
@@ -37,15 +51,21 @@ const integrateUserOwnedAlbums = async (req, res) => {
       // console.log('integrateUserOwnedAlbums albumId: ', albumId);
 
       // associate album with user
-      const result = await user.insertSingleUserAlbum({
+      await user.insertSingleUserAlbum({
         userId,
-        albumId: albumId,
+        albumId,
         localId: albums[i].localId,
         oneDriveId: albums[i].oneDriveId,
       });
-      // console.log('insertSingleUserAlbum returned: ', result);
+      // console.log('insertSingleUserAlbum returned: ', albumResult);
     }
   }
+
+  // kick off worker jobs to keep database updated
+  await spotifyAlbumArtistQueue.add({ userId });
+  await lastAlbumQueue.add();
+  await audioDbAlbumQueue.add();
+  console.log('integrateUserOwnedAlbums started worker jobs');
 
   const userAlbums = await user.getUserAlbums(userId, genreId);
   res.json(userAlbums);

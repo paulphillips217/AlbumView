@@ -178,7 +178,7 @@ const PlaylistContext = ({
             minSize={50}
             defaultSize={350}
             style={{ height: '50%', position: 'relative' }}
-            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+            paneStyle={{ 'overflowY': 'auto', 'overflowX': 'hidden' }}
           >
             <ContextList httpService={httpService} />
             <ContextGrid contextGridData={contextGridData} httpService={httpService} />

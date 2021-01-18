@@ -16,7 +16,6 @@ import { sortByName, sortGridData } from '../util/sortUtils';
 import {
   getContextGridData,
   getContextItem,
-  getContextListData,
   getContextSortType,
   getDataLoading,
   getSpotifyIsAuthenticated,
@@ -31,7 +30,6 @@ const ArtistContext = ({
   dataLoading,
   contextGridData,
   contextSortType,
-  contextListData,
   setGridData,
   setListData,
   setLoading,
@@ -53,22 +51,28 @@ const ArtistContext = ({
           .get(`/spotify/artist-albums/${contextItem}/${offset}/${SPOTIFY_PAGE_LIMIT}`)
           .then((rawData) => {
             console.log('artist album data', rawData);
-            const data = rawData.items.map((e) => ({
-              albumId: 0,
-              spotifyAlbumId: e.id,
-              albumName: e.name,
-              artistName: e.artists[0].name,
-              image: getImage(e.images),
-              releaseDate: e.release_date ? moment(e.release_date).valueOf()  : Date.now(),
-              albumGroup: e.album_group,
-              albumType: e.album_type,
-            }));
-            const newData = contextGridData.data.concat(data);
-            setGridData({
-              spotifyCount: rawData.total,
-              data: sortGridData(newData, contextSortType),
-            });
-            if (!rawData.next) {
+            if (rawData && rawData.items && rawData.items.length > 0) {
+              const data = rawData.items.map((e) => ({
+                albumId: 0,
+                spotifyAlbumId: e.id,
+                albumName: e.name,
+                artistName: e.artists[0].name,
+                image: getImage(e.images),
+                releaseDate: e.release_date ? moment(e.release_date).valueOf()  : Date.now(),
+                albumGroup: e.album_group,
+                albumType: e.album_type,
+              }));
+              const newData = contextGridData.data.concat(data);
+              setGridData({
+                spotifyCount: rawData.total,
+                data: sortGridData(newData, contextSortType),
+              });
+              if (!rawData.next) {
+                setLoading(false);
+              }
+            } else if (contextGridData.data.length === 0) {
+              // got no data back from spotify
+              console.log('getGridData got no data');
               setLoading(false);
             }
             setLoadingState({
@@ -94,51 +98,22 @@ const ArtistContext = ({
   // load list data
   useEffect(() => {
     const getList = () => {
-      if (
-        isSpotifyAuthenticated &&
-        dataLoading &&
-        (contextListData.offset < contextListData.artistTotal ||
-          contextListData.offset < contextListData.albumTotal ||
-          contextListData.offset < contextListData.trackTotal ||
-          contextListData.offset === 0)
-      ) {
+      if (isSpotifyAuthenticated) {
         httpService
-          .get(
-            `/spotify/artist-list/${contextListData.offset}/${SPOTIFY_PAGE_LIMIT}/${contextListData.artistTotal}/${contextListData.albumTotal}/${contextListData.trackTotal}`
-          )
-          .then((rawData) => {
-            console.log('artist list raw data', rawData);
-            const artistList = contextListData.data;
-            rawData.data.forEach((e) => {
-              if (!artistList.some((a) => a.id === e.id)) {
-                artistList.push({
-                  id: e.id,
-                  name: e.name,
-                  author: '',
-                  description: '',
-                  image: getImage(e.images),
-                });
-              }
-            });
-            const newOffset = +rawData.offset + SPOTIFY_PAGE_LIMIT;
-            const maxCount = Math.max(
-              +contextListData.artistTotal,
-              +contextListData.albumTotal,
-              +contextListData.trackTotal,
-              0
-            );
+          .get(`/spotify/artist-list`)
+          .then((data) => {
+            console.log('artist list raw data', data);
+            const artistList = data.map((item) => ({
+              id: item.spotifyArtistId,
+              name: item.artistName,
+              author: '',
+              description: '',
+              image: item.imageUrl,
+            }));
             setListData({
-              ...rawData,
-              offset: newOffset,
               data: artistList.sort(sortByName),
             });
-            if (newOffset >= maxCount && maxCount > 0) {
-              setLoading(false);
-            }
-            setLoadingState({
-              spotifyCount: maxCount,
-              loadingCount: +rawData.offset,
-            });
+            setLoading(false);
           })
           .catch((error) => console.log(error));
       }
@@ -146,8 +121,6 @@ const ArtistContext = ({
     getList();
   }, [
     isSpotifyAuthenticated,
-    dataLoading,
-    contextListData,
     setListData,
     setLoading,
     httpService,
@@ -188,7 +161,7 @@ const ArtistContext = ({
             minSize={50}
             defaultSize={350}
             style={{ height: '50%', position: 'relative' }}
-            paneStyle={{ 'overflow-y': 'auto', 'overflow-x': 'hidden' }}
+            paneStyle={{ 'overflowY': 'auto', 'overflowX': 'hidden' }}
           >
             <ContextList httpService={httpService} />
             <ContextGrid contextGridData={contextGridData} httpService={httpService} />
@@ -218,22 +191,6 @@ ArtistContext.propTypes = {
     ),
   }).isRequired,
   contextSortType: PropTypes.string.isRequired,
-  contextListData: PropTypes.shape({
-    spotifyCount: PropTypes.number,
-    offset: PropTypes.number,
-    artistTotal: PropTypes.number,
-    albumTotal: PropTypes.number,
-    trackTotal: PropTypes.number,
-    data: PropTypes.arrayOf(
-      PropTypes.shape({
-        spotifyAlbumId: PropTypes.string,
-        albumName: PropTypes.string,
-        artistName: PropTypes.string,
-        image: PropTypes.string,
-        releaseDate: PropTypes.number,
-      })
-    ),
-  }).isRequired,
   setGridData: PropTypes.func.isRequired,
   setListData: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
@@ -246,7 +203,6 @@ const mapStateToProps = (state) => ({
   dataLoading: getDataLoading(state),
   contextGridData: getContextGridData(state),
   contextSortType: getContextSortType(state),
-  contextListData: getContextListData(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

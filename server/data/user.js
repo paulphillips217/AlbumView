@@ -30,14 +30,20 @@ const findUnusedId = async (trx) => {
 
 const initializeSpotifyUser = async (credentials) => {
   const numDeleted = await clearOutOldUsers();
-  console.log('initializeSpotifyUser - clearOutOldUsers num deleted', numDeleted);
+  console.log(
+    'initializeSpotifyUser - clearOutOldUsers num deleted',
+    numDeleted
+  );
 
   const trx = await promisify(db.transaction.bind(db));
   const { spotifyAuthToken } = credentials;
 
   // for now, don't try to add a user if spotifyAuthToken is undefined
   if (!spotifyAuthToken) {
-    console.log('initializeSpotifyUser aborting because access token is empty', numDeleted);
+    console.log(
+      'initializeSpotifyUser aborting because access token is empty',
+      numDeleted
+    );
     return 0;
   }
 
@@ -75,7 +81,10 @@ const initializeSpotifyUser = async (credentials) => {
 
 const initializeOneDriveUser = async (credentials) => {
   const numDeleted = await clearOutOldUsers();
-  console.log('initializeOneDriveUser - clearOutOldUsers num deleted', numDeleted);
+  console.log(
+    'initializeOneDriveUser - clearOutOldUsers num deleted',
+    numDeleted
+  );
 
   const trx = await promisify(db.transaction.bind(db));
   const { oneDriveProfileId } = credentials;
@@ -83,7 +92,10 @@ const initializeOneDriveUser = async (credentials) => {
 
   // for now, don't try to add a user if oneDriveProfileId is undefined
   if (!oneDriveProfileId) {
-    console.log('initializeOneDriveUser aborting because profile ID is empty', numDeleted);
+    console.log(
+      'initializeOneDriveUser aborting because profile ID is empty',
+      numDeleted
+    );
     return 0;
   }
 
@@ -130,8 +142,10 @@ const getUserFromSpotifyToken = (spotifyAuthToken) => {
       }
       return 0;
     })
-    .catch((err) => console.log('getUserFromSpotifyToken error', err.name, err.message));
-}
+    .catch((err) =>
+      console.log('getUserFromSpotifyToken error', err.name, err.message)
+    );
+};
 
 const getUserFromOneDriveId = (oneDriveProfileId) => {
   return db
@@ -144,8 +158,10 @@ const getUserFromOneDriveId = (oneDriveProfileId) => {
       }
       return 0;
     })
-    .catch((err) => console.log('getUserFromOneDriveId error', err.name, err.message));
-}
+    .catch((err) =>
+      console.log('getUserFromOneDriveId error', err.name, err.message)
+    );
+};
 
 const getSpotifyCredentials = (userId) => {
   return db
@@ -153,7 +169,9 @@ const getSpotifyCredentials = (userId) => {
     .from('user')
     .where('id', userId)
     .first()
-    .catch((err) => console.log('getSpotifyCredentials error', err.name, err.message));
+    .catch((err) =>
+      console.log('getSpotifyCredentials error', err.name, err.message)
+    );
 };
 
 const getOneDriveCredentials = (userId) => {
@@ -162,16 +180,74 @@ const getOneDriveCredentials = (userId) => {
     .from('user')
     .where('id', userId)
     .first()
-    .catch((err) => console.log('getOneDriveCredentials error', err.name, err.message));
+    .catch((err) =>
+      console.log('getOneDriveCredentials error', err.name, err.message)
+    );
 };
 
 const updateTokens = (userId, tokens) => {
   console.log('updateTokens for user ', userId);
-  return db('user')
-    .where({ id: userId })
-    .returning(['id','spotifyExpiration', 'oneDriveExpiration'])
-    .update(tokens)
-    .catch((err) => console.log('updateTokens error', err.name, err.message));
+  return db
+    .transaction((trx) => {
+      // first make sure we have a user to update
+      return trx('user')
+        .select()
+        .where({ id: userId })
+        .then((rows) => {
+          if (rows.length > 0) {
+            // user record found, do the update
+            return trx('user')
+              .where({ id: userId })
+              .update(tokens)
+              .catch((err) =>
+                console.log('updateTokens update error', err.name, err.message)
+              );
+          } else {
+            // no user was found, create a new one
+            console.log('updateTokens - no user found, creating one for userId: ', userId);
+            trx('user')
+              .insert({
+                id: userId,
+                ...tokens,
+              })
+              .then((result) => {
+                // console.log('updateTokens insert result: ', result);
+                return result;
+              })
+              .catch((err) => {
+                console.log(
+                  'updateTokens insert error: ',
+                  err.name,
+                  err.message,
+                  userId
+                );
+                return null;
+              });
+          }
+        })
+        .catch((err) => {
+          console.log(
+            'updateTokens select error: ',
+            err.name,
+            err.message,
+            userId
+          );
+          return null;
+        });
+    })
+    .then((result) => {
+      // console.log('updateTokens transaction result: ', result);
+      return result;
+    })
+    .catch((err) => {
+      console.log(
+        'updateTokens transaction error: ',
+        err.name,
+        err.message,
+        userId
+      );
+      return null;
+    });
 };
 
 const clearOutOldUsers = () => {
@@ -221,7 +297,7 @@ const insertSingleUserAlbum = (userAlbum) => {
                 )
               );
           } else {
-            // duplicate spotifyId found
+            // duplicate record found
             if (userAlbum.localId || userAlbum.oneDriveId) {
               // update the record with localId and oneDriveId
               // console.log('insertSingleUserAlbum duplicate found: ', userAlbum);
@@ -276,6 +352,71 @@ const insertSingleUserAlbum = (userAlbum) => {
     });
 };
 
+const insertSingleUserArtist = (userArtist) => {
+  return db
+    .transaction((trx) => {
+      return trx('userArtists')
+        .select()
+        .where({
+          userId: userArtist.userId,
+          artistId: userArtist.artistId,
+        })
+        .then((rows) => {
+          if (rows.length === 0) {
+            // no matching records found
+            return trx('userArtists')
+              .returning(['userId', 'artistId'])
+              .insert(userArtist)
+              .then((rows) => {
+                if (rows.length > 0) {
+                  return rows[0];
+                } else {
+                  console.log(
+                    'insertSingleUserArtist added row but got no results',
+                    userArtist
+                  );
+                  return null;
+                }
+              })
+              .catch((err) =>
+                console.log(
+                  'insertSingleUserArtist insert error',
+                  err.name,
+                  err.message,
+                  userArtist
+                )
+              );
+          } else {
+            // duplicate record found
+            // return userArtist record;
+            return rows[0];
+          }
+        })
+        .catch((err) => {
+          console.log(
+            'insertSingleUserArtist select error: ',
+            err.name,
+            err.message,
+            userArtist
+          );
+          return null;
+        });
+    })
+    .then((result) => {
+      // console.log('insertSingleUserArtist transaction result: ', result);
+      return result;
+    })
+    .catch((err) => {
+      console.log(
+        'insertSingleUserArtist transaction error: ',
+        err.name,
+        err.message,
+        userArtist
+      );
+      return null;
+    });
+};
+
 const getUserAlbums = (userId, genreId = 0) => {
   console.log('getUserAlbums genre: ', genreId);
   if (genreId > 0) {
@@ -315,6 +456,21 @@ const getUserAlbums = (userId, genreId = 0) => {
   }
 };
 
+const getUserArtists = (userId) => {
+  return db
+    .from('userArtists')
+    .innerJoin('artist', 'userArtists.artistId', 'artist.id')
+    .select(
+      { artistId: 'artist.id' },
+      { spotifyArtistId: 'artist.spotifyId' },
+      { musicBrainzArtistId: 'artist.musicBrainzId' },
+      { tadbArtistId: 'artist.tadbId' },
+      { artistName: 'artist.name' },
+      { imageUrl: 'artist.imageUrl' }
+    )
+    .where('userArtists.userId', userId);
+};
+
 module.exports = {
   initializeSpotifyUser,
   initializeOneDriveUser,
@@ -324,5 +480,7 @@ module.exports = {
   getOneDriveCredentials,
   updateTokens,
   insertSingleUserAlbum,
+  insertSingleUserArtist,
   getUserAlbums,
+  getUserArtists,
 };

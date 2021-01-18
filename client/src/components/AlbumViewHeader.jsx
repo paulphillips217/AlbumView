@@ -93,9 +93,10 @@ const AlbumViewHeader = ({
 
   useEffect(() => {
     const getGenreList = () => {
-      if (!isSpotifyAuthenticated) {
+      if (!isSpotifyAuthenticated || genreOptions.length > 1) {
         return;
       }
+      // console.log('getGenreList refreshing list: ', genreOptions);
       httpService
         .get(`/album-view/genre-list`)
         .then((rawData) => {
@@ -119,7 +120,7 @@ const AlbumViewHeader = ({
         .catch((error) => console.log(error));
     };
     getGenreList();
-  }, [isSpotifyAuthenticated, httpService]);
+  }, [isSpotifyAuthenticated, genreOptions.length, httpService]);
 
   const getAlbumJobProgress = () => {
     if (
@@ -219,9 +220,7 @@ const AlbumViewHeader = ({
             )}
             {contextType === ContextType.Albums &&
               jobProgress > 0 &&
-              jobProgress < 100 && (
-                <Progress percent={jobProgress} progress />
-              )}
+              jobProgress < 100 && <Progress percent={jobProgress} progress />}
           </Segment>
         </Grid.Column>
         <Grid.Column>
