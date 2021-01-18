@@ -166,10 +166,14 @@ const FileAnalysis = ({
   };
 
   const gridItemColor = (item) => {
-    if (item[albumFileIdProp] && item.spotifyAlbumId) {
+    if (
+      item[albumFileIdProp] &&
+      item.spotifyAlbumId &&
+      item.spotifyAlbumId !== 'NOT-FOUND'
+    ) {
       return 'green';
     }
-    if (item.spotifyAlbumId) {
+    if (item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND') {
       return 'blue';
     }
     return 'red';
@@ -193,10 +197,14 @@ const FileAnalysis = ({
       </Grid.Column>
       <Grid.Column>{item[albumFileIdProp] ? item.albumName : ''}</Grid.Column>
       <Grid.Column>
-        {item.spotifyAlbumId ? item.artistName : gridItemSearchButton(item)}
+        {item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND'
+          ? item.artistName
+          : gridItemSearchButton(item)}
       </Grid.Column>
       <Grid.Column>
-        {item.spotifyAlbumId ? item.albumName : gridItemSearchResults(item)}
+        {item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND'
+          ? item.albumName
+          : gridItemSearchResults(item)}
       </Grid.Column>
     </Grid.Row>
   );
