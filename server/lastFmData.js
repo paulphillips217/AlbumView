@@ -188,7 +188,7 @@ const addAlbumLastFmData = async (sleep) => {
         (!albumRecord.spotifyId || albumRecord.spotifyId === 'NOT-FOUND') &&
         albumInfo && albumInfo.wiki && albumInfo.wiki.published) {
         console.log(
-          'lastAlbumQueue release date: ',
+          'addAlbumLastFmData release date: ',
           albumInfo.wiki.published
         );
         await album.updateAlbum(albums[i].albumId, {

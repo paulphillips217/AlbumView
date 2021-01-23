@@ -4,13 +4,7 @@ const album = require('./data/album');
 const user = require('./data/user');
 
 const Queue = require('bull');
-const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
-const spotifyAlbumArtistQueue = new Queue(
-  'spotifyAlbumsArtists',
-  process.env.REDIS_URL
-);
-const lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
-const audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
+const albumViewQueue = new Queue('albumView', process.env.REDIS_URL);
 
 // this gets them from the database and sends them to the client
 const getGenreList = async (req, res) => {
@@ -61,11 +55,17 @@ const integrateUserOwnedAlbums = async (req, res) => {
     }
   }
 
-  // kick off worker jobs to keep database updated
-  await spotifyAlbumArtistQueue.add({ userId });
-  await lastAlbumQueue.add();
-  await audioDbAlbumQueue.add();
-  console.log('integrateUserOwnedAlbums started worker jobs');
+  // kick off worker job to keep database updated
+  const queueCount = await albumViewQueue.count();
+  if (queueCount > 0) {
+    console.log(`worker queue count is ${queueCount}, not queuing another task`);
+  } else {
+    const job = await albumViewQueue.add({
+      userId: userId,
+      savedAlbumCount: 0,
+    });
+    console.log('integrateUserOwnedAlbums created albumViewQueue worker job', job.id);
+  }
 
   const userAlbums = await user.getUserAlbums(userId, genreId);
   res.json(userAlbums);
@@ -75,7 +75,7 @@ const getJobProgress = async (req, res) => {
   const jobId = req.params.id;
   console.log('getJobProgress', jobId);
 
-  const job = await savedAlbumQueue.getJob(jobId);
+  const job = await albumViewQueue.getJob(jobId);
 
   if (job === null) {
     console.log('getJobProgress job not found');

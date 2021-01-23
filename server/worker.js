@@ -35,7 +35,7 @@ const workers = +process.env.WEB_CONCURRENCY || 1;
 // to be tuned for your application. If each job is mostly waiting on network
 // responses it can be much higher. If each job is CPU-intensive, it might need
 // to be much lower.
-const maxJobsPerWorker = +process.env.MAX_JOBS_PER_WORKER || 50;
+const maxJobsPerWorker = +process.env.MAX_JOBS_PER_WORKER || 1;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,55 +43,26 @@ function sleep(ms) {
 
 const start = async () => {
   // Connect to the named work queues
-  const testQueue = new Queue('test', process.env.REDIS_URL);
-  const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
-  const spotifyAlbumArtistQueue = new Queue(
-    'spotifyAlbumsArtists',
-    process.env.REDIS_URL
-  );
-  const lastAlbumQueue = new Queue('lastAlbums', process.env.REDIS_URL);
-  const audioDbAlbumQueue = new Queue('audioDbAlbums', process.env.REDIS_URL);
-
+  const albumViewQueue = new Queue('albumView', process.env.REDIS_URL);
   console.log('starting worker process');
 
-  // *** TEST QUEUE ***
-  testQueue.process(maxJobsPerWorker, async (job) => {
-    // This is an example job that just slowly reports on progress
-    // while doing no work. Replace this with your own job logic.
-    let progress = 0;
-    console.log('test queue processing a job from the queue', job.data);
-    /*
-    while (progress < 100) {
-      await sleep(50);
-      progress += 1;
-      job.progress(progress)
-    }
-    */
-
-    // A job can return values that will be stored in Redis as JSON
-    // This return value is unused in this demo application.
-    return { value: 'This will be stored' };
-  });
-
-  // *** SAVED ALBUM QUEUE ***
-  // gets the user's saved albums from Spotify
-  savedAlbumQueue.process(maxJobsPerWorker, async (job) => {
-    const { userId, count } = job.data;
+  albumViewQueue.process(maxJobsPerWorker, async (job) => {
+    const { userId, savedAlbumCount } = job.data;
     console.log(
-      `savedAlbumQueue processing a job from the queue, user: ${userId}, count: ${count}`
+      `albumViewQueue processing a job from the queue, user: ${userId}, savedAlbumCount: ${savedAlbumCount}`
     );
 
     let offset = +process.env.SPOTIFY_PAGE_LIMIT;
-    while (offset < count) {
+    while (offset < savedAlbumCount) {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getSavedAlbums(userId, offset);
-      job.progress(count > 0 ? Math.floor((100 * offset) / count) : 100);
+      job.progress(savedAlbumCount > 0 ? Math.floor((100 * offset) / savedAlbumCount) : 100);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
-      // console.log(`savedAlbumQueue count and offset: ${offset}, count: ${count}`);
+      // console.log(`albumViewQueue savedAlbumCount and offset: ${offset}, savedAlbumCount: ${savedAlbumCount}`);
     }
 
     job.progress(100);
-    console.log('savedAlbumQueue processing completed');
+    console.log('albumViewQueue processing completed');
 
     // now let's do followed artists (don't track progress here)
     await sleep(process.env.SPOTIFY_INTERVAL);
@@ -101,7 +72,7 @@ const start = async () => {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getFollowedArtists(userId, offset);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
-      console.log(`savedAlbumQueue followedArtistCount and offset: ${offset}, followedArtistCount: ${followedArtistCount}`);
+      console.log(`albumViewQueue followedArtistCount and offset: ${offset}, followedArtistCount: ${followedArtistCount}`);
     }
 
     // and now artists from saved tracks (again, don't track progress here)
@@ -112,48 +83,26 @@ const start = async () => {
       await sleep(process.env.SPOTIFY_INTERVAL);
       await spotifyData.getSavedTrackArtists(userId, offset);
       offset += +process.env.SPOTIFY_PAGE_LIMIT;
-      console.log(`savedAlbumQueue savedTrackArtistCount and offset: ${offset}, savedTrackArtistCount: ${savedTrackArtistCount}`);
+      console.log(`albumViewQueue savedTrackArtistCount and offset: ${offset}, savedTrackArtistCount: ${savedTrackArtistCount}`);
     }
 
-    console.log('savedAlbumQueue starting secondary queues');
+    console.log('albumViewQueue starting secondary functions');
     try {
-      let newJob = await spotifyAlbumArtistQueue.add({ userId });
-      console.log('addAlbumSpotifyIds job: ', newJob.id);
-      newJob = await lastAlbumQueue.add();
-      console.log('lastAlbumQueue job: ', newJob.id);
-      newJob = await audioDbAlbumQueue.add();
-      console.log('audioDbAlbumQueue job: ', newJob.id);
+      console.log('Spotify updates starting for userId ', userId);
+      await spotifyData.addAlbumSpotifyIds(userId, sleep);
+      await  spotifyData.addArtistSpotifyIds(userId, sleep);
+      await spotifyData.addArtistImageUrls(userId, sleep);
+      console.log('lastAlbum updates starting');
+      await lastFmData.addAlbumLastFmData(sleep);
+      await lastFmData.addArtistLastFmData(sleep);
+      // some day we might get genres from last.fm again ???
+      // await lastFmData.getLastFmGenres(sleep);
+      console.log('audioDbAlbum updates starting');
+      await theAudioDbData.addAlbumTheAudioDbData(sleep);
+      await theAudioDbData.addArtistTheAudioDbData(sleep);
     } catch (err) {
       console.log('error starting secondary jobs: ', err.name, err.message);
     }
-  });
-
-  // *** SPOTIFY QUEUE ***
-  // gets information for albums and artists from spotify
-  spotifyAlbumArtistQueue.process(maxJobsPerWorker, async (job) => {
-    const { userId } = job.data;
-    console.log('spotifyAlbumArtistQueue starting with userId: ', userId);
-    await spotifyData.addAlbumSpotifyIds(userId, sleep);
-    await  spotifyData.addArtistSpotifyIds(userId, sleep);
-    await spotifyData.addArtistImageUrls(userId, sleep);
-  });
-
-  // *** LAST.FM QUEUE ***
-  // gets information for albums from Last.fm
-  lastAlbumQueue.process(maxJobsPerWorker, async (job) => {
-    console.log('lastAlbumQueue starting');
-    await lastFmData.addAlbumLastFmData(sleep);
-    await lastFmData.addArtistLastFmData(sleep);
-    // some day we might get genres from last.fm again ???
-    // await lastFmData.getLastFmGenres(sleep);
-  });
-
-  // *** AUDIO DB QUEUE ***
-  // gets information for albums from theAudioDb.com
-  audioDbAlbumQueue.process(maxJobsPerWorker, async (job) => {
-    console.log('audioDbAlbumQueue starting');
-    await theAudioDbData.addAlbumTheAudioDbData(sleep);
-    await theAudioDbData.addArtistTheAudioDbData(sleep);
   });
 };
 

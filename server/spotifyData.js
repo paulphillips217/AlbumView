@@ -8,7 +8,8 @@ const album = require('./data/album');
 const user = require('./data/user');
 
 const Queue = require('bull');
-const savedAlbumQueue = new Queue('savedAlbums', process.env.REDIS_URL);
+const albumViewQueue = new Queue('albumView', process.env.REDIS_URL);
+
 const getSpotifyUrl = (req) => {
   //console.log('getSpotifyUrl:', req.path);
   switch (true) {
@@ -170,11 +171,11 @@ const refreshSavedAlbums = async (req, res) => {
   console.log('refreshSavedAlbums total count is ', totalCount);
 
   // kick off worker to get the rest of the saved albums
-  const job = await savedAlbumQueue.add({
+  const job = await albumViewQueue.add({
     userId: req.user.userId,
-    count: totalCount,
+    savedAlbumCount: totalCount,
   });
-  console.log('refreshSavedAlbums created savedAlbumQueue worker job', job.id);
+  console.log('refreshSavedAlbums created albumViewQueue worker job', job.id);
 
   // return album count to client
   res.json({ count: totalCount, jobId: job.id });
@@ -276,7 +277,7 @@ const getFollowedArtists = async (userId, offset) => {
       spotifyId: theArtist.id,
       name: theArtist.name,
     });
-    console.log('insertSingleArtist in getFollowedArtists returned ', artistId);
+    // console.log('insertSingleArtist in getFollowedArtists returned ', artistId);
 
     // associate artist with user
     await user.insertSingleUserArtist({
@@ -315,7 +316,7 @@ const getSavedTrackArtists = async (userId, offset) => {
       spotifyId: theArtist.id,
       name: theArtist.name,
     });
-    console.log('insertSingleArtist in getSavedTrackArtists returned ', artistId);
+    // console.log('insertSingleArtist in getSavedTrackArtists returned ', artistId);
 
     // associate artist with user
     await user.insertSingleUserArtist({
@@ -417,7 +418,7 @@ const addArtistImageUrls = async (userId, sleep) => {
 
       // console.log('addArtistImageUrls spotifyArtists record: ', spotifyArtists[i]);
       console.log(
-        'spotifyAlbumArtistQueue getting spotifyArtist: ',
+        'addArtistImageUrls getting spotifyArtist: ',
         spotifyArtists[i].artistId,
         spotifyArtists[i].spotifyId
       );

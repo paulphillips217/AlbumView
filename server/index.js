@@ -129,37 +129,12 @@ app.use(passport.session());
 const Queue = require('bull');
 
 // create / connect to a named work queue
-const testQueue = new Queue('test', process.env.REDIS_URL);
+const albumViewQueue = new Queue('albumView', process.env.REDIS_URL);
 
-// Kick off a new job by adding it to the work queue
-app.get('/job', async (req, res) => {
-  console.log('kicking off a new job');
-  // This would be where you could pass arguments to the job
-  // Ex: workQueue.add({ url: 'https://www.heroku.com' })
-  // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
-  const job = await testQueue.add({myData: "this is test data"});
-  console.log('this is after the await for the add');
-  res.json({ id: job.id });
-});
-
-// Allows the client to query the state of a background job
-app.get('/job/:id', async (req, res) => {
-  const id = req.params.id;
-  const job = await testQueue.getJob(id);
-
-  if (job === null) {
-    res.status(404).end();
-  } else {
-    const state = await job.getState();
-    const progress = job._progress;
-    const reason = job.failedReason;
-    res.json({ id, state, progress, reason });
-  }
-});
-
-// You can listen to global events to get notified when jobs are processed
-testQueue.on('global:completed', (jobId, result) => {
-  console.log(`Global testQueue Listener: Job completed with result ${result}`);
+app.get('/queue-count', async (req, res) => {
+  console.log('showing queue count');
+  const queueCount = await albumViewQueue.count();
+  res.json({ queueCount });
 });
 
 /* end bull & redis queue setup */
@@ -174,7 +149,7 @@ app.get('/ping', (req, res) => {
   res.send('It is ALIVE!!!');
 });
 
-// test endpoint to get the environment setting
+// test endpoint to get the environment settings
 app.get('/node-env', (req, res) => {
   res.send(`NODE_ENV: ${process.env.NODE_ENV}<br/>
             PORT: ${process.env.PORT}<br/>
