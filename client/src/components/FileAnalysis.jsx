@@ -61,28 +61,34 @@ const FileAnalysis = ({
         albumName: item.albumName,
       }));
       // console.log('handleRead sendArray', sendArray);
-      const rawData = await httpService.post(`/album-view/user-owned-albums`, {
-        albums: sendArray,
-      });
-      console.log('user owned albums return rawData', rawData);
-      const data = rawData.map((item) => ({
-        albumId: item.albumId,
-        spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
-        localId: item.localId ? item.localId : null,
-        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
-        albumName: item.albumName ? item.albumName : 'unknown album',
-        artistName: item.artistName ? item.artistName : 'unknown artist',
-        image: item.imageUrl,
-        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
-        tracks: getTracks(item, theAlbumArray, savedAlbumData),
-      }));
-      // console.log('user owned albums return data', data);
-      const sortedData = sortGridData(data, contextSortType);
-      // console.log('saving data');
-      setAlbumData({
-        spotifyCount: savedAlbumData.spotifyCount,
-        data: sortedData,
-      });
+      try {
+        const rawData = await httpService.post(`/album-view/user-owned-albums`, {
+          albums: sendArray,
+        });
+        console.log('user owned albums return rawData', rawData);
+        const data = rawData.map((item) => ({
+          albumId: item.albumId,
+          spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
+          localId: item.localId ? item.localId : null,
+          oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+          albumName: item.albumName ? item.albumName : 'unknown album',
+          artistName: item.artistName ? item.artistName : 'unknown artist',
+          image: item.imageUrl,
+          releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
+          tracks: getTracks(item, theAlbumArray, savedAlbumData),
+        }));
+        // console.log('user owned albums return data', data);
+        const sortedData = sortGridData(data, contextSortType);
+        // console.log('saving data');
+        setAlbumData({
+          spotifyCount: savedAlbumData.spotifyCount,
+          data: sortedData,
+        });
+      } catch (err) {
+        console.error('error getting user owned albums: ', err.name, err.message);
+        setReadingData(false);
+        return;
+      }
     } else {
       console.log('file import data is empty');
     }
