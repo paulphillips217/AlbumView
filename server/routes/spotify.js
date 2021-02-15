@@ -47,11 +47,6 @@ router.get(
   spotifyData.refreshSavedAlbums
 );
 router.get(
-  '/album-list-fetch/:genreId',
-  passport.authenticate('jwt', { session: false }),
-  spotifyData.fetchSavedAlbums
-);
-router.get(
   '/albums/contains/:ids',
   passport.authenticate('jwt', { session: false }),
   spotifyData.talkToSpotify

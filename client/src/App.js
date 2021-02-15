@@ -3,17 +3,22 @@
 
 // for testing: to log out use      localStorage.setItem('accessToken', '');
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { ThemeProvider } from 'emotion-theming';
 import './styles/App.css';
 import './styles/splitPane.css';
 import './styles/flex-height.css';
-import { setOneDriveLoggedIn, setSpotifyIsAuthenticated } from './store/actions';
-import { getAlbumViewTheme, getContextType } from './store/selectors';
+import {
+  setAlbumJobId,
+  setAlbumViewIsAuthenticated,
+  setOneDriveLoggedIn,
+  setSavedAlbumData,
+  setSpotifyIsAuthenticated,
+} from './store/actions';
+import { getAlbumViewTheme, getContextType, getSavedAlbumData } from './store/selectors';
 import { AlbumViewTheme, ContextType } from './store/types';
 import PropTypes from 'prop-types';
-// import { useHistory } from 'react-router-dom';
 import AlbumContext from './components/AlbumContext';
 import TrackContext from './components/TrackContext';
 import PlaylistContext from './components/PlaylistContext';
@@ -33,23 +38,54 @@ const darkTheme = {
 };
 
 const App = ({
+  savedAlbumData,
   contextType,
   albumViewTheme,
+  setAlbumViewLoggedIn,
   setSpotifyLoggedIn,
   setOneDriveLoggedIn,
+  setAlbumData,
+  setJobId,
   httpService,
 }) => {
-  console.log('Album View Cookie: ', document.cookie);
-  setSpotifyLoggedIn(document.cookie.includes('spotify='));
-  setOneDriveLoggedIn(document.cookie.includes('oneDrive='));
+  useEffect(() => {
+    const handleAuth = async () => {
+      console.log('Album View Cookie: ', document.cookie);
+      if (!document.cookie) {
+        console.log('empty cookie in Auth, logging in');
+        await httpService.get(`/album-view/login`);
+      } else {
+        setAlbumViewLoggedIn(true);
+      }
+      const isSpotifyAuthenticated = document.cookie.includes('spotify=');
+      setSpotifyLoggedIn(isSpotifyAuthenticated);
+      setOneDriveLoggedIn(document.cookie.includes('oneDrive='));
 
-  // const history = useHistory();
-  // const urlParams = new URLSearchParams(window.location.search);
-  // if (urlParams.has('oneDriveLogin')) {
-  //   setOneDriveLoggedIn(!!urlParams.get('oneDriveLogin'));
-  //   console.log(`oneDriveLogin is set`);
-  //   history.push('/');
-  // }
+      if (savedAlbumData.spotifyCount < 0 && isSpotifyAuthenticated) {
+        console.log('AlbumView App - refreshing saved album data');
+        const data = await httpService.get(`/spotify/album-list-refresh`);
+        console.log('handleAuth got savedAlbum data: ', data);
+        if (data && data.count >= 0) {
+          setAlbumData({
+            spotifyCount: data.count,
+            data: [],
+          });
+        }
+        if (data && data.jobId > 0) {
+          setJobId(parseInt(data.jobId));
+        }
+      }
+    };
+    handleAuth();
+  }, [
+    httpService,
+    savedAlbumData.spotifyCount,
+    setAlbumData,
+    setAlbumViewLoggedIn,
+    setJobId,
+    setOneDriveLoggedIn,
+    setSpotifyLoggedIn,
+  ]);
 
   const activeTheme = albumViewTheme === AlbumViewTheme.Light ? lightTheme : darkTheme;
 
@@ -94,21 +130,43 @@ const App = ({
 };
 
 App.propTypes = {
+  savedAlbumData: PropTypes.shape({
+    spotifyCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
+      })
+    ),
+  }).isRequired,
   contextType: PropTypes.string.isRequired,
   albumViewTheme: PropTypes.string.isRequired,
+  setAlbumViewLoggedIn: PropTypes.func.isRequired,
   setSpotifyLoggedIn: PropTypes.func.isRequired,
   setOneDriveLoggedIn: PropTypes.func.isRequired,
+  setAlbumData: PropTypes.func.isRequired,
+  setJobId: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
+  savedAlbumData: getSavedAlbumData(state),
   contextType: getContextType(state),
   albumViewTheme: getAlbumViewTheme(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  setAlbumViewLoggedIn: (isLoggedIn) => dispatch(setAlbumViewIsAuthenticated(isLoggedIn)),
   setSpotifyLoggedIn: (isAuthenticated) =>
     dispatch(setSpotifyIsAuthenticated(isAuthenticated)),
   setOneDriveLoggedIn: (isLoggedIn) => dispatch(setOneDriveLoggedIn(isLoggedIn)),
+  setAlbumData: (data) => dispatch(setSavedAlbumData(data)),
+  setJobId: (data) => dispatch(setAlbumJobId(data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

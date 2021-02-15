@@ -1,3 +1,7 @@
+import { createLocalAlbumTracks } from './localFileUtils';
+import moment from 'moment';
+import { sortGridData } from './sortUtils';
+
 export const getImage = (images) => {
   if (images == null || !images.length) {
     return '';
@@ -39,4 +43,36 @@ export const filterByAlbumType = (album, type) => {
 
 export const getRandomInt = (max) => {
   return Math.floor(Math.random() * Math.floor(max));
-}
+};
+
+export const getUserAlbums = async (
+  contextSortType,
+  genre,
+  localFileData,
+  httpService
+) => {
+  console.log('getUserAlbums fetching data');
+  try {
+    const rawData = await httpService.get(`/album-view/album-list-fetch/${genre}`);
+    // console.log('albumContext saved album data', rawData);
+    const theAlbumArray = createLocalAlbumTracks(localFileData);
+    console.log('AlbumContext.getGridData got theAlbumArray', theAlbumArray);
+    if (rawData && rawData.length > 0) {
+      const data = rawData.map((item) => ({
+        albumId: item.albumId,
+        spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
+        localId: item.localId ? item.localId : 0,
+        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
+        albumName: item.albumName ? item.albumName : 'unknown album',
+        artistName: item.artistName ? item.artistName : 'unknown artist',
+        image: item.imageUrl,
+        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
+        tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
+      }));
+      return sortGridData(data, contextSortType);
+    }
+  } catch (err) {
+    console.error('getUserAlbums error', err.name, err.message);
+  }
+  return [];
+};

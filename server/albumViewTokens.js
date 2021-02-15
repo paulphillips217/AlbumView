@@ -16,25 +16,46 @@ const setSessionJwt = async (req, res) => {
       }
     } else if (req.user && req.user.oneDriveProfileId) {
       userId = await user.getUserFromOneDriveId(req.user.oneDriveProfileId);
-      console.log('setSessionJwt found userId from oneDrive oid: ', userId, req.user.oneDriveProfileId);
+      console.log(
+        'setSessionJwt found userId from oneDrive oid: ',
+        userId,
+        req.user.oneDriveProfileId
+      );
       if (req.credentials) {
         await user.updateTokens(userId, req.credentials);
       }
     } else if (req.credentials && req.credentials.spotifyAuthToken) {
-      userId = await user.getUserFromSpotifyToken(req.credentials.spotifyAuthToken);
-      console.log('setSessionJwt got existing user from spotify credentials', userId);
+      userId = await user.getUserFromSpotifyToken(
+        req.credentials.spotifyAuthToken
+      );
+      console.log(
+        'setSessionJwt got existing user from spotify credentials',
+        userId
+      );
       if (userId === 0 && req.credentials) {
-        userId = await user.initializeSpotifyUser(req.credentials);
-        console.log('setSessionJwt initialized user from spotify credentials', userId);
+        userId = await user.initializeNewUser(req.credentials);
+        console.log(
+          'setSessionJwt initialized user from spotify credentials',
+          userId
+        );
       }
+    } else {
+      userId = await user.initializeNewUser();
+      console.log(
+        'setSessionJwt initialized user without any credentials',
+        userId
+      );
     }
   } catch (err) {
-    console.error('got error setting userId in setSessionJwt', err.name, err.message);
+    console.error(
+      'got error setting userId in setSessionJwt',
+      err.name,
+      err.message
+    );
   }
 
   if (userId <= 0) {
     console.log('setSessionJwt returning false because userId is empty');
-    // res.status(400).send({ error: 'database error' });
     return false;
   }
 
@@ -46,15 +67,16 @@ const setSessionJwt = async (req, res) => {
 
   // add spotify and oneDrive cookies if logged in
   const spotifyCredentials = await user.getSpotifyCredentials(userId);
-  const spotifyLoggedIn = spotifyCredentials && spotifyCredentials.spotifyAuthToken;
+  const spotifyLoggedIn =
+    spotifyCredentials && spotifyCredentials.spotifyAuthToken;
   const oneDriveCredentials = await user.getOneDriveCredentials(userId);
-  const oneDriveLoggedIn = oneDriveCredentials && oneDriveCredentials.oneDriveProfileId;
+  const oneDriveLoggedIn =
+    oneDriveCredentials && oneDriveCredentials.oneDriveProfileId;
 
   // assigns payload to req.user
   req.login(payload, { session: false }, (error) => {
     if (error) {
       console.log('setSessionJwt req.login got error: ', error);
-      // res.status(400).send({ error });
       return false;
     }
 
@@ -62,8 +84,13 @@ const setSessionJwt = async (req, res) => {
     const token = jwt.sign(JSON.stringify(payload), process.env.JWT_SECRET);
 
     // assign our jwt to the cookie
-    console.log('setSessionJwt setting cookies: ', spotifyLoggedIn, oneDriveLoggedIn);
-    res.cookie('jwt', token, { httpOnly: true });
+    console.log(
+      'setSessionJwt setting cookies: ',
+      spotifyLoggedIn,
+      oneDriveLoggedIn
+    );
+    // res.cookie('jwt', token, { httpOnly: true });
+    res.cookie('jwt', token);
     if (spotifyLoggedIn) {
       res.cookie('spotify', 'true');
     } else {
@@ -74,11 +101,20 @@ const setSessionJwt = async (req, res) => {
     } else {
       res.cookie('oneDrive', '', { maxAge: 0 });
     }
-    //res.redirect(process.env.CLIENT_URL);
   });
   return true;
 };
 
+const handleAuthentication = async (req, res) => {
+  console.log('handleAuthentication entry point -- ', req.url);
+  if (await setSessionJwt(req, res)) {
+    res.redirect(process.env.CLIENT_URL);
+  } else {
+    res.json({ error: true });
+  }
+};
+
 module.exports = {
   setSessionJwt,
+  handleAuthentication,
 };

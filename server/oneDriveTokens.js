@@ -108,7 +108,7 @@ async function signInComplete(
     // console.log('signInComplete updated existing database user: ', response);
   }
   else {
-    userId = await user.initializeOneDriveUser(credentials);
+    userId = await user.initializeNewUser(credentials);
     console.log('signInComplete initialized new database user: ', userId);
   }
 
@@ -126,23 +126,20 @@ const handleOneDriveAuthentication = async (req, res) => {
 
 const signOutOneDriveUser = async (req, res) => {
   if (req.user && req.user.userId) {
-    console.log('signOutOneDriveUser clearing database fields for user ', req.user.userId);
-    await user.updateTokens(req.user.userId, {
+    const { userId } = req.user;
+    console.log('signOutOneDriveUser clearing database fields for user ', userId);
+    await user.updateTokens(userId, {
       oneDriveProfileId: null,
       oneDriveParams: null,
       oneDriveExpiration: null,
     });
+    await user.clearUserOneDriveAlbums(userId);
     await albumViewTokens.setSessionJwt(req, res);
     res.json({ signedOut: true });
   } else {
     console.log('signOutOneDriveUser found no user');
     res.json({ error: true });
   }
-
-  // req.session.destroy(function (err) {
-  //   req.logout();
-  //   res.redirect('/');
-  // });
 }
 
 module.exports = {

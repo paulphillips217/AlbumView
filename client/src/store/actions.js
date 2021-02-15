@@ -20,8 +20,14 @@ import {
   SELECTED_ALBUM_ID,
   SELECTED_SPOTIFY_ALBUM_ID,
   ALBUM_JOB_ID,
+  ALBUM_VIEW_IS_AUTHENTICATED,
 } from './types';
 import { sortGridData } from '../util/sortUtils';
+
+export const setAlbumViewIsAuthenticated = (isAuthenticated) => ({
+  type: ALBUM_VIEW_IS_AUTHENTICATED,
+  payload: isAuthenticated,
+});
 
 export const setSpotifyIsAuthenticated = (isAuthenticated) => ({
   type: SPOTIFY_IS_AUTHENTICATED,

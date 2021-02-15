@@ -203,12 +203,16 @@ const FileAnalysis = ({
       </Grid.Column>
       <Grid.Column>{item[albumFileIdProp] ? item.albumName : ''}</Grid.Column>
       <Grid.Column>
-        {item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND'
+        {isSpotifyAuthenticated &&
+        item.spotifyAlbumId &&
+        item.spotifyAlbumId !== 'NOT-FOUND'
           ? item.artistName
           : gridItemSearchButton(item)}
       </Grid.Column>
       <Grid.Column>
-        {item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND'
+        {isSpotifyAuthenticated &&
+        item.spotifyAlbumId &&
+        item.spotifyAlbumId !== 'NOT-FOUND'
           ? item.albumName
           : gridItemSearchResults(item)}
       </Grid.Column>
@@ -256,8 +260,13 @@ const FileAnalysis = ({
           </Grid.Row>
           {sortGridData(savedAlbumData.data, SortTypes.ArtistThenAlbumName)
             .filter(
-              (item) => !(hideMatches && item[albumFileIdProp] && item.spotifyAlbumId)
-            )
+              (item) =>
+                ((!hideMatches && (item[albumFileIdProp] || (item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND' && isSpotifyAuthenticated))) ||
+                  (hideMatches && (!item[albumFileIdProp] || !(item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND' && isSpotifyAuthenticated)) &&
+
+                    !(!item[albumFileIdProp] && !(item.spotifyAlbumId && item.spotifyAlbumId !== 'NOT-FOUND' && isSpotifyAuthenticated))
+                  )
+                ))
             .map((item, index) => GridItem(item, index))}
         </Grid>
       )}

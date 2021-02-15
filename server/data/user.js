@@ -28,40 +28,49 @@ const findUnusedId = async (trx) => {
   return newId;
 };
 
-const initializeSpotifyUser = async (credentials) => {
+const initializeNewUser = async (credentials) => {
   const numDeleted = await clearOutOldUsers();
-  console.log(
-    'initializeSpotifyUser - clearOutOldUsers num deleted',
-    numDeleted
-  );
+  console.log('initializeNewUser - clearOutOldUsers num deleted', numDeleted);
 
   const trx = await promisify(db.transaction.bind(db));
-  const { spotifyAuthToken } = credentials;
-
-  // for now, don't try to add a user if spotifyAuthToken is undefined
-  if (!spotifyAuthToken) {
+  if (credentials) {
     console.log(
-      'initializeSpotifyUser aborting because access token is empty',
-      numDeleted
+      'initializeNewUser existing spotify/oneDrive credentials: ',
+      credentials.spotifyAuthToken,
+      credentials.oneDriveProfileId
     );
-    return 0;
+  } else {
+    console.log('initializeNewUser with no credentials');
   }
 
   // do this inside a transaction so any unused ID's we find stay unused until we're done
   try {
-    const result = await trx
-      .select('id')
-      .from('user')
-      .where({ spotifyAuthToken: spotifyAuthToken });
-    console.log('initializeSpotifyUser current user result: ', result);
-    if (result && result.length > 0) {
-      console.log('initializeSpotifyUser found current user', result[0].id);
-      // await trx.rollback();
-      return result[0].id;
+    if (credentials && credentials.spotifyAuthToken) {
+      const result = await trx
+        .select('id')
+        .from('user')
+        .where({ spotifyAuthToken: credentials.spotifyAuthToken });
+      console.log('initializeNewUser spotify user result: ', result);
+      if (result && result.length > 0) {
+        console.log('initializeNewUser found current user', result[0].id);
+        // await trx.rollback();
+        return result[0].id;
+      }
+    }
+    if (credentials && credentials.oneDriveProfileId) {
+      const result = await trx
+        .select('id')
+        .from('user')
+        .where({ oneDriveProfileId: credentials.oneDriveProfileId });
+      console.log('initializeNewUser oneDrive user result: ', result);
+      if (result && result.length > 0) {
+        console.log('initializeNewUser found current user', result[0].id);
+        // await trx.rollback();
+        return result[0].id;
+      }
     }
 
     const newId = await findUnusedId(trx);
-
     if (newId > 0) {
       await trx('user').insert({
         id: newId,
@@ -70,66 +79,117 @@ const initializeSpotifyUser = async (credentials) => {
     }
 
     await trx.commit();
-    console.log('initializeSpotifyUser commit successful');
+    console.log('initializeNewUser commit successful');
     return newId;
   } catch (e) {
-    console.log('initializeSpotifyUser error', e);
+    console.log('initializeNewUser error', e.name, e.message);
     await trx.rollback();
     return 0;
   }
 };
 
-const initializeOneDriveUser = async (credentials) => {
-  const numDeleted = await clearOutOldUsers();
-  console.log(
-    'initializeOneDriveUser - clearOutOldUsers num deleted',
-    numDeleted
-  );
-
-  const trx = await promisify(db.transaction.bind(db));
-  const { oneDriveProfileId } = credentials;
-  console.log('initializeOneDriveUser oid: ', oneDriveProfileId);
-
-  // for now, don't try to add a user if oneDriveProfileId is undefined
-  if (!oneDriveProfileId) {
-    console.log(
-      'initializeOneDriveUser aborting because profile ID is empty',
-      numDeleted
-    );
-    return 0;
-  }
-
-  // do this inside a transaction so any unused ID's we find stay unused until we're done
-  try {
-    const result = await trx
-      .select('id')
-      .from('user')
-      .where({ oneDriveProfileId: oneDriveProfileId });
-    console.log('initializeOneDriveUser current user result: ', result);
-    if (result && result.length > 0) {
-      console.log('initializeOneDriveUser found current user', result[0].id);
-      // await trx.rollback();
-      return result[0].id;
-    }
-
-    const newId = await findUnusedId(trx);
-
-    if (newId > 0) {
-      await trx('user').insert({
-        id: newId,
-        ...credentials,
-      });
-    }
-
-    await trx.commit();
-    console.log('initializeOneDriveUser commit successful');
-    return newId;
-  } catch (e) {
-    console.log('initializeOneDriveUser error', e);
-    await trx.rollback();
-    return 0;
-  }
-};
+// const initializeSpotifyUser = async (credentials) => {
+//   const numDeleted = await clearOutOldUsers();
+//   console.log(
+//     'initializeSpotifyUser - clearOutOldUsers num deleted',
+//     numDeleted
+//   );
+//
+//   const trx = await promisify(db.transaction.bind(db));
+//   const { spotifyAuthToken } = credentials;
+//
+//   // for now, don't try to add a user if spotifyAuthToken is undefined
+//   if (!spotifyAuthToken) {
+//     console.log(
+//       'initializeSpotifyUser aborting because access token is empty',
+//       numDeleted
+//     );
+//     return 0;
+//   }
+//
+//   // do this inside a transaction so any unused ID's we find stay unused until we're done
+//   try {
+//     const result = await trx
+//       .select('id')
+//       .from('user')
+//       .where({ spotifyAuthToken: spotifyAuthToken });
+//     console.log('initializeSpotifyUser current user result: ', result);
+//     if (result && result.length > 0) {
+//       console.log('initializeSpotifyUser found current user', result[0].id);
+//       // await trx.rollback();
+//       return result[0].id;
+//     }
+//
+//     const newId = await findUnusedId(trx);
+//
+//     if (newId > 0) {
+//       await trx('user').insert({
+//         id: newId,
+//         ...credentials,
+//       });
+//     }
+//
+//     await trx.commit();
+//     console.log('initializeSpotifyUser commit successful');
+//     return newId;
+//   } catch (e) {
+//     console.log('initializeSpotifyUser error', e);
+//     await trx.rollback();
+//     return 0;
+//   }
+// };
+//
+// const initializeOneDriveUser = async (credentials) => {
+//   const numDeleted = await clearOutOldUsers();
+//   console.log(
+//     'initializeOneDriveUser - clearOutOldUsers num deleted',
+//     numDeleted
+//   );
+//
+//   const trx = await promisify(db.transaction.bind(db));
+//   const { oneDriveProfileId } = credentials;
+//   console.log('initializeOneDriveUser oid: ', oneDriveProfileId);
+//
+//   // for now, don't try to add a user if oneDriveProfileId is undefined
+//   if (!oneDriveProfileId) {
+//     console.log(
+//       'initializeOneDriveUser aborting because profile ID is empty',
+//       numDeleted
+//     );
+//     return 0;
+//   }
+//
+//   // do this inside a transaction so any unused ID's we find stay unused until we're done
+//   try {
+//     const result = await trx
+//       .select('id')
+//       .from('user')
+//       .where({ oneDriveProfileId: oneDriveProfileId });
+//     console.log('initializeOneDriveUser current user result: ', result);
+//     if (result && result.length > 0) {
+//       console.log('initializeOneDriveUser found current user', result[0].id);
+//       // await trx.rollback();
+//       return result[0].id;
+//     }
+//
+//     const newId = await findUnusedId(trx);
+//
+//     if (newId > 0) {
+//       await trx('user').insert({
+//         id: newId,
+//         ...credentials,
+//       });
+//     }
+//
+//     await trx.commit();
+//     console.log('initializeOneDriveUser commit successful');
+//     return newId;
+//   } catch (e) {
+//     console.log('initializeOneDriveUser error', e);
+//     await trx.rollback();
+//     return 0;
+//   }
+// };
 
 const getUserFromSpotifyToken = (spotifyAuthToken) => {
   return db
@@ -204,7 +264,10 @@ const updateTokens = (userId, tokens) => {
               );
           } else {
             // no user was found, create a new one
-            console.log('updateTokens - no user found, creating one for userId: ', userId);
+            console.log(
+              'updateTokens - no user found, creating one for userId: ',
+              userId
+            );
             trx('user')
               .insert({
                 id: userId,
@@ -471,9 +534,42 @@ const getUserArtists = (userId) => {
     .where('userArtists.userId', userId);
 };
 
+const clearUserSpotifyAlbums = (userId) => {
+  return db('userAlbums')
+    .where('userId', userId)
+    .whereNull('localId')
+    .whereNull('oneDriveId')
+    .delete()
+    .catch((err) => {
+      console.log(
+        'clearUserSpotifyAlbums error: ',
+        err.name,
+        err.message,
+        userId
+      );
+    });
+};
+
+const clearUserOneDriveAlbums = (userId) => {
+  return db('userAlbums')
+    .where('userId', userId)
+    .whereNotNull('oneDriveId')
+    .where('localId', -1)
+    .delete()
+    .catch((err) => {
+      console.log(
+        'clearUserOneDriveAlbums error: ',
+        err.name,
+        err.message,
+        userId
+      );
+    });
+};
+
 module.exports = {
-  initializeSpotifyUser,
-  initializeOneDriveUser,
+  // initializeSpotifyUser,
+  // initializeOneDriveUser,
+  initializeNewUser,
   getUserFromSpotifyToken,
   getUserFromOneDriveId,
   getSpotifyCredentials,
@@ -483,4 +579,6 @@ module.exports = {
   insertSingleUserArtist,
   getUserAlbums,
   getUserArtists,
+  clearUserSpotifyAlbums,
+  clearUserOneDriveAlbums,
 };

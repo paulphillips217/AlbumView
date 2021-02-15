@@ -20,6 +20,7 @@ export const SELECTED_GENRE = 'SELECTED_GENRE';
 export const SELECTED_ALBUM_ID = 'SELECTED_ALBUM_ID';
 export const SELECTED_SPOTIFY_ALBUM_ID = 'SELECTED_SPOTIFY_ALBUM_ID';
 export const ALBUM_JOB_ID = 'ALBUM_JOB_ID';
+export const ALBUM_VIEW_IS_AUTHENTICATED = 'ALBUM_VIEW_IS_AUTHENTICATED';
 
 export const ContextType = {
   Playlists: 'playlists',

@@ -71,6 +71,22 @@ const integrateUserOwnedAlbums = async (req, res) => {
   res.json(userAlbums);
 };
 
+// this gets them from the database and sends them to the client
+const fetchSavedAlbums = async (req, res) => {
+  const userAlbums = await user.getUserAlbums(
+    req.user.userId,
+    req.params.genreId
+  );
+  console.log(
+    'fetchSavedAlbums - genre & count:',
+    req.params.genreId,
+    userAlbums.length
+  );
+
+  // return album data to client
+  res.json(userAlbums);
+};
+
 const getJobProgress = async (req, res) => {
   const jobId = req.params.id;
   console.log('getJobProgress', jobId);
@@ -92,5 +108,6 @@ module.exports = {
   getGenreList,
   getAlbumGenreList,
   integrateUserOwnedAlbums,
+  fetchSavedAlbums,
   getJobProgress,
 };

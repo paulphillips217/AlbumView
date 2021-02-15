@@ -130,7 +130,9 @@ const SpotifyModalDisplay = ({
   }
 
   let typeCount = spotifyAlbumId ? 1 : 0;
-  const albumObject = savedAlbumData.data.find((item) => item.spotifyAlbumId === spotifyAlbumId);
+  const albumObject = savedAlbumData.data.find(
+    (item) => item.spotifyAlbumId === spotifyAlbumId
+  );
   if (albumObject) {
     typeCount += albumObject.localId ? 1 : 0;
     typeCount += albumObject.oneDriveId ? 1 : 0;
@@ -187,9 +189,13 @@ const SpotifyModalDisplay = ({
             {
               spotifyAlbumId: albumData.id,
               albumName: albumData.name,
-              artistName: albumData.artists[0] ? albumData.artists[0].name : 'unknown artist',
+              artistName: albumData.artists[0]
+                ? albumData.artists[0].name
+                : 'unknown artist',
               image: getImage(albumData.images),
-              releaseDate: albumData.release_date ? moment(albumData.release_date).valueOf()  : Date.now(),
+              releaseDate: albumData.release_date
+                ? moment(albumData.release_date).valueOf()
+                : Date.now(),
             },
             savedAlbumData,
             contextSortType
@@ -293,7 +299,13 @@ const SpotifyModalDisplay = ({
         <Loader>Loading</Loader>
       </Dimmer>
       <Modal.Header style={theme}>
-        {headerTitle}
+        <a
+          href={`https://open.spotify.com/album/${spotifyAlbumId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {headerTitle}
+        </a>
         <Icon
           name={albumHeart ? 'heart' : 'heart outline'}
           size="small"

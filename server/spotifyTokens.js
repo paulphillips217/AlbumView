@@ -57,14 +57,14 @@ const getSpotifyAccessToken = (req, res, next) => {
 
 const getSpotifyCredentials = async (userId) => {
   const credentials = await user.getSpotifyCredentials(userId);
-  if (!credentials || !(credentials.spotifyRefreshToken)) {
+  if (!credentials || !credentials.spotifyRefreshToken) {
     // if we get here we don't have a proper token, so we'll log out the user
     console.log('getSpotifyCredentials - credentials not found in database');
     await user.updateTokens(userId, {
       spotifyAuthToken: null,
       spotifyRefreshToken: null,
       spotifyExpiration: null,
-    })
+    });
     return {};
   }
 
@@ -81,7 +81,10 @@ const getSpotifyCredentials = async (userId) => {
 
   const tokenExpiration = moment(spotifyExpiration);
   const currentTime = moment();
-  if ((!spotifyExpiration || tokenExpiration <= currentTime) && spotifyRefreshToken) {
+  if (
+    (!spotifyExpiration || tokenExpiration <= currentTime) &&
+    spotifyRefreshToken
+  ) {
     console.log('getSpotifyCredentials refreshing credentials');
     // console.log('getSpotifyCredentials token before refresh: ', spotifyAuthToken);
     return await refreshSpotifyAccessToken(userId, spotifyRefreshToken);
@@ -167,28 +170,26 @@ const handleSpotifyAuthentication = async (req, res) => {
   } else {
     res.json({ error: true });
   }
-}
+};
 
 const logOutSpotifyUser = async (req, res) => {
   if (req.user && req.user.userId) {
-    console.log('logOutSpotifyUser clearing database fields for user ', req.user.userId);
-    await user.updateTokens(req.user.userId, {
+    const { userId } = req.user;
+    console.log(
+      'logOutSpotifyUser clearing database fields for user ', userId);
+    await user.updateTokens(userId, {
       spotifyAuthToken: null,
       spotifyRefreshToken: null,
       spotifyExpiration: null,
     });
+    await user.clearUserSpotifyAlbums(userId);
     await albumViewTokens.setSessionJwt(req, res);
     res.json({ signedOut: true });
   } else {
     console.log('logOutSpotifyUser found no user');
     res.json({ error: true });
   }
-
-  // req.session.destroy(function (err) {
-  //   req.logout();
-  //   res.redirect('/');
-  // });
-}
+};
 
 module.exports = {
   getSpotifyAccessToken,

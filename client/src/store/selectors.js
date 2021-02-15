@@ -1,6 +1,7 @@
 import { ContextType } from './types';
 
 export const getSpotifyIsAuthenticated = (store) => store.albumView.spotifyIsAuthenticated;
+export const getAlbumViewIsAuthenticated = (store) => store.albumView.albumViewIsAuthenticated;
 export const getContextType = (store) => store.albumView.contextType;
 export const getContextItem = (store) => store.albumView.contextItem;
 export const getRelatedToArtist = (store) => store.albumView.relatedToArtist;

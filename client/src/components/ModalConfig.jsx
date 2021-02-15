@@ -8,38 +8,51 @@ import {
   getAlbumSort,
   getAlbumViewTheme,
   getContextGridColumns,
+  getContextSortType,
+  getLocalFileData,
+  getOneDriveLoggedIn,
   getPlaylistSort,
   getPlaylistTrackSort,
+  getSavedAlbumData,
   getSavedTrackSort,
+  getSelectedGenre,
+  getSpotifyIsAuthenticated,
 } from '../store/selectors';
 import {
   setAlbumSort,
   setAlbumViewTheme,
   setContextGridColumns,
-  setContextGridData,
   setContextItem,
   resetContextListData,
   setPlaylistSort,
   setPlaylistTrackSort,
   setRelatedToArtist,
   setSavedTrackSort,
+  setSavedAlbumData,
 } from '../store/actions';
 import { AlbumViewTheme, SortTypes } from '../store/types';
 import HttpService from '../util/httpUtils';
 import '../styles/App.css';
+import { getUserAlbums } from '../util/utilities';
 
 const ModalConfig = ({
+  isSpotifyAuthenticated,
+  isOneDriveLoggedIn,
+  localFileData,
+  contextSortType,
+  genre,
   albumViewTheme,
   contextGridColumns,
   albumSort,
   playlistSort,
   savedTrackSort,
   playlistTrackSort,
+  savedAlbumData,
+  setAlbumData,
   setTheme,
   setGridColumns,
   setItem,
   setRelatedTo,
-  setGridData,
   resetListData,
   setAlbumSortOrder,
   setPlaylistSortOrder,
@@ -164,7 +177,7 @@ const ModalConfig = ({
     setGridColumns(e.target.value);
   };
 
-  const handleLogOutSpotify = () => {
+  const handleLogOutSpotify = async () => {
     // kill the cookie
     document.cookie = 'spotify= ;max-age=0';
     console.log('handleLogOutSpotify - updated cookie', document.cookie);
@@ -174,14 +187,23 @@ const ModalConfig = ({
         console.log('handleLogOutSpotify logout response: ', response);
       })
       .catch((error) => console.log(error));
+    const userAlbums = await getUserAlbums(
+      contextSortType,
+      genre,
+      localFileData,
+      httpService
+    );
+    setAlbumData({
+      spotifyCount: savedAlbumData.spotifyCount,
+      data: userAlbums,
+    });
     setItem('');
     setRelatedTo('');
-    setGridData({ spotifyCount: 0, data: [] });
     resetListData();
     history.push('/');
   };
 
-  const handleLogOutOneDrive = () => {
+  const handleLogOutOneDrive = async () => {
     // kill the cookie
     document.cookie = 'oneDrive= ;max-age=0';
     console.log('handleLogOutOneDrive - updated cookie', document.cookie);
@@ -191,6 +213,16 @@ const ModalConfig = ({
         console.log('handleLogOutOneDrive signout response: ', response);
       })
       .catch((error) => console.log(error));
+    const userAlbums = await getUserAlbums(
+      contextSortType,
+      genre,
+      localFileData,
+      httpService
+    );
+    setAlbumData({
+      spotifyCount: savedAlbumData.spotifyCount,
+      data: userAlbums,
+    });
     history.push('/');
   };
 
@@ -219,12 +251,32 @@ const ModalConfig = ({
               onChange={handleContextGridColumnsChange}
             />
           </div>
-          <button className="spotify-button" onClick={handleLogOutSpotify}>
-            Log Out Spotify
-          </button>
-          <button className="one-drive-button" onClick={handleLogOutOneDrive}>
-            Log Out OneDrive
-          </button>
+          {isSpotifyAuthenticated && (
+            <button className="spotify-button" onClick={handleLogOutSpotify}>
+              Log Out Spotify
+            </button>
+          )}
+          {!isSpotifyAuthenticated && (
+            <a
+              className="spotify-button"
+              href={`${process.env.REACT_APP_SERVER_ROOT}/spotify/login`}
+            >
+              Connect to Spotify
+            </a>
+          )}
+          {isOneDriveLoggedIn && (
+            <button className="one-drive-button" onClick={handleLogOutOneDrive}>
+              Log Out OneDrive
+            </button>
+          )}
+          {!isOneDriveLoggedIn &&
+          <a
+            className="one-drive-button"
+            href={`${process.env.REACT_APP_SERVER_ROOT}/one-drive/signin`}
+          >
+            Connect to OneDrive
+          </a>
+          }
         </Tab.Pane>
       ),
     },
@@ -296,17 +348,37 @@ const ModalConfig = ({
 };
 
 ModalConfig.propTypes = {
+  isSpotifyAuthenticated: PropTypes.bool.isRequired,
+  isOneDriveLoggedIn: PropTypes.bool.isRequired,
+  savedAlbumData: PropTypes.shape({
+    spotifyCount: PropTypes.number,
+    data: PropTypes.arrayOf(
+      PropTypes.shape({
+        albumId: PropTypes.number,
+        spotifyAlbumId: PropTypes.string,
+        localId: PropTypes.number,
+        oneDriveId: PropTypes.string,
+        albumName: PropTypes.string,
+        artistName: PropTypes.string,
+        image: PropTypes.string,
+        releaseDate: PropTypes.number,
+      })
+    ),
+  }).isRequired,
+  localFileData: PropTypes.any.isRequired,
+  contextSortType: PropTypes.string.isRequired,
+  genre: PropTypes.number.isRequired,
   albumViewTheme: PropTypes.string.isRequired,
   contextGridColumns: PropTypes.number.isRequired,
   albumSort: PropTypes.string.isRequired,
   playlistSort: PropTypes.string.isRequired,
   savedTrackSort: PropTypes.string.isRequired,
   playlistTrackSort: PropTypes.string.isRequired,
+  setAlbumData: PropTypes.func.isRequired,
   setGridColumns: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
   setTheme: PropTypes.func.isRequired,
   setRelatedTo: PropTypes.func.isRequired,
-  setGridData: PropTypes.func.isRequired,
   resetListData: PropTypes.func.isRequired,
   setAlbumSortOrder: PropTypes.func.isRequired,
   setPlaylistSortOrder: PropTypes.func.isRequired,
@@ -316,6 +388,12 @@ ModalConfig.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
+  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
+  isOneDriveLoggedIn: getOneDriveLoggedIn(state),
+  savedAlbumData: getSavedAlbumData(state),
+  localFileData: getLocalFileData(state),
+  contextSortType: getContextSortType(state),
+  genre: getSelectedGenre(state),
   albumViewTheme: getAlbumViewTheme(state),
   contextGridColumns: getContextGridColumns(state),
   albumSort: getAlbumSort(state),
@@ -325,11 +403,11 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  setAlbumData: (data) => dispatch(setSavedAlbumData(data)),
   setGridColumns: (columns) => dispatch(setContextGridColumns(columns)),
   setTheme: (theme) => dispatch(setAlbumViewTheme(theme)),
   setItem: (id) => dispatch(setContextItem(id)),
   setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),
-  setGridData: (data) => dispatch(setContextGridData(data)),
   resetListData: () => dispatch(resetContextListData()),
   setAlbumSortOrder: (sort) => dispatch(setAlbumSort(sort)),
   setPlaylistSortOrder: (sort) => dispatch(setPlaylistSort(sort)),

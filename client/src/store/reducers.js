@@ -23,9 +23,11 @@ import {
   SELECTED_ALBUM_ID,
   SELECTED_SPOTIFY_ALBUM_ID,
   ALBUM_JOB_ID,
+  ALBUM_VIEW_IS_AUTHENTICATED,
 } from './types';
 
 const initialState = {
+  albumViewIsAuthenticated: false,
   spotifyIsAuthenticated: false,
   contextType: localStorage.getItem('contextType') || ContextType.Albums,
   contextItem: '',
@@ -58,6 +60,11 @@ const initialState = {
 
 export function albumViewReducer(state = initialState, action) {
   switch (action.type) {
+    case ALBUM_VIEW_IS_AUTHENTICATED:
+      console.log('setting albumView is authenticated', action.payload);
+      return Object.assign({}, state, {
+        albumViewIsAuthenticated: action.payload,
+      });
     case SPOTIFY_IS_AUTHENTICATED:
       console.log('setting spotify is authenticated', action.payload);
       return Object.assign({}, state, {

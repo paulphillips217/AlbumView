@@ -1,22 +1,39 @@
-const express = require('express')
+const express = require('express');
 const router = express.Router();
+const albumViewTokens = require('../albumViewTokens');
 const albumViewData = require('../albumViewData');
 const passport = require('passport');
 
-router.get('/genre-list',
-  passport.authenticate('jwt', { session: false }),
-  albumViewData.getGenreList);
+router.get('/login', albumViewTokens.handleAuthentication);
 
-router.get('/album-genre-list',
+router.get(
+  '/album-list-fetch/:genreId',
   passport.authenticate('jwt', { session: false }),
-  albumViewData.getAlbumGenreList);
+  albumViewData.fetchSavedAlbums
+);
 
-router.post('/user-owned-albums',
+router.get(
+  '/genre-list',
   passport.authenticate('jwt', { session: false }),
-  albumViewData.integrateUserOwnedAlbums);
+  albumViewData.getGenreList
+);
 
-router.get('/job-progress/:id',
+router.get(
+  '/album-genre-list',
   passport.authenticate('jwt', { session: false }),
-  albumViewData.getJobProgress);
+  albumViewData.getAlbumGenreList
+);
 
-module.exports = router
+router.post(
+  '/user-owned-albums',
+  passport.authenticate('jwt', { session: false }),
+  albumViewData.integrateUserOwnedAlbums
+);
+
+router.get(
+  '/job-progress/:id',
+  passport.authenticate('jwt', { session: false }),
+  albumViewData.getJobProgress
+);
+
+module.exports = router;

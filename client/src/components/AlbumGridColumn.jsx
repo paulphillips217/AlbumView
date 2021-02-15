@@ -38,14 +38,16 @@ const AlbumGridColumn = ({
                   item.id,
                   trackIndexOffset + item.track_number - 1,
                   trackHearts[trackIndexOffset + item.track_number - 1]
-                )}
+                )
+              }
             />
             <Icon
               name="play"
               size="small"
               color={getTrackColor(item)}
               onClick={() =>
-                handleTrackPlayClick(trackIndexOffset + item.track_number - 1)}
+                handleTrackPlayClick(trackIndexOffset + item.track_number - 1)
+              }
             />
           </Grid.Column>
           <Grid.Column
@@ -64,7 +66,13 @@ const AlbumGridColumn = ({
               paddingRight: '0.5rem',
             }}
           >
-            {item.name}
+            <a
+              href={`https://open.spotify.com/track/${item.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.name}
+            </a>
           </Grid.Column>
           <Grid.Column
             style={{

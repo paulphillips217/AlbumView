@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import moment from 'moment';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
 import '../styles/splitPane.css';
@@ -11,18 +10,18 @@ import AlbumViewHeader from './AlbumViewHeader';
 import {
   getSavedAlbumData,
   getContextSortType,
-  getSpotifyIsAuthenticated,
   getSelectedGenre,
-  getLocalFileData, getAlbumJobId
+  getLocalFileData,
+  getAlbumJobId,
+  getAlbumViewIsAuthenticated,
 } from '../store/selectors';
 import { setSavedAlbumData, setAlbumJobId } from '../store/actions';
-import SpotifyLogin from './SpotifyLogin';
 import HttpService from '../util/httpUtils';
-import { createLocalAlbumTracks } from '../util/localFileUtils';
-import { sortGridData } from '../util/sortUtils';
+import { getUserAlbums } from '../util/utilities';
+import SpotifyLogin from './SpotifyLogin';
 
 const AlbumContext = ({
-  isSpotifyAuthenticated,
+  isAlbumViewAuthenticated,
   savedAlbumData,
   localFileData,
   contextSortType,
@@ -35,61 +34,35 @@ const AlbumContext = ({
   const theme = useTheme();
 
   const getGridData = useCallback(async () => {
-    let spotifyCount = savedAlbumData.spotifyCount;
-    if (!isSpotifyAuthenticated) {
-      console.log('albumContext getGridData - not logged in');
-      return;
-    }
-    if (spotifyCount < 0) {
-      console.log('albumContext getGridData - refreshing saved album data');
-      const data = await httpService.get(`/spotify/album-list-refresh`);
-      console.log('saved album data refreshed: ', data);
-      spotifyCount = data.count;
-      setJobId(parseInt(data.jobId));
-    }
-    console.log('albumContext getGridData - fetching data');
-    try {
-      const rawData = await httpService.get(`/spotify/album-list-fetch/${genre}`);
-      // console.log('albumContext saved album data', rawData);
-      const theAlbumArray = createLocalAlbumTracks(localFileData);
-      console.log('AlbumContext.getGridData got theAlbumArray', theAlbumArray);
-      const data = rawData.map((item) => ({
-        albumId: item.albumId,
-        spotifyAlbumId: item.spotifyAlbumId ? item.spotifyAlbumId : '',
-        localId: item.localId ? item.localId : 0,
-        oneDriveId: item.oneDriveId ? item.oneDriveId : '',
-        albumName: item.albumName ? item.albumName : 'unknown album',
-        artistName: item.artistName ? item.artistName : 'unknown artist',
-        image: item.imageUrl,
-        releaseDate: item.releaseDate ? moment(item.releaseDate).valueOf() : Date.now(),
-        tracks: theAlbumArray.find((a) => a.localId === item.localId)?.tracks,
-      }));
-      const sortedData = sortGridData(data, contextSortType);
+    if (isAlbumViewAuthenticated) {
+      const userAlbums = await getUserAlbums(
+        contextSortType,
+        genre,
+        localFileData,
+        httpService
+      );
       setAlbumData({
-        spotifyCount: spotifyCount,
-        data: sortedData,
+        spotifyCount: savedAlbumData.spotifyCount,
+        data: userAlbums,
       });
-    } catch (err) {
-      console.error(err.name, err.message);
     }
   }, [
+    isAlbumViewAuthenticated,
     contextSortType,
     genre,
     httpService,
-    isSpotifyAuthenticated,
     setAlbumData,
-    setJobId,
     localFileData,
     savedAlbumData.spotifyCount,
   ]);
 
   useEffect(() => {
     getGridData();
-  }, [genre, getGridData]);
+  }, [getGridData]);
 
   useEffect(() => {
     // AlbumViewHeader will set jobId to -1 to let us know the worker job finished
-    if (jobId === -1){
+    if (jobId === -1) {
       console.log('AlbumContext refreshing grid on worker completion');
       getGridData();
       setJobId(0);
@@ -114,10 +87,8 @@ const AlbumContext = ({
         />
       </div>
       <div className="row content">
-        {isSpotifyAuthenticated && (
-          <ContextGrid contextGridData={savedAlbumData} httpService={httpService} />
-        )}
-        {!isSpotifyAuthenticated && <SpotifyLogin />}
+        {savedAlbumData.data.length === 0 && <SpotifyLogin />}
+        <ContextGrid contextGridData={savedAlbumData} httpService={httpService} />
       </div>
       <div className="row footer"> </div>
     </div>
@@ -125,7 +96,7 @@ const AlbumContext = ({
 };
 
 AlbumContext.propTypes = {
-  isSpotifyAuthenticated: PropTypes.bool.isRequired,
+  isAlbumViewAuthenticated: PropTypes.bool.isRequired,
   savedAlbumData: PropTypes.shape({
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
@@ -151,7 +122,7 @@ AlbumContext.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isSpotifyAuthenticated: getSpotifyIsAuthenticated(state),
+  isAlbumViewAuthenticated: getAlbumViewIsAuthenticated(state),
   savedAlbumData: getSavedAlbumData(state),
   localFileData: getLocalFileData(state),
   contextSortType: getContextSortType(state),

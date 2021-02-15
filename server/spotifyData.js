@@ -148,23 +148,7 @@ const chatWithSpotify = async (accessToken, url, method) => {
   }
 };
 
-// this gets them from the database and sends them to the client
-const fetchSavedAlbums = async (req, res) => {
-  const userAlbums = await user.getUserAlbums(
-    req.user.userId,
-    req.params.genreId
-  );
-  console.log(
-    'fetchSavedAlbums - genre & count:',
-    req.params.genreId,
-    userAlbums.length
-  );
-
-  // return album data to client
-  res.json(userAlbums);
-};
-
-// this gets them from Spotify
+// this gets the user's albums from Spotify
 const refreshSavedAlbums = async (req, res) => {
   // get the first page of saved albums from Spotify
   const totalCount = await getSavedAlbums(req.user.userId, 0);
@@ -530,7 +514,6 @@ module.exports = {
   getSavedAlbums,
   getFollowedArtists,
   getSavedTrackArtists,
-  fetchSavedAlbums,
   fetchSavedArtists,
   searchAlbum,
   searchArtist,
