@@ -108,3 +108,5 @@ api/variables.env
 .idea/
 
 server/variables.env
+
+docker-compose (has secrets).yml
