@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
-import { Grid, Header, Image, Icon } from 'semantic-ui-react';
+import { Grid, Header, Image, Icon, Menu } from 'semantic-ui-react';
 import { filterByAlbumType } from '../util/utilities';
 import { getContextType, getContextGridColumns } from '../store/selectors';
 import { ContextType } from '../store/types';
@@ -20,6 +20,10 @@ const ContextGrid = ({
   httpService,
 }) => {
   const theme = useTheme();
+  const [activeMenuItem, setActiveMenuItem] = useState(0);
+
+  const useArtistGrid =
+    contextType === ContextType.Artists || contextType === ContextType.RelatedArtists;
 
   const selectAlbum = (item) => {
     if (item.albumId) {
@@ -34,6 +38,10 @@ const ContextGrid = ({
     }
     setAlbumId(0);
     setSpotifyAlbumId('');
+  };
+
+  const selectMenuItem = (menuItem) => {
+    setActiveMenuItem(menuItem);
   };
 
   const GridItem = (item, index) => (
@@ -95,13 +103,28 @@ const ContextGrid = ({
     </>
   );
 
-  const useArtistAlbumGrid =
-    contextType === ContextType.Artists || contextType === ContextType.RelatedArtists;
+  const ArtistGrid = () => (
+    <>
+      <Menu pointing secondary>
+        <Menu.Item
+          name="albums"
+          active={activeMenuItem === 0}
+          onClick={() => selectMenuItem(0)}
+        />
+        <Menu.Item
+          name="wiki"
+          active={activeMenuItem === 1}
+          onClick={() => selectMenuItem(1)}
+        />
+      </Menu>
+      <ArtistAlbumGrid />
+    </>
+  );
 
   return (
     <div className="grid-container">
-      {useArtistAlbumGrid && contextGridData.data.length > 0 ? <ArtistAlbumGrid /> : ''}
-      {!useArtistAlbumGrid && contextGridData.data.length > 0 ? <AlbumGrid /> : ''}
+      {useArtistGrid && contextGridData.data.length > 0 ? <ArtistGrid /> : ''}
+      {!useArtistGrid && contextGridData.data.length > 0 ? <AlbumGrid /> : ''}
       <ModalAlbum httpService={httpService} />
     </div>
   );

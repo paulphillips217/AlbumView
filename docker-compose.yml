@@ -1,0 +1,111 @@
+# for bull/redis config: 
+#    https://github.com/HugoDF/express-bull-es6
+#    https://codewithhugo.com/setting-up-express-and-redis-with-docker-compose/
+# for postgres config: https://codewithhugo.com/node-postgres-express-docker-compose/
+# for compose file syntax: https://docs.docker.com/compose/compose-file/compose-file-v3/
+
+# for production, change REACT_APP_SERVER_ROOT in ./client/.env.production file
+
+version: "3"
+services:
+  redis:
+    image: redis
+    container_name: bull
+    expose:
+      - 6379
+
+  database:
+    image: postgres
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: albumview
+
+  web:
+    build: .
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    depends_on:
+      - database
+      - redis
+    links:
+      - database
+      - redis
+    ports:
+      - 8080:8080
+    environment:
+      - REDIS_URL=redis://bull
+      - NODE_ENV=production
+      - PORT=8080
+      - CLIENT_URL=http://localhost:8080
+      - SPOTIFY_CLIENT_ID=a095ad5dd90044d59deec6bbc3dfda37
+      - SPOTIFY_CLIENT_SECRET=03681d8f315c41fcacef7291e6880a9b
+      - SPOTIFY_REDIRECT_URI=http://localhost:8080/spotify/callback
+      - DATABASE_URL=postgresql://user:secret@database:5432/albumview
+      - JWT_SECRET=j6g85hc4dlk9ie3f&nfj*ksge43
+      - JWT_EXPIRATION_HOURS=12
+      - LAST_FM_API_KEY=641be98f03016958b1c1e0373ffb8e0c
+      - LAST_FM_SECRET=25faac307b6582a44da0093d23bcc9f8
+      - LAST_FM_INTERVAL=1000
+      - OAUTH_APP_ID=99a7e35c-76d2-467f-be2a-e76043ba0a69
+      - OAUTH_APP_PASSWORD=Qhzk0yPFaKHD-GP3..3sTM.BT9_9M68B-_
+      - OAUTH_REDIRECT_URI=http://localhost:8080/one-drive/callback
+      - OAUTH_SCOPES='profile offline_access user.read Files.ReadWrite.All'
+      - OAUTH_AUTHORITY=https://login.microsoftonline.com/common/
+      - OAUTH_ID_METADATA=v2.0/.well-known/openid-configuration
+      - OAUTH_AUTHORIZE_ENDPOINT=oauth2/v2.0/authorize
+      - OAUTH_TOKEN_ENDPOINT=oauth2/v2.0/token
+      - WEB_CONCURRENCY=1
+      - MAX_JOBS_PER_WORKER=1
+      - SPOTIFY_PAGE_LIMIT=50
+      - SPOTIFY_INTERVAL=500
+      - THE_AUDIO_DB_API_KEY=1
+      - THE_AUDIO_DB_INTERVAL=500
+    command:
+      sh -c 'cd ./client && npm run build && cd .. && npm run migrate && node ./server/index.js'
+
+  worker:
+    build: .
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    depends_on:
+      - database
+      - redis
+      - web
+    links:
+      - database
+      - redis
+    environment:
+      - REDIS_URL=redis://bull
+      - NODE_ENV=production
+      - PORT=8080
+      - CLIENT_URL=http://localhost:8080
+      - SPOTIFY_CLIENT_ID=a095ad5dd90044d59deec6bbc3dfda37
+      - SPOTIFY_CLIENT_SECRET=03681d8f315c41fcacef7291e6880a9b
+      - SPOTIFY_REDIRECT_URI=http://localhost:8080/spotify/callback
+      - DATABASE_URL=postgresql://user:secret@database:5432/albumview
+      - JWT_SECRET=j6g85hc4dlk9ie3f&nfj*ksge43
+      - JWT_EXPIRATION_HOURS=12
+      - LAST_FM_API_KEY=641be98f03016958b1c1e0373ffb8e0c
+      - LAST_FM_SECRET=25faac307b6582a44da0093d23bcc9f8
+      - LAST_FM_INTERVAL=1000
+      - OAUTH_APP_ID=99a7e35c-76d2-467f-be2a-e76043ba0a69
+      - OAUTH_APP_PASSWORD=Qhzk0yPFaKHD-GP3..3sTM.BT9_9M68B-_
+      - OAUTH_REDIRECT_URI=http://localhost:8080/one-drive/callback
+      - OAUTH_SCOPES='profile offline_access user.read Files.ReadWrite.All'
+      - OAUTH_AUTHORITY=https://login.microsoftonline.com/common/
+      - OAUTH_ID_METADATA=v2.0/.well-known/openid-configuration
+      - OAUTH_AUTHORIZE_ENDPOINT=oauth2/v2.0/authorize
+      - OAUTH_TOKEN_ENDPOINT=oauth2/v2.0/token
+      - WEB_CONCURRENCY=1
+      - MAX_JOBS_PER_WORKER=1
+      - SPOTIFY_PAGE_LIMIT=50
+      - SPOTIFY_INTERVAL=500
+      - THE_AUDIO_DB_API_KEY=1
+      - THE_AUDIO_DB_INTERVAL=500
+    command:
+      sh -c 'node ./server/worker.js'

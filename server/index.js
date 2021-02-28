@@ -97,7 +97,7 @@ passport.deserializeUser(async (userId, done) => {
   // done(null, users[id] ? users[id] : null);
   const oneDriveCredentials = await user.getOneDriveCredentials(userId);
   console.log(`deserializeUser credentials ${oneDriveCredentials ? 'success' : 'failed'}`);
-  done(null, {...oneDriveCredentials, userId});
+  done(null, { ...oneDriveCredentials, userId });
 });
 
 // Configure OIDC strategy
@@ -154,6 +154,7 @@ app.get('/node-env', (req, res) => {
   res.send(`NODE_ENV: ${process.env.NODE_ENV}<br/>
             PORT: ${process.env.PORT}<br/>
             CLIENT_URL: ${process.env.CLIENT_URL}<br/>
+            SPOTIFY_REDIRECT_URI: ${process.env.SPOTIFY_REDIRECT_URI}<br/>
             `);
 });
 

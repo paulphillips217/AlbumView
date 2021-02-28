@@ -1,9 +1,9 @@
 {
-  "name": "AlbumView",
+  "name": "album-view",
   "version": "1.0.0",
   "description": "Album-oriented view of music collection data from Spotify and elsewhere",
   "engines": {
-    "node": "10.x"
+    "node": "14.x"
   },
   "scripts": {
     "start": "nf start",
@@ -40,7 +40,7 @@
     "passport": "^0.4.1",
     "passport-azure-ad": "^4.2.1",
     "passport-jwt": "^4.0.0",
-    "pg": "^7.18.2",
+    "pg": "^8.5.1",
     "pusher": "^3.0.0",
     "simple-oauth2": "^3.3.0",
     "throng": "^4.0.0"
@@ -52,7 +52,6 @@
   "author": "Paul Phillips",
   "keywords": [
     "node",
-    "heroku",
     "create-react-app",
     "react"
   ],
