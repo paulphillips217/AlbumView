@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useTheme } from 'emotion-theming';
 import '../styles/App.css';
-import { Grid, Header, Image, Icon, Menu } from 'semantic-ui-react';
+import { Grid, Header, Image, Icon, Menu, Card, Item } from 'semantic-ui-react';
 import { filterByAlbumType } from '../util/utilities';
-import { getContextType, getContextGridColumns } from '../store/selectors';
+import {
+  getContextType,
+  getContextGridColumns,
+  getContextItem,
+} from '../store/selectors';
 import { ContextType } from '../store/types';
 import ModalAlbum from './ModalAlbum';
 import HttpService from '../util/httpUtils';
@@ -13,6 +17,7 @@ import { setSelectedAlbumId, setSelectedSpotifyAlbumId } from '../store/actions'
 
 const ContextGrid = ({
   contextType,
+  contextItem,
   contextGridData,
   contextGridColumns,
   setAlbumId,
@@ -21,9 +26,26 @@ const ContextGrid = ({
 }) => {
   const theme = useTheme();
   const [activeMenuItem, setActiveMenuItem] = useState(0);
+  const [aboutArtistData, setAboutArtistData] = useState({});
 
   const useArtistGrid =
     contextType === ContextType.Artists || contextType === ContextType.RelatedArtists;
+
+  useEffect(() => {
+    if (contextItem) {
+      httpService
+        .get(`/album-view/artist-wiki/${contextItem}`)
+        .then((rawData) => {
+          console.log('artist wiki data', rawData);
+          if (rawData && rawData.artists) {
+            setAboutArtistData(rawData.artists[0]);
+          } else {
+            setAboutArtistData({});
+          }
+        })
+        .catch((error) => console.log(error));
+    }
+  }, [httpService, contextItem, setAboutArtistData]);
 
   const selectAlbum = (item) => {
     if (item.albumId) {
@@ -103,28 +125,96 @@ const ContextGrid = ({
     </>
   );
 
+  const ArtistMenu = () => (
+    <Menu pointing secondary>
+      <Menu.Item
+        name="albums"
+        active={activeMenuItem === 0}
+        onClick={() => selectMenuItem(0)}
+      />
+      <Menu.Item
+        name="about"
+        active={activeMenuItem === 1}
+        onClick={() => selectMenuItem(1)}
+      />
+    </Menu>
+  );
+
   const ArtistGrid = () => (
     <>
-      <Menu pointing secondary>
-        <Menu.Item
-          name="albums"
-          active={activeMenuItem === 0}
-          onClick={() => selectMenuItem(0)}
-        />
-        <Menu.Item
-          name="wiki"
-          active={activeMenuItem === 1}
-          onClick={() => selectMenuItem(1)}
-        />
-      </Menu>
+      <ArtistMenu />
       <ArtistAlbumGrid />
     </>
   );
 
+  const ArtistWiki = () => {
+    const paragraphs = aboutArtistData.strBiographyEN
+      ? aboutArtistData.strBiographyEN.split('\n')
+      : ['No Article Available'];
+
+    return (
+      <>
+        <ArtistMenu />
+        <Card centered raised fluid>
+          {aboutArtistData.strArtistBanner && (
+            <Image src={aboutArtistData.strArtistBanner} wrapped ui={false} />
+          )}
+          <Card.Content textAlign={'left'}>
+            {aboutArtistData.strStyle && (
+              <p>
+                <strong>Style:</strong> {aboutArtistData.strStyle}
+              </p>
+            )}
+            {aboutArtistData.strGenre && (
+              <p>
+                <strong>Genre:</strong> {aboutArtistData.strGenre}
+              </p>
+            )}
+            {aboutArtistData.strMood && (
+              <p>
+                <strong>Mood:</strong> {aboutArtistData.strMood}
+              </p>
+            )}
+
+            {aboutArtistData.strArtistThumb && (
+              <Image src={aboutArtistData.strArtistThumb} wrapped ui={false} />
+            )}
+
+            {paragraphs.map((p) => (
+              <Item style={{ marginTop: '10px' }}>
+                <Item.Content content={p} />
+              </Item>
+            ))}
+            {aboutArtistData.strArtist && (
+              <Item style={{ marginTop: '10px' }}>
+                <Item.Content>
+                  <a
+                    href={`https://en.wikipedia.org/wiki/${encodeURIComponent(
+                      aboutArtistData.strArtist
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Wikipedia Article
+                  </a>
+                </Item.Content>
+              </Item>
+            )}
+          </Card.Content>
+        </Card>
+      </>
+    );
+  };
+
   return (
     <div className="grid-container">
-      {useArtistGrid && contextGridData.data.length > 0 ? <ArtistGrid /> : ''}
+      {useArtistGrid && activeMenuItem === 0 && contextGridData.data.length > 0 ? (
+        <ArtistGrid />
+      ) : (
+        ''
+      )}
       {!useArtistGrid && contextGridData.data.length > 0 ? <AlbumGrid /> : ''}
+      {useArtistGrid && activeMenuItem === 1 && <ArtistWiki />}
       <ModalAlbum httpService={httpService} />
     </div>
   );
@@ -132,6 +222,7 @@ const ContextGrid = ({
 
 ContextGrid.propTypes = {
   contextType: PropTypes.string.isRequired,
+  contextItem: PropTypes.string.isRequired,
   contextGridData: PropTypes.shape({
     spotifyCount: PropTypes.number,
     data: PropTypes.arrayOf(
@@ -153,6 +244,7 @@ ContextGrid.propTypes = {
 
 const mapStateToProps = (state) => ({
   contextType: getContextType(state),
+  contextItem: getContextItem(state),
   contextGridColumns: getContextGridColumns(state),
 });
 

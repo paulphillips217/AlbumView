@@ -153,6 +153,23 @@ const getArtistById = (artistId) => {
     .catch((err) => console.log('getArtistById error', err.name, err.message));
 };
 
+const getArtistBySpotifyId = (artistSpotifyId) => {
+  // console.log('getArtistBySpotifyId');
+  return db
+    .from('artist')
+    .where({ spotifyId: artistSpotifyId})
+    .then((rows) => {
+      if (rows && rows.length > 0) {
+        // console.log('getArtistBySpotifyId got: ', rows);
+        return rows[0];
+      } else {
+        console.log('getArtistBySpotifyId got no results');
+        return null;
+      }
+    })
+    .catch((err) => console.log('getArtistBySpotifyId error', err.name, err.message));
+};
+
 const updateArtist = (artistId, artist) => {
   console.log('updateArtist for artist ', artistId);
   return db('artist')
@@ -168,5 +185,6 @@ module.exports = {
   getArtistsWithNoTadbId,
   getSpotifyArtistsWithNoImageUrl,
   getArtistById,
+  getArtistBySpotifyId,
   updateArtist,
 };

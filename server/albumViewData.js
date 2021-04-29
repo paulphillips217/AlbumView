@@ -1,3 +1,4 @@
+const axios = require('axios');
 const genre = require('./data/genre');
 const artist = require('./data/artist');
 const album = require('./data/album');
@@ -104,10 +105,56 @@ const getJobProgress = async (req, res) => {
   }
 }
 
+// this gets them from the database and sends them to the client
+const fetchSavedArtists = async (req, res) => {
+  const userArtists = await user.getUserArtists(req.user.userId);
+  console.log('fetchSavedArtists count:', userArtists.length);
+  res.json(userArtists);
+};
+
+const getWikiArtistArticle = async (req, res) => {
+  const method = req.method;
+  const artistSpotifyId = req.params.id;
+
+  const artistRecord = await artist.getArtistBySpotifyId(artistSpotifyId);
+  if (!artistRecord) {
+    console.log('getWikiArtistArticle - getArtistBySpotifyId got no records');
+    res.json({ emptyResponse: true });
+  }
+  const artistName = encodeURIComponent(artistRecord.name);
+  // const url = `https://en.wikipedia.org/w/api.php?action=parse&page=${artistName}&prop=text&format=json`
+  const url = `https://www.theaudiodb.com/api/v1/json/1/search.php?s=${artistName}`
+  console.log('getWikiArtistArticle - url: ', url);
+
+  try {
+    const response = await axios({
+      url: url,
+      method: method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('getWikiArtistArticle - axios got response for ', url);
+    if (response && response.data) {
+      // console.log('getWikiArtistArticle - response ', response.data);
+      res.json(response.data);
+    } else {
+      console.log('getWikiArtistArticle - axios got empty response');
+      res.json({ emptyResponse: true });
+    }
+  } catch (err) {
+    console.error('getWikiArtistArticle error', err.name, err.message);
+    res.json({ emptyResponse: true });
+  }
+}
+
 module.exports = {
   getGenreList,
   getAlbumGenreList,
   integrateUserOwnedAlbums,
   fetchSavedAlbums,
   getJobProgress,
+  fetchSavedArtists,
+  getWikiArtistArticle,
 };

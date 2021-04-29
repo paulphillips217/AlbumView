@@ -100,7 +100,7 @@ const ArtistContext = ({
     const getList = () => {
       if (isSpotifyAuthenticated) {
         httpService
-          .get(`/spotify/artist-list`)
+          .get(`/album-view/artist-list`)
           .then((data) => {
             console.log('artist list raw data', data);
             const artistList = data.map((item) => ({

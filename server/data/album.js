@@ -16,7 +16,10 @@ const insertSingleAlbum = (album) => {
               // if spotify id not found, it still may be in database without an id
               return trx('album')
                 .select()
-                .where('matchName', album.matchName)
+                .where({
+                  artistId: album.artistId,
+                  matchName: album.matchName,
+                })
                 .then((rows) => returnOrInsertAlbum(trx, rows, album))
                 .catch((err) => {
                   console.log('insertSingleAlbum select error: ', err.name, err.message, album);

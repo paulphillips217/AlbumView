@@ -228,13 +228,6 @@ const getSavedAlbums = async (userId, offset) => {
   return response.total;
 };
 
-// this gets them from the database and sends them to the client
-const fetchSavedArtists = async (req, res) => {
-  const userArtists = await user.getUserArtists(req.user.userId);
-  console.log('fetchSavedArtists count:', userArtists.length);
-  res.json(userArtists);
-};
-
 const getFollowedArtists = async (userId, offset) => {
   const credentials = await spotifyTokens.getSpotifyCredentials(userId);
   if (!credentials || !credentials.spotifyAuthToken) {
@@ -514,7 +507,6 @@ module.exports = {
   getSavedAlbums,
   getFollowedArtists,
   getSavedTrackArtists,
-  fetchSavedArtists,
   searchAlbum,
   searchArtist,
   getArtistById,

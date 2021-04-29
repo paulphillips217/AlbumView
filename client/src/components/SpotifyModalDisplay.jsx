@@ -25,6 +25,7 @@ import {
   setRelatedToArtist,
   addSavedAlbum,
   removeSavedAlbum,
+  setSelectedAlbumId,
 } from '../store/actions';
 import { ContextType, ModalDisplayTypes } from '../store/types';
 import HttpService from '../util/httpUtils';
@@ -36,6 +37,7 @@ const SpotifyModalDisplay = ({
   contextSortType,
   setType,
   setItem,
+  setAlbumId,
   setLoading,
   setRelatedTo,
   setGridData,
@@ -176,6 +178,7 @@ const SpotifyModalDisplay = ({
         .delete(`/spotify/delete-albums/${spotifyAlbumId}`)
         .then(() => {
           console.log('handleAlbumHeartClick delete response');
+          setAlbumId(0);
           removeAlbum(spotifyAlbumId, savedAlbumData);
           setShowLoader(false);
         })
@@ -255,6 +258,7 @@ const SpotifyModalDisplay = ({
       setLoading(true);
       setItem(albumData.artists[0].id);
       setType(ContextType.Artists);
+      setAlbumId(0);
     }
   };
 
@@ -374,6 +378,7 @@ SpotifyModalDisplay.propTypes = {
   spotifyAlbumId: PropTypes.string.isRequired,
   setType: PropTypes.func.isRequired,
   setItem: PropTypes.func.isRequired,
+  setAlbumId: PropTypes.func.isRequired,
   setLoading: PropTypes.func.isRequired,
   setRelatedTo: PropTypes.func.isRequired,
   setGridData: PropTypes.func.isRequired,
@@ -406,6 +411,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  setAlbumId: (id) => dispatch(setSelectedAlbumId(id)),
   setType: (type) => dispatch(setContextType(type)),
   setItem: (id) => dispatch(setContextItem(id)),
   setRelatedTo: (id) => dispatch(setRelatedToArtist(id)),

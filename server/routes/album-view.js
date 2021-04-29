@@ -36,4 +36,16 @@ router.get(
   albumViewData.getJobProgress
 );
 
+router.get(
+  '/artist-list',
+  passport.authenticate('jwt', { session: false }),
+  albumViewData.fetchSavedArtists
+);
+
+router.get(
+  '/artist-wiki/:id',
+  passport.authenticate('jwt', { session: false }),
+  albumViewData.getWikiArtistArticle
+);
+
 module.exports = router;

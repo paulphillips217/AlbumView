@@ -6,3 +6,18 @@ heroku run knex seed:run -a album-view-online
 
 list my last.fm applications:
 https://www.last.fm/api/accounts
+
+docker-compose up -d --build
+docker-compose exec web knex migrate:latest
+docker-compose exec web knex seed:run
+
+
+to deploy on old laptop at home:
+copy over the following folders: server, client/build, and the package.json and package-lock.json files from the root and client folders
+run `npm ci` on both folders to install stuff in node_modules 
+copy over the .env.production file from the client folders (make sure variables are right for production)
+copy over the server/variables.env file (make sure the variables are right for production)
+run `npm install -g knex` to install knex for migrations
+run `"node_modules/.bin/knex" migrate:latest` and then `"node_modules/.bin/knex" seed:run` to create the database (include double-quotes)
+create database: `psql -U postgres`, `create database albumview;` `create user myuser with encrypted password 'mypass';`  `grant all privileges on database albumview to myuser;` 
+run using `node ./server/index.js`

@@ -205,7 +205,7 @@ const addArtistLastFmData = async (sleep) => {
 
   if (artists && artists.length > 0) {
     for (let i = 0; i < artists.length; i++) {
-      await sleep(process.env.SPOTIFY_INTERVAL);
+      await sleep(process.env.LAST_FM_INTERVAL);
 
       // console.log('addArtistLastFmData artists record: ', artists[i]);
       // console.log('addArtistLastFmData searching for artist: ', artists[i],artistId, artists[i].artistName);

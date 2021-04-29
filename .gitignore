@@ -110,3 +110,23 @@ api/variables.env
 server/variables.env
 
 docker-compose (has secrets).yml
+
+docker-compose.yml
+
+docker-compose (no secrets).yml
+
+Dockerfile
+
+kubernetes/postgres-deployment.yaml
+
+kubernetes/postgres-service.yaml
+
+kubernetes/secret.yaml
+
+kubernetes/volume-claim.yaml
+
+kubernetes/volume.yaml
+
+kubernetes/web-deployment.yaml
+
+kubernetes/web-service.yaml

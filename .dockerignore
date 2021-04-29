@@ -1,4 +1,8 @@
 node_modules
+./client/node_modules
 .dockerignore
 Dockerfile
 ./server/variables.env
+npm-debug.log
+docker-compose.yml
+.gitignore
