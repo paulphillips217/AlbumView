@@ -109,7 +109,7 @@ router.delete(
 router.delete(
   '/delete-albums/:ids',
   passport.authenticate('jwt', { session: false }),
-  spotifyData.talkToSpotify
+  spotifyData.removeAlbum
 );
 router.post(
   '/queue-track/:uri',

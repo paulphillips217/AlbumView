@@ -256,9 +256,9 @@ const SpotifyModalDisplay = ({
       resetListData();
       setRelatedTo('');
       setLoading(true);
-      setItem(albumData.artists[0].id);
       setType(ContextType.Artists);
       setAlbumId(0);
+      setItem(albumData.artists[0].id);
     }
   };
 

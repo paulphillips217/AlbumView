@@ -43,9 +43,15 @@ const ArtistContext = ({
   useEffect(() => {
     const getGridData = () => {
       if (!dataLoading || !isSpotifyAuthenticated) {
+        console.log(
+          'getGridData - data loading false or not authenticated',
+          dataLoading,
+          isSpotifyAuthenticated
+        );
         return;
       }
       if (contextItem) {
+        console.log('getGridData - contextItem: ', contextItem);
         const offset = contextGridData.data.length;
         httpService
           .get(`/spotify/artist-albums/${contextItem}/${offset}/${SPOTIFY_PAGE_LIMIT}`)
@@ -58,7 +64,9 @@ const ArtistContext = ({
                 albumName: e.name,
                 artistName: e.artists[0].name,
                 image: getImage(e.images),
-                releaseDate: e.release_date ? moment(e.release_date).valueOf()  : Date.now(),
+                releaseDate: e.release_date
+                  ? moment(e.release_date).valueOf()
+                  : Date.now(),
                 albumGroup: e.album_group,
                 albumType: e.album_type,
               }));
@@ -68,6 +76,7 @@ const ArtistContext = ({
                 data: sortGridData(newData, contextSortType),
               });
               if (!rawData.next) {
+                console.log('getGridData - next is empty');
                 setLoading(false);
               }
             } else if (contextGridData.data.length === 0) {
@@ -113,18 +122,15 @@ const ArtistContext = ({
             setListData({
               data: artistList.sort(sortByName),
             });
-            setLoading(false);
+            if (!contextItem) {
+              setLoading(false);
+            }
           })
           .catch((error) => console.log(error));
       }
     };
     getList();
-  }, [
-    isSpotifyAuthenticated,
-    setListData,
-    setLoading,
-    httpService,
-  ]);
+  }, [isSpotifyAuthenticated, contextItem, setListData, setLoading, httpService]);
 
   // load title for header
   useEffect(() => {
@@ -161,7 +167,7 @@ const ArtistContext = ({
             minSize={50}
             defaultSize={350}
             style={{ height: '50%', position: 'relative' }}
-            paneStyle={{ 'overflowY': 'auto', 'overflowX': 'hidden' }}
+            paneStyle={{ overflowY: 'auto', overflowX: 'hidden' }}
           >
             <ContextList httpService={httpService} />
             <ContextGrid contextGridData={contextGridData} httpService={httpService} />

@@ -157,6 +157,23 @@ const getAlbumById = (albumId) => {
     .catch((err) => console.log('getAlbumById error', err.name, err.message));
 };
 
+const getAlbumBySpotifyId = (spotifyId) => {
+  // console.log('getAlbumBySpotifyId');
+  return db
+    .from('album')
+    .where({ spotifyId: spotifyId})
+    .then((rows) => {
+      if (rows && rows.length > 0) {
+        // console.log('getAlbumBySpotifyId got: ', rows);
+        return rows[0];
+      } else {
+        console.log('getAlbumBySpotifyId got no results');
+        return null;
+      }
+    })
+    .catch((err) => console.log('getAlbumBySpotifyId error', err.name, err.message));
+};
+
 const addMusicBrainzId = (albumId, musicBrainzId) => {
   console.log('addMusicBrainzId ', albumId, musicBrainzId);
   db('album')
@@ -288,6 +305,7 @@ module.exports = {
   getAlbumsWithNoMbid,
   getAlbumsWithNoTadbId,
   getAlbumById,
+  getAlbumBySpotifyId,
   addSpotifyId,
   addMusicBrainzId,
   addTadbId,

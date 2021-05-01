@@ -21,3 +21,7 @@ run `npm install -g knex` to install knex for migrations
 run `"node_modules/.bin/knex" migrate:latest` and then `"node_modules/.bin/knex" seed:run` to create the database (include double-quotes)
 create database: `psql -U postgres`, `create database albumview;` `create user myuser with encrypted password 'mypass';`  `grant all privileges on database albumview to myuser;` 
 run using `node ./server/index.js`
+
+files to leave alone on carols laptop:
+server/index.js
+server/worker.js

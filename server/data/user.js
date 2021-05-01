@@ -88,109 +88,6 @@ const initializeNewUser = async (credentials) => {
   }
 };
 
-// const initializeSpotifyUser = async (credentials) => {
-//   const numDeleted = await clearOutOldUsers();
-//   console.log(
-//     'initializeSpotifyUser - clearOutOldUsers num deleted',
-//     numDeleted
-//   );
-//
-//   const trx = await promisify(db.transaction.bind(db));
-//   const { spotifyAuthToken } = credentials;
-//
-//   // for now, don't try to add a user if spotifyAuthToken is undefined
-//   if (!spotifyAuthToken) {
-//     console.log(
-//       'initializeSpotifyUser aborting because access token is empty',
-//       numDeleted
-//     );
-//     return 0;
-//   }
-//
-//   // do this inside a transaction so any unused ID's we find stay unused until we're done
-//   try {
-//     const result = await trx
-//       .select('id')
-//       .from('user')
-//       .where({ spotifyAuthToken: spotifyAuthToken });
-//     console.log('initializeSpotifyUser current user result: ', result);
-//     if (result && result.length > 0) {
-//       console.log('initializeSpotifyUser found current user', result[0].id);
-//       // await trx.rollback();
-//       return result[0].id;
-//     }
-//
-//     const newId = await findUnusedId(trx);
-//
-//     if (newId > 0) {
-//       await trx('user').insert({
-//         id: newId,
-//         ...credentials,
-//       });
-//     }
-//
-//     await trx.commit();
-//     console.log('initializeSpotifyUser commit successful');
-//     return newId;
-//   } catch (e) {
-//     console.log('initializeSpotifyUser error', e);
-//     await trx.rollback();
-//     return 0;
-//   }
-// };
-//
-// const initializeOneDriveUser = async (credentials) => {
-//   const numDeleted = await clearOutOldUsers();
-//   console.log(
-//     'initializeOneDriveUser - clearOutOldUsers num deleted',
-//     numDeleted
-//   );
-//
-//   const trx = await promisify(db.transaction.bind(db));
-//   const { oneDriveProfileId } = credentials;
-//   console.log('initializeOneDriveUser oid: ', oneDriveProfileId);
-//
-//   // for now, don't try to add a user if oneDriveProfileId is undefined
-//   if (!oneDriveProfileId) {
-//     console.log(
-//       'initializeOneDriveUser aborting because profile ID is empty',
-//       numDeleted
-//     );
-//     return 0;
-//   }
-//
-//   // do this inside a transaction so any unused ID's we find stay unused until we're done
-//   try {
-//     const result = await trx
-//       .select('id')
-//       .from('user')
-//       .where({ oneDriveProfileId: oneDriveProfileId });
-//     console.log('initializeOneDriveUser current user result: ', result);
-//     if (result && result.length > 0) {
-//       console.log('initializeOneDriveUser found current user', result[0].id);
-//       // await trx.rollback();
-//       return result[0].id;
-//     }
-//
-//     const newId = await findUnusedId(trx);
-//
-//     if (newId > 0) {
-//       await trx('user').insert({
-//         id: newId,
-//         ...credentials,
-//       });
-//     }
-//
-//     await trx.commit();
-//     console.log('initializeOneDriveUser commit successful');
-//     return newId;
-//   } catch (e) {
-//     console.log('initializeOneDriveUser error', e);
-//     await trx.rollback();
-//     return 0;
-//   }
-// };
-
 const getUserFromSpotifyToken = (spotifyAuthToken) => {
   return db
     .select('id')
@@ -415,6 +312,15 @@ const insertSingleUserAlbum = (userAlbum) => {
     });
 };
 
+const removeSingleUserAlbum = (userId, albumId) => {
+  return db('userAlbums')
+    .where({
+      userId: userId,
+      albumId: albumId,
+    })
+    .del();
+};
+
 const insertSingleUserArtist = (userArtist) => {
   return db
     .transaction((trx) => {
@@ -567,8 +473,6 @@ const clearUserOneDriveAlbums = (userId) => {
 };
 
 module.exports = {
-  // initializeSpotifyUser,
-  // initializeOneDriveUser,
   initializeNewUser,
   getUserFromSpotifyToken,
   getUserFromOneDriveId,
@@ -576,6 +480,7 @@ module.exports = {
   getOneDriveCredentials,
   updateTokens,
   insertSingleUserAlbum,
+  removeSingleUserAlbum,
   insertSingleUserArtist,
   getUserAlbums,
   getUserArtists,

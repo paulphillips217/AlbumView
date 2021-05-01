@@ -150,6 +150,9 @@ const chatWithSpotify = async (accessToken, url, method) => {
 
 // this gets the user's albums from Spotify
 const refreshSavedAlbums = async (req, res) => {
+  // if we're gonna refresh them, clear out the old ones from the userAlbums table first
+  await user.clearUserSpotifyAlbums(req.user.userId);
+
   // get the first page of saved albums from Spotify
   const totalCount = await getSavedAlbums(req.user.userId, 0);
   console.log('refreshSavedAlbums total count is ', totalCount);
@@ -501,6 +504,16 @@ const addArtistSpotifyIds = async (userId, sleep) => {
   }
 };
 
+const addAlbum = async (req, res) => {};
+
+const removeAlbum = async (req, res) => {
+  const albumRecord = await album.getAlbumBySpotifyId(req.params.ids);
+  if (albumRecord && albumRecord.id) {
+    await user.removeSingleUserAlbum(req.user.userId, albumRecord.id);
+  }
+  await talkToSpotify(req, res);
+};
+
 module.exports = {
   talkToSpotify,
   refreshSavedAlbums,
@@ -513,4 +526,5 @@ module.exports = {
   addArtistImageUrls,
   addAlbumSpotifyIds,
   addArtistSpotifyIds,
+  removeAlbum,
 };
