@@ -12,7 +12,7 @@
     "emotion": "^10.0.27",
     "emotion-theming": "^10.0.27",
     "lodash": "^4.17.21",
-    "moment": "^2.29.2",
+    "moment": "^2.29.4",
     "prop-types": "^15.7.2",
     "pusher-js": "^5.1.1",
     "react": "^16.13.1",
