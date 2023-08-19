@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Album-oriented view of music collection data from Spotify and elsewhere",
   "engines": {
-    "node": "14.x"
+    "node": "^18.x"
   },
   "scripts": {
     "start": "nf start",
@@ -37,7 +37,7 @@
     "node-cron": "^2.0.3",
     "node-fetch": "^3.3.1",
     "numbers2words": "^1.4.0",
-    "passport": "^0.6.0",
+    "passport": "github:joeyguerra/passport#missing-regenerate-on-req",
     "passport-azure-ad": "^4.3.5",
     "passport-jwt": "^4.0.1",
     "pg": "^8.5.1",

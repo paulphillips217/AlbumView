@@ -1,0 +1,27 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "askForPassword": true,
+      "driver": "PostgreSQL",
+      "name": "AlbumViewLocal",
+      "database": "albumview",
+      "username": "dbuser"
+    },
+    {
+      "pgOptions": {
+        "ssl": true
+      },
+      "previewLimit": 50,
+      "server": "ep-misty-night-266142.us-east-2.aws.neon.tech",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "AlbumView-Neon",
+      "database": "neondb",
+      "username": "paulphillips217",
+      "password": "pFSMqQTNx45c"
+    }
+  ]
+}

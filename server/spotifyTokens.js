@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const moment = require('moment');
 const albumViewTokens = require('./albumViewTokens');
 const spotify = require('./credentials');
@@ -154,11 +154,10 @@ const authorizeSpotify = (req, res) => {
   const scopes =
     'user-read-recently-played playlist-read-private playlist-read-collaborative user-modify-playback-state user-library-modify user-library-read user-follow-read user-read-playback-state user-modify-playback-state';
 
-  const url = `https://accounts.spotify.com/authorize?&client_id=${
-    spotify.client_id
-  }&redirect_uri=${encodeURI(
-    spotify.redirect_uri
-  )}&response_type=code&scope=${scopes}`;
+  const url = `https://accounts.spotify.com/authorize?&client_id=${spotify.client_id
+    }&redirect_uri=${encodeURI(
+      spotify.redirect_uri
+    )}&response_type=code&scope=${scopes}`;
 
   res.redirect(url);
 };
