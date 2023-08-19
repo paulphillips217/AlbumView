@@ -1,11 +1,10 @@
 {
   "env": {
     "browser": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
-  "extends": [
-    "plugin:react/recommended"
-  ],
+  "extends": [],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -14,11 +13,11 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "ecmaVersion": 11,
+    "ecmaVersion": 2018,
     "sourceType": "module"
   },
   "plugins": [
-    "react"
+    "react-hooks"
   ],
   "rules": {
     "linebreak-style": 0,
