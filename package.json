@@ -25,7 +25,7 @@
     "body-parser": "^1.20.2",
     "bull": "^3.18.0",
     "cookie-parser": "^1.4.5",
-    "cookie-session": "^1.4.0",
+    "cookie-session": "^2.1.1",
     "cors": "^2.8.5",
     "diacritic": "0.0.2",
     "express": "^4.20.0",
